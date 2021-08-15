@@ -5,7 +5,7 @@ from typing import Optional
 from sqlalchemy.orm import sessionmaker
 from trader.connections.cache import cache
 from trader.connections.database import database
-from trader.persistence.models import Currency, CurrencyPlatform, Source, SourceType
+from trader.persistence.models import Currency, CurrencyPlatform, Source, SourceType, Timeframe
 
 
 @dataclass
@@ -60,6 +60,22 @@ UNITED_STATES_DOLLAR = CurrencyData(
     "currency_united_states_dollar_id", BASE_DATA, "United States Dollar", "USD", is_cryptocurrency=False
 )
 CURRENCIES = (UNITED_STATES_DOLLAR,)
+
+
+@dataclass
+class TimeframeData:
+    cache_key: str
+    label: str
+    seconds_length: int
+
+
+ONE_MINUTE = TimeframeData("timeframe_1m", "1m", 60)
+FIVE_MINUTE = TimeframeData("timeframe_5m", "5m", 60 * 5)
+FIFTEEN_MINUTE = TimeframeData("timeframe_15m", "15m", 60 * 15)
+THIRTY_MINUTE = TimeframeData("timeframe_30m", "30m", 60 * 30)
+ONE_HOUR = TimeframeData("timeframe_1h", "1h", 60 * 60)
+ONE_DAY = TimeframeData("timeframe_1d", "1d", 60 * 60 * 24)
+TIMEFRAMES = (ONE_MINUTE, FIVE_MINUTE, FIFTEEN_MINUTE, THIRTY_MINUTE, ONE_HOUR, ONE_DAY)
 
 
 def initialize_base_data() -> None:
@@ -134,3 +150,17 @@ def initialize_base_data() -> None:
                 session.add(instance)
                 session.commit()
             cache.set(currency.cache_key, instance.id)
+        for timeframe in TIMEFRAMES:
+            instance = (
+                session.query(Timeframe)
+                .filter(
+                    Timeframe.label == timeframe.label,
+                    Timeframe.seconds_length == timeframe.seconds_length,
+                )
+                .first()
+            )
+            if not instance:
+                instance = Timeframe(label=timeframe.label, seconds_length=timeframe.seconds_length)
+                session.add(instance)
+                session.commit()
+            cache.set(timeframe.cache_key, instance.id)

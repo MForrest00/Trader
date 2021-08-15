@@ -44,6 +44,7 @@ class Source(Base):
     top_cryptocurrency_snapshots = relationship(
         "TopCryptocurrencySnapshot", lazy=True, backref=backref(__tablename__, lazy=True)
     )
+    currency_ohlcv_pulls = relationship("CurrencyOHLCVPull", lazy=True, backref=backref(__tablename__, lazy=True))
 
 
 class CurrencyPlatform(Base):
@@ -133,6 +134,42 @@ class TopCryptocurrency(Base):
     usd_price = Column(Numeric(33, 15), nullable=False)
     circulating_supply = Column(Numeric(33, 15), nullable=False)
     total_supply = Column(Numeric(33, 15), nullable=False)
+
+
+class Timeframe(Base):
+    __tablename__ = "timeframe"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    ccxt_label = Column(String(3), nullable=False)
+    seconds_length = Column(Integer, nullable=False)
+    date_created = Column(DateTime, nullable=False, server_default=func.now())
+
+
+class CurrencyOHLCVPull(Base):
+    __tablename__ = "currency_ohlcv_pull"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
+    base_currency_id = Column(Integer, ForeignKey("currency.id"), nullable=False)
+    quote_currency_id = Column(Integer, ForeignKey("currency.id"), nullable=False)
+    timeframe_id = Column(Integer, ForeignKey("timeframe.id"), nullable=False)
+    from_inclusive = Column(DateTime, nullable=False)
+    to_exclusive = Column(DateTime, nullable=True)
+    date_created = Column(DateTime, nullable=False, server_default=func.now())
+
+    currency_ohlcvs = relationship("CurrencyOHLCV", lazy=True, backref=backref(__tablename__, lazy=False))
+
+
+class CurrencyOHLCV(Base):
+    __tablename__ = "currency_ohlcv"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    currency_ohlcv_pull_id = Column(Integer, ForeignKey("currency_ohlcv_pull.id"), nullable=False)
+    open = Column(Numeric(33, 15), nullable=False)
+    high = Column(Numeric(33, 15), nullable=False)
+    low = Column(Numeric(33, 15), nullable=False)
+    close = Column(Numeric(33, 15), nullable=False)
+    volume = Column(Numeric(33, 15), nullable=False)
 
 
 def initialize_models() -> None:
