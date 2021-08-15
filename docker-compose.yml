@@ -1,0 +1,41 @@
+version: "3.8"
+
+services:
+  redis:
+    image: redis:6.0.7-alpine
+    volumes:
+      - redis_data:/data
+    networks:
+      - redis_network
+    ports:
+      - "6379:6379"
+  postgres:
+    image: postgres:12.4-alpine
+    env_file:
+      - .env
+    volumes:
+      - ./scripts/postgres_init_scripts/create_dbs.sh:/docker-entrypoint-initdb.d/create_dbs.sh
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - postgres_network
+    ports:
+      - "5432:5432"
+  selenium:
+    image: selenium/standalone-chrome:3.141.59
+    networks:
+      - selenium_network
+    ports:
+      - "4444:4444"
+    shm_size: 2gb
+
+
+networks:
+  redis_network:
+    driver: bridge
+  postgres_network:
+    driver: bridge
+  selenium_network:
+    driver: bridge
+volumes:
+  redis_data:
+  postgres_data:
