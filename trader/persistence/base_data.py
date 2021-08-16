@@ -5,7 +5,7 @@ from typing import Optional
 from sqlalchemy.orm import sessionmaker
 from trader.connections.cache import cache
 from trader.connections.database import database
-from trader.persistence.models import Currency, CurrencyPlatform, Source, SourceType, Timeframe
+from trader.persistence.models import Currency, CurrencyPlatform, GoogleTrendsDataPullGeo, Source, SourceType, Timeframe
 
 
 @dataclass
@@ -14,9 +14,11 @@ class SourceTypeData:
     description: str
 
 
-DATA_ONLY = SourceTypeData("source_type_data_only_id", "Data only")
+BASE_DATA_TYPE = SourceTypeData("source_type_base_data_type_id", "Base data type")
+CRYPTOCURRENCY_MARKET_DATA = SourceTypeData("source_type_cryptocurrency_market_data_id", "Cryptocurrency market data")
 CRYPTOCURRENCY_EXCHANGE = SourceTypeData("source_type_cryptocurrency_exchange_id", "Cryptocurrency exchange")
-SOURCE_TYPES = (DATA_ONLY, CRYPTOCURRENCY_EXCHANGE)
+SEARCH_DATA = SourceTypeData("source_type_search_data_id", "Search data")
+SOURCE_TYPES = (BASE_DATA_TYPE, CRYPTOCURRENCY_MARKET_DATA, CRYPTOCURRENCY_EXCHANGE, SEARCH_DATA)
 
 
 @dataclass
@@ -27,9 +29,12 @@ class SourceData:
     url: Optional[str] = None
 
 
-BASE_DATA = SourceData("source_base_data_id", "Base Data", DATA_ONLY)
-COIN_MARKET_CAP = SourceData("source_coin_market_cap_id", "CoinMarketCap", DATA_ONLY, url="https://coinmarketcap.com/")
+BASE_DATA = SourceData("source_base_data_id", "Base Data", BASE_DATA_TYPE)
+COIN_MARKET_CAP = SourceData(
+    "source_coin_market_cap_id", "CoinMarketCap", CRYPTOCURRENCY_MARKET_DATA, url="https://coinmarketcap.com/"
+)
 BINANCE = SourceData("source_binance_id", "Binance", CRYPTOCURRENCY_EXCHANGE, url="https://www.binance.com/")
+GOOGLE_TRENDS = SourceData("source_google_trends_id", "Google Trends", SEARCH_DATA, url="https://trends.google.com/")
 SOURCES = (BASE_DATA, COIN_MARKET_CAP, BINANCE)
 
 
@@ -65,17 +70,31 @@ CURRENCIES = (UNITED_STATES_DOLLAR,)
 @dataclass
 class TimeframeData:
     cache_key: str
-    label: str
-    seconds_length: int
+    base_label: str
+    seconds_length: Optional[int]
 
 
 ONE_MINUTE = TimeframeData("timeframe_1m", "1m", 60)
 FIVE_MINUTE = TimeframeData("timeframe_5m", "5m", 60 * 5)
+EIGHT_MINUTE = TimeframeData("timeframe_8m", 60 * 8)
 FIFTEEN_MINUTE = TimeframeData("timeframe_15m", "15m", 60 * 15)
 THIRTY_MINUTE = TimeframeData("timeframe_30m", "30m", 60 * 30)
 ONE_HOUR = TimeframeData("timeframe_1h", "1h", 60 * 60)
 ONE_DAY = TimeframeData("timeframe_1d", "1d", 60 * 60 * 24)
-TIMEFRAMES = (ONE_MINUTE, FIVE_MINUTE, FIFTEEN_MINUTE, THIRTY_MINUTE, ONE_HOUR, ONE_DAY)
+ONE_MONTH = TimeframeData("timeframe_1M", "1M", None)
+TIMEFRAMES = (ONE_MINUTE, FIVE_MINUTE, EIGHT_MINUTE, FIFTEEN_MINUTE, THIRTY_MINUTE, ONE_HOUR, ONE_DAY, ONE_MONTH)
+
+
+@dataclass
+class GoogleTrendsDataPullGeoData:
+    cache_key: str
+    code: str
+    name: str
+
+
+WORLDWIDE = GoogleTrendsDataPullGeoData("google_trends_data_pull_geo_worldwide", "", "Worldwide")
+UNITED_STATES = GoogleTrendsDataPullGeoData("google_trends_data_pull_geo_worldwide", "US", "United States")
+GOOGLE_TRENDS_DATA_PULL_GEOS = (WORLDWIDE, UNITED_STATES)
 
 
 def initialize_base_data() -> None:
@@ -154,13 +173,29 @@ def initialize_base_data() -> None:
             instance = (
                 session.query(Timeframe)
                 .filter(
-                    Timeframe.label == timeframe.label,
+                    Timeframe.base_label == timeframe.base_label,
                     Timeframe.seconds_length == timeframe.seconds_length,
                 )
                 .first()
             )
             if not instance:
-                instance = Timeframe(label=timeframe.label, seconds_length=timeframe.seconds_length)
+                instance = Timeframe(base_label=timeframe.base_label, seconds_length=timeframe.seconds_length)
                 session.add(instance)
                 session.commit()
             cache.set(timeframe.cache_key, instance.id)
+        for google_trends_data_pull_geo in GOOGLE_TRENDS_DATA_PULL_GEOS:
+            instance = (
+                session.query(GoogleTrendsDataPullGeo)
+                .filter(
+                    GoogleTrendsDataPullGeo.code == google_trends_data_pull_geo.code,
+                    GoogleTrendsDataPullGeo.name == google_trends_data_pull_geo.name,
+                )
+                .first()
+            )
+            if not instance:
+                instance = GoogleTrendsDataPullGeo(
+                    code=google_trends_data_pull_geo.code, name=google_trends_data_pull_geo.name
+                )
+                session.add(instance)
+                session.commit()
+            cache.set(google_trends_data_pull_geo.cache_key, instance.id)

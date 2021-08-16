@@ -9,6 +9,7 @@ from sqlalchemy import (
     String,
     UniqueConstraint,
 )
+from sqlalchemy.dialects.postgresql import ARRAY
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.sql import func
@@ -140,8 +141,8 @@ class Timeframe(Base):
     __tablename__ = "timeframe"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    ccxt_label = Column(String(3), nullable=False)
-    seconds_length = Column(Integer, nullable=False)
+    base_label = Column(String(5), nullable=True, unique=True)
+    seconds_length = Column(Integer, nullable=True)
     date_created = Column(DateTime, nullable=False, server_default=func.now())
 
 
@@ -170,6 +171,55 @@ class CurrencyOHLCV(Base):
     low = Column(Numeric(33, 15), nullable=False)
     close = Column(Numeric(33, 15), nullable=False)
     volume = Column(Numeric(33, 15), nullable=False)
+
+
+class GoogleTrendsDataPullKeywords(Base):
+    __tablename__ = "google_trends_data_pull_keywords"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    keywords = Column(ARRAY(String(250)), nullable=False, unique=True)
+    date_created = Column(DateTime, nullable=False, server_default=func.now())
+
+    google_trends_data_pulls = relationship(
+        "GoogleTrendsDataPull", lazy=True, backref=backref(__tablename__, lazy=False)
+    )
+
+
+class GoogleTrendsDataPullGeo(Base):
+    __tablename__ = "google_trends_data_pull_geo"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    code = Column(String(25), nullable=False, unique=True)
+    name = Column(String(250), nullable=False)
+    date_created = Column(DateTime, nullable=False, server_default=func.now())
+
+    google_trends_data_pulls = relationship(
+        "GoogleTrendsDataPull", lazy=True, backref=backref(__tablename__, lazy=False)
+    )
+
+
+class GoogleTrendsDataPull(Base):
+    __tablename__ = "google_trends_data_pull"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
+    google_trends_data_pull_keywords_id = Column(
+        Integer, ForeignKey("google_trends_data_pull_keywords.id"), nullable=False
+    )
+    google_trends_data_pull_geo_id = Column(Integer, ForeignKey("google_trends_data_pull_geo.id"), nullable=False)
+    timeframe_id = Column(Integer, ForeignKey("timeframe.id"), nullable=False)
+    from_inclusive = Column(DateTime, nullable=False)
+    to_exclusive = Column(DateTime, nullable=True)
+    date_created = Column(DateTime, nullable=False, server_default=func.now())
+
+    google_trends_datas = relationship("GoogleTrendsData", lazy=True, backref=backref(__tablename__, lazy=False))
+
+
+class GoogleTrendsData(Base):
+    __tablename__ = "google_trends_data"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    google_trends_data_pull_id = Column(Integer, ForeignKey("google_trends_data_pull_id.id"), nullable=False)
 
 
 def initialize_models() -> None:
