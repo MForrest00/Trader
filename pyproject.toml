@@ -1,16 +1,19 @@
 [tool.black]
 line_length = 120
 
-[tool.pylint.FORMAT]
-disable = ["C0114", "C0115", "C0116"]
-max-line-length = 120
-
 [tool.coverage.report]
 show_missing = true
 skip_empty = true
 
 [tool.coverage.run]
 source = ["trader"]
+
+[tool.pylint.FORMAT]
+disable = ["C0114", "C0115", "C0116"]
+max-line-length = 120
+
+[tool.pylint.SIMILARITIES]
+ignore-imports = true
 
 [tool.pytest.ini_options]
 markers = ["integration"]

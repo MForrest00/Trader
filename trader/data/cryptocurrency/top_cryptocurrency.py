@@ -1,9 +1,8 @@
 from dataclasses import dataclass
-from datetime import date, datetime, timezone
+from datetime import datetime, timezone
 from decimal import Decimal
-from typing import Dict, List, Optional, Union
+from typing import List, Optional
 from bs4 import BeautifulSoup
-from ccxt.base.exchange import Exchange
 import requests
 from sqlalchemy.orm import Session, sessionmaker
 from trader.connections.cache import cache
@@ -14,78 +13,11 @@ from trader.persistence.models import (
     CurrencyCurrencyTag,
     CurrencyPlatform,
     CurrencyTag,
-    Timeframe,
     TopCryptocurrencySnapshot,
     TopCryptocurrency,
 )
 from trader.utilities.constants import TOP_CRYPTOCURRENCY_LIMIT
-from trader.utilities.functions import (
-    clean_range_cap,
-    datetime_to_ms_timestamp,
-    ms_timestamp_to_datetime,
-    TIMEFRAME_UNIT_TO_INCREMENT_FUNCTION,
-)
 from trader.utilities.logging import logger
-
-
-def fetch_ohlcv_from_exchange(
-    exchange: Exchange,
-    base_currency: Currency,
-    quote_currency: Currency,
-    timeframe: Timeframe,
-    from_inclusive: Union[date, datetime],
-    to_exclusive: Optional[Union[date, datetime]] = None,
-    limit: Optional[int] = None,
-) -> List[Dict[str, Union[datetime, float]]]:
-    amount, unit = int(timeframe.base_label[:-1]), timeframe.base_label[-1:]
-    from_inclusive = clean_range_cap(from_inclusive, unit)
-    to_exclusive = (
-        clean_range_cap(min(to_exclusive, datetime.utcnow()), unit)
-        if to_exclusive
-        else clean_range_cap(datetime.utcnow(), unit)
-    )
-    if not from_inclusive < to_exclusive:
-        raise ValueError("From argument must be less than the to argument")
-    symbol = f"{base_currency.symbol}/{quote_currency.symbol}"
-    end = datetime_to_ms_timestamp(to_exclusive)
-    output: List[Dict[str, Union[datetime, float]]] = []
-    since = datetime_to_ms_timestamp(from_inclusive)
-    while since < end:
-        logger.debug(
-            "Fetching records from exchange %s since %s",
-            exchange.id,
-            ms_timestamp_to_datetime(since).strftime("%Y-%m-%d %H:%M:%S"),
-        )
-        data = exchange.fetch_ohlcv(symbol, timeframe=timeframe, since=since, limit=limit)
-        if len(data) == 0:
-            since = datetime_to_ms_timestamp(
-                max(
-                    TIMEFRAME_UNIT_TO_INCREMENT_FUNCTION[unit](since, amount),
-                    TIMEFRAME_UNIT_TO_INCREMENT_FUNCTION["d"](since, 1),
-                )
-            )
-        else:
-            logger.debug("Retrieved %i records", len(data))
-            for record in data:
-                if record[0] >= end:
-                    break
-                output.append(
-                    {
-                        "time": ms_timestamp_to_datetime(record[0]),
-                        "open": record[1],
-                        "high": record[2],
-                        "low": record[3],
-                        "close": record[4],
-                        "volume": record[5],
-                    }
-                )
-            else:
-                since = datetime_to_ms_timestamp(
-                    TIMEFRAME_UNIT_TO_INCREMENT_FUNCTION[unit](ms_timestamp_to_datetime(data[-1][0]), amount)
-                )
-                continue
-            break
-    return output
 
 
 def retrieve_historical_snapshot_list_from_coin_market_cap() -> List[datetime]:
@@ -106,7 +38,7 @@ def retrieve_historical_snapshot_list_from_coin_market_cap() -> List[datetime]:
                 day = int(historical_snapshot.text)
                 snapshot_date = datetime(year, month_name_to_number[month], day, tzinfo=timezone.utc)
                 if snapshot_date.date() != datetime.utcnow().date():
-                    output.append()
+                    output.append(snapshot_date)
     return output
 
 
@@ -222,7 +154,7 @@ def insert_top_cryptocurrencies(
     session.commit()
 
 
-def capture_historical_top_cryptocurrencies_from_coin_market_cap(
+def retrieve_historical_top_cryptocurrencies_from_coin_market_cap(
     snapshot_date: datetime,
 ) -> List[TopCryptocurrencyRecord]:
     url = (
@@ -245,20 +177,24 @@ def capture_historical_top_cryptocurrencies_from_coin_market_cap(
                 rank=currency["cmc_rank"],
                 currency_name=currency["name"],
                 currency_symbol=currency["symbol"],
-                currency_max_supply=Decimal(currency["max_supply"]) if currency["max_supply"] else None,
+                currency_max_supply=Decimal(currency["max_supply"]) if currency["max_supply"] is not None else None,
                 currency_source_date_added=datetime.strptime(currency["date_added"], "%Y-%m-%dT%H:%M:%S.%f%z"),
                 currency_tags=currency["tags"],
                 currency_platform=currency_platform,
-                usd_market_cap=Decimal(currency["quote"]["USD"]["market_cap"]),
+                usd_market_cap=Decimal(currency["quote"]["USD"]["market_cap"])
+                if currency["quote"]["USD"]["market_cap"] is not None
+                else None,
                 usd_price=Decimal(currency["quote"]["USD"]["price"]),
-                circulating_supply=Decimal(currency["circulating_supply"]),
-                total_supply=Decimal(currency["total_supply"]),
+                circulating_supply=Decimal(currency["circulating_supply"])
+                if currency["circulating_supply"] is not None
+                else None,
+                total_supply=Decimal(currency["total_supply"]) if currency["total_supply"] is not None else None,
             )
         )
     return output
 
 
-def capture_current_top_cryptocurrencies_from_coin_market_cap() -> List[TopCryptocurrencyRecord]:
+def retrieve_current_top_cryptocurrencies_from_coin_market_cap() -> List[TopCryptocurrencyRecord]:
     url = (
         f"https://api.coinmarketcap.com/data-api/v3/cryptocurrency/listing?start=1&limit={TOP_CRYPTOCURRENCY_LIMIT}&"
         + "sortBy=market_cap&sortType=desc&convert=USD&cryptoType=all&tagType=all&audited=false"
@@ -312,10 +248,10 @@ def update_top_cryptocurrencies_from_coin_market_cap() -> None:
                     "Fetching data for historical top cryptocurrencies snapshot for date %s",
                     historical_snapshot.strftime("%Y-%m-%d"),
                 )
-                data = capture_historical_top_cryptocurrencies_from_coin_market_cap(historical_snapshot)
+                data = retrieve_historical_top_cryptocurrencies_from_coin_market_cap(historical_snapshot)
                 if data:
                     insert_top_cryptocurrencies(session, coin_market_cap_id, historical_snapshot, True, data)
         logger.debug("Fetching data for current top cryptocurrencies")
-        data = capture_current_top_cryptocurrencies_from_coin_market_cap()
+        data = retrieve_current_top_cryptocurrencies_from_coin_market_cap()
         if data:
             insert_top_cryptocurrencies(session, coin_market_cap_id, datetime.utcnow(), False, data)

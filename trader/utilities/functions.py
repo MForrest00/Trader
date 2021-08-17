@@ -58,10 +58,10 @@ def fully_scroll_page(web_driver: WebDriver) -> None:
 def google_trends_date_ranges_to_timeframe(from_inclusive: datetime, to_exclusive: Optional[datetime]) -> TimeframeData:
     if to_exclusive - from_inclusive == timedelta(seconds=60 * 60 * 4):
         return ONE_MINUTE
-    elif to_exclusive - from_inclusive == timedelta(seconds=60 * 60 * 24):
+    if to_exclusive - from_inclusive == timedelta(seconds=60 * 60 * 24):
         return EIGHT_MINUTE
-    elif from_inclusive.day == 1 and from_inclusive + relativedelta(months=1) == to_exclusive:
+    if from_inclusive.day == 1 and from_inclusive + relativedelta(months=1) == to_exclusive:
         return ONE_DAY
-    elif from_inclusive == datetime(2004, 1, 1) and not to_exclusive:
+    if from_inclusive == datetime(2004, 1, 1) and not to_exclusive:
         return ONE_MONTH
     raise ValueError("From and to arguments do not reflect a timeframe compatible with Google Trends")

@@ -5,7 +5,7 @@ from typing import Optional
 from sqlalchemy.orm import sessionmaker
 from trader.connections.cache import cache
 from trader.connections.database import database
-from trader.persistence.models import Currency, CurrencyPlatform, GoogleTrendsDataPullGeo, Source, SourceType, Timeframe
+from trader.persistence.models import Currency, CurrencyPlatform, GoogleTrendsPullGeo, Source, SourceType, Timeframe
 
 
 @dataclass
@@ -76,7 +76,7 @@ class TimeframeData:
 
 ONE_MINUTE = TimeframeData("timeframe_1m", "1m", 60)
 FIVE_MINUTE = TimeframeData("timeframe_5m", "5m", 60 * 5)
-EIGHT_MINUTE = TimeframeData("timeframe_8m", 60 * 8)
+EIGHT_MINUTE = TimeframeData("timeframe_8m", "8m", 60 * 8)
 FIFTEEN_MINUTE = TimeframeData("timeframe_15m", "15m", 60 * 15)
 THIRTY_MINUTE = TimeframeData("timeframe_30m", "30m", 60 * 30)
 ONE_HOUR = TimeframeData("timeframe_1h", "1h", 60 * 60)
@@ -86,15 +86,15 @@ TIMEFRAMES = (ONE_MINUTE, FIVE_MINUTE, EIGHT_MINUTE, FIFTEEN_MINUTE, THIRTY_MINU
 
 
 @dataclass
-class GoogleTrendsDataPullGeoData:
+class GoogleTrendsPullGeoData:
     cache_key: str
     code: str
     name: str
 
 
-WORLDWIDE = GoogleTrendsDataPullGeoData("google_trends_data_pull_geo_worldwide", "", "Worldwide")
-UNITED_STATES = GoogleTrendsDataPullGeoData("google_trends_data_pull_geo_worldwide", "US", "United States")
-GOOGLE_TRENDS_DATA_PULL_GEOS = (WORLDWIDE, UNITED_STATES)
+WORLDWIDE = GoogleTrendsPullGeoData("google_trends_pull_geo_worldwide", "", "Worldwide")
+UNITED_STATES = GoogleTrendsPullGeoData("google_trends_pull_geo_worldwide", "US", "United States")
+GOOGLE_TRENDS_PULL_GEOS = (WORLDWIDE, UNITED_STATES)
 
 
 def initialize_base_data() -> None:
@@ -183,19 +183,17 @@ def initialize_base_data() -> None:
                 session.add(instance)
                 session.commit()
             cache.set(timeframe.cache_key, instance.id)
-        for google_trends_data_pull_geo in GOOGLE_TRENDS_DATA_PULL_GEOS:
+        for google_trends_pull_geo in GOOGLE_TRENDS_PULL_GEOS:
             instance = (
-                session.query(GoogleTrendsDataPullGeo)
+                session.query(GoogleTrendsPullGeo)
                 .filter(
-                    GoogleTrendsDataPullGeo.code == google_trends_data_pull_geo.code,
-                    GoogleTrendsDataPullGeo.name == google_trends_data_pull_geo.name,
+                    GoogleTrendsPullGeo.code == google_trends_pull_geo.code,
+                    GoogleTrendsPullGeo.name == google_trends_pull_geo.name,
                 )
                 .first()
             )
             if not instance:
-                instance = GoogleTrendsDataPullGeo(
-                    code=google_trends_data_pull_geo.code, name=google_trends_data_pull_geo.name
-                )
+                instance = GoogleTrendsPullGeo(code=google_trends_pull_geo.code, name=google_trends_pull_geo.name)
                 session.add(instance)
                 session.commit()
-            cache.set(google_trends_data_pull_geo.cache_key, instance.id)
+            cache.set(google_trends_pull_geo.cache_key, instance.id)
