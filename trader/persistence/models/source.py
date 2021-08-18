@@ -47,18 +47,3 @@ class Source(Base):
     currency_tags = relationship("CurrencyTag", lazy=True, backref=backref(__tablename__, lazy=True))
     currency_ohlcv_pulls = relationship("CurrencyOHLCVPull", lazy=True, backref=backref(__tablename__, lazy=True))
     google_trends_pulls = relationship("GoogleTrendsPulls", lazy=True, backref=backref(__tablename__, lazy=True))
-
-
-class CryptocurrencyExchange(Base):
-    __tablename__ = "cryptocurrency_exchange"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    source_id = Column(Integer, ForeignKey("source.id"), nullable=False, unique=True)
-    source_entity_id = Column(Integer, nullable=True)
-    source_slug = Column(String(50), nullable=True)
-    source_date_launched = Column(DateTime, nullable=True)
-    source_date_last_updated = Column(DateTime, nullable=True)
-
-    cryptocurrency_exchange_ranks = relationship(
-        "CryptocurrencyExchangeRank", lazy=True, backref=backref(__tablename__, lazy=False)
-    )

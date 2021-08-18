@@ -1,5 +1,7 @@
 from trader.connections.database import database
 from trader.persistence.models.base import Base
+from trader.persistence.models.cryptocurrency import *
+from trader.persistence.models.cryptocurrency_exchange import *
 from trader.persistence.models.cryptocurrency_exchange_rank import *
 from trader.persistence.models.cryptocurrency_rank import *
 from trader.persistence.models.currency import *
