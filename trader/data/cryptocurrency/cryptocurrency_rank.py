@@ -48,7 +48,7 @@ class CryptocurrencyRankRecord:
     currency_name: str
     currency_symbol: str
     currency_max_supply: Optional[Decimal]
-    currency_source_id: int
+    currency_source_entity_id: int
     currency_source_slug: str
     currency_source_date_added: datetime
     currency_tags: List[str]
@@ -111,7 +111,7 @@ def insert_cryptocurrency_ranks(
                 symbol=record.currency_symbol,
                 is_cryptocurrency=True,
                 max_supply=record.currency_max_supply,
-                source_id=record.currency_source_id,
+                source_entity_id=record.currency_source_entity_id,
                 source_slug=record.currency_source_slug,
                 source_date_added=record.currency_source_date_added,
                 currency_platform_id=currency_platform_id,
@@ -178,7 +178,7 @@ def retrieve_historical_cryptocurrency_ranks_from_coin_market_cap(
                 currency_name=currency["name"],
                 currency_symbol=currency["symbol"],
                 currency_max_supply=Decimal(currency["max_supply"]) if currency["max_supply"] is not None else None,
-                currency_source_id=currency["id"],
+                currency_source_entity_id=currency["id"],
                 currency_source_slug=currency["slug"],
                 currency_source_date_added=datetime.strptime(currency["date_added"], "%Y-%m-%dT%H:%M:%S.%f%z"),
                 currency_tags=currency["tags"],
@@ -219,7 +219,7 @@ def retrieve_current_cryptocurrency_ranks_from_coin_market_cap() -> List[Cryptoc
                 currency_name=currency["name"],
                 currency_symbol=currency["symbol"],
                 currency_max_supply=Decimal(currency["maxSupply"]) if "maxSupply" in currency else None,
-                currency_source_id=currency["id"],
+                currency_source_entity_id=currency["id"],
                 currency_source_slug=currency["slug"],
                 currency_source_date_added=datetime.strptime(currency["dateAdded"], "%Y-%m-%dT%H:%M:%S.%f%z"),
                 currency_tags=currency["tags"],
@@ -234,7 +234,7 @@ def retrieve_current_cryptocurrency_ranks_from_coin_market_cap() -> List[Cryptoc
     return output
 
 
-def update_top_cryptocurrencies_from_coin_market_cap() -> None:
+def update_cryptocurrency_ranks_from_coin_market_cap() -> None:
     coin_market_cap_id = int(cache.get(COIN_MARKET_CAP.cache_key).decode())
     historical_snapshots = retrieve_historical_snapshot_list_from_coin_market_cap()
     Session = sessionmaker(database)

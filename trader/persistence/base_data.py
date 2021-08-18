@@ -1,11 +1,8 @@
 from dataclasses import dataclass
-from datetime import datetime
-from decimal import Decimal
 from typing import Optional
 from sqlalchemy.orm import sessionmaker
 from trader.connections.cache import cache
 from trader.connections.database import database
-from trader.persistence.models.currency import Currency, CurrencyPlatform
 from trader.persistence.models.google_trends import GoogleTrendsPullGeo
 from trader.persistence.models.source import Source, SourceType
 from trader.persistence.models.timeframe import Timeframe
@@ -36,36 +33,10 @@ BASE_DATA = SourceData("source_base_data_id", "Base Data", BASE_DATA_TYPE)
 COIN_MARKET_CAP = SourceData(
     "source_coin_market_cap_id", "CoinMarketCap", CRYPTOCURRENCY_MARKET_DATA, url="https://coinmarketcap.com/"
 )
-GOOGLE_TRENDS = SourceData("source_google_trends_id", "Google Trends", WEB_SEARCH_DATA, url="https://trends.google.com/")
+GOOGLE_TRENDS = SourceData(
+    "source_google_trends_id", "Google Trends", WEB_SEARCH_DATA, url="https://trends.google.com/"
+)
 SOURCES = (BASE_DATA, COIN_MARKET_CAP, GOOGLE_TRENDS)
-
-
-@dataclass
-class CurrencyPlatformData:
-    cache_key: str
-    source: SourceData
-    name: str
-    symbol: str
-
-
-CURRENCY_PLATFORMS = ()
-
-
-@dataclass
-class CurrencyData:
-    cache_key: str
-    source: SourceData
-    name: str
-    symbol: str
-    is_cryptocurrency: bool = True
-    max_supply: Optional[Decimal] = None
-    source_id: Optional[int] = None
-    source_slug: Optional[str] = None
-    source_date_added: Optional[datetime] = None
-    currency_platform: Optional[CurrencyPlatformData] = None
-
-
-CURRENCIES = ()
 
 
 @dataclass
@@ -125,52 +96,6 @@ def initialize_base_data() -> None:
                 session.add(instance)
                 session.commit()
             cache.set(source.cache_key, instance.id)
-        for currency_platform in CURRENCY_PLATFORMS:
-            instance = (
-                session.query(CurrencyPlatform)
-                .filter(
-                    CurrencyPlatform.name == currency_platform.name,
-                    CurrencyPlatform.symbol == currency_platform.symbol,
-                )
-                .first()
-            )
-            if not instance:
-                instance = CurrencyPlatform(
-                    source_id=int(cache.get(currency_platform.source.cache_key).decode()),
-                    name=currency_platform.name,
-                    symbol=currency_platform.symbol,
-                )
-                session.add(instance)
-                session.commit()
-            cache.set(currency_platform.cache_key, instance.id)
-        for currency in CURRENCIES:
-            instance = (
-                session.query(Currency)
-                .filter(
-                    Currency.name == currency.name,
-                    Currency.symbol == currency.symbol,
-                    Currency.is_cryptocurrency == currency.is_cryptocurrency,
-                )
-                .first()
-            )
-            if not instance:
-                currency_platform_id = (
-                    int(cache.get(currency.currency_platform.cache_key).decode())
-                    if currency.currency_platform
-                    else None
-                )
-                instance = Currency(
-                    source_id=int(cache.get(currency.source.cache_key).decode()),
-                    name=currency.name,
-                    symbol=currency.symbol,
-                    is_cryptocurrency=currency.is_cryptocurrency,
-                    max_supply=currency.max_supply,
-                    source_date_added=currency.source_date_added,
-                    currency_platform_id=currency_platform_id,
-                )
-                session.add(instance)
-                session.commit()
-            cache.set(currency.cache_key, instance.id)
         for timeframe in TIMEFRAMES:
             instance = (
                 session.query(Timeframe)

@@ -9,7 +9,7 @@ skip_empty = true
 source = ["trader"]
 
 [tool.pylint.FORMAT]
-disable = ["C0114", "C0115", "C0116"]
+disable = ["C0114", "C0115", "C0116", "R0903"]
 max-line-length = 120
 
 [tool.pylint.SIMILARITIES]
