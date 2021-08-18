@@ -23,6 +23,9 @@ class Currency(Base):
     cryptocurrency = relationship(
         "Cryptocurrency", lazy=False, backref=backref(__tablename__, lazy=False), uselist=False
     )
+    standard_currency = relationship(
+        "StandardCurrency", lazy=False, backref=backref(__tablename__, lazy=False), uselist=False
+    )
 
     currency_tags = relationship("CurrencyCurrencyTag", lazy=True, back_populates=__tablename__)
     cryptocurrency_exchanges = relationship("CryptocurrencyExchange", lazy=True, back_populates=__tablename__)

@@ -4,6 +4,7 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     String,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.sql import func
@@ -47,3 +48,5 @@ class Source(Base):
     currency_tags = relationship("CurrencyTag", lazy=True, backref=backref(__tablename__, lazy=True))
     currency_ohlcv_pulls = relationship("CurrencyOHLCVPull", lazy=True, backref=backref(__tablename__, lazy=True))
     google_trends_pulls = relationship("GoogleTrendsPulls", lazy=True, backref=backref(__tablename__, lazy=True))
+
+    __table_args__ = (UniqueConstraint("name", "source_type_id", name=f"uc_{__tablename__}_name_source_type_id"),)
