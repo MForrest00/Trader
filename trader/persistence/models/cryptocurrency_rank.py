@@ -21,7 +21,7 @@ class CryptocurrencyRankSnapshot(Base):
     is_historical = Column(Boolean, nullable=False)
     date_created = Column(DateTime, nullable=False, server_default=func.now())
 
-    top_cryptocurrencies = relationship("CryptocurrencyRank", lazy=True, backref=backref(__tablename__, lazy=False))
+    cryptocurrency_ranks = relationship("CryptocurrencyRank", lazy=True, backref=backref(__tablename__, lazy=False))
 
 
 class CryptocurrencyRank(Base):
@@ -29,8 +29,8 @@ class CryptocurrencyRank(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     cryptocurrency_rank_snapshot_id = Column(Integer, ForeignKey("cryptocurrency_rank_snapshot.id"), nullable=False)
+    cryptocurrency_id = Column(Integer, ForeignKey("cryptocurrency.id"), nullable=False)
     rank = Column(SmallInteger, nullable=False)
-    currency_id = Column(Integer, ForeignKey("currency.id"), nullable=False)
     usd_market_cap = Column(Numeric(33, 15), nullable=True)
     usd_price = Column(Numeric(33, 15), nullable=False)
     usd_volume_24h = Column(Numeric(33, 15), nullable=False)

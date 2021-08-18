@@ -44,6 +44,10 @@ def ms_timestamp_to_datetime(ts: int) -> datetime:
     return datetime.utcfromtimestamp(ts // 1000)
 
 
+def iso_time_string_to_datetime(time_string: str) -> datetime:
+    return datetime.strptime(time_string, "%Y-%m-%dT%H:%M:%S.%f%z")
+
+
 def fully_scroll_page(web_driver: WebDriver) -> None:
     current_y_offset = web_driver.execute_script("return window.pageYOffset")
     while True:

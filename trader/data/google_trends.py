@@ -1,9 +1,8 @@
 from datetime import date, datetime, timezone
 from typing import Dict, List, Optional, Tuple, Union
 from pytrends.request import TrendReq
-from sqlalchemy.orm import sessionmaker
 from trader.connections.cache import cache
-from trader.connections.database import database
+from trader.connections.database import DBSession
 from trader.persistence.models.google_trends import GoogleTrendsPullGeo, GoogleTrendsPullKeyword
 from trader.persistence.models.timeframe import Timeframe
 from trader.utilities.functions import clean_range_cap, google_trends_date_ranges_to_timeframe
@@ -16,8 +15,7 @@ def retrieve_interest_over_time(
     to_exclusive: Optional[Union[date, datetime]] = None,
 ) -> Tuple[Timeframe, List[Dict[str, Union[datetime, int, bool]]]]:
     timeframe_data = google_trends_date_ranges_to_timeframe(from_inclusive, to_exclusive)
-    Session = sessionmaker(database)
-    with Session() as session:
+    with DBSession() as session:
         timeframe = session.query(Timeframe).get(int(cache.get(timeframe_data.cache_key).decode()))
     if to_exclusive:
         timeframe_unit = timeframe.base_label[-1:]

@@ -1,8 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
-from sqlalchemy.orm import sessionmaker
 from trader.connections.cache import cache
-from trader.connections.database import database
+from trader.connections.database import DBSession
 from trader.persistence.models.google_trends import GoogleTrendsPullGeo
 from trader.persistence.models.source import Source, SourceType
 from trader.persistence.models.timeframe import Timeframe
@@ -14,29 +13,30 @@ class SourceTypeData:
     description: str
 
 
-BASE_DATA_TYPE = SourceTypeData("source_type_base_data_type_id", "Base data type")
+MISCELLANEOUS_DATA = SourceTypeData("source_type_miscellaneous_data", "Miscellaneous data")
 CRYPTOCURRENCY_MARKET_DATA = SourceTypeData("source_type_cryptocurrency_market_data_id", "Cryptocurrency market data")
 CRYPTOCURRENCY_EXCHANGE = SourceTypeData("source_type_cryptocurrency_exchange_id", "Cryptocurrency exchange")
 WEB_SEARCH_DATA = SourceTypeData("source_type_web_search_data_id", "Web search data")
-SOURCE_TYPES = (BASE_DATA_TYPE, CRYPTOCURRENCY_MARKET_DATA, CRYPTOCURRENCY_EXCHANGE, WEB_SEARCH_DATA)
+SOURCE_TYPES = (MISCELLANEOUS_DATA, CRYPTOCURRENCY_MARKET_DATA, CRYPTOCURRENCY_EXCHANGE, WEB_SEARCH_DATA)
 
 
 @dataclass
 class SourceData:
     cache_key: str
+    source_id: Optional[int]
     name: str
     source_type: SourceTypeData
     url: Optional[str] = None
 
 
-BASE_DATA = SourceData("source_base_data_id", "Base Data", BASE_DATA_TYPE)
+ISO = SourceData("source_iso", None, "ISO", MISCELLANEOUS_DATA, url="https://www.iso.org/")
 COIN_MARKET_CAP = SourceData(
-    "source_coin_market_cap_id", "CoinMarketCap", CRYPTOCURRENCY_MARKET_DATA, url="https://coinmarketcap.com/"
+    "source_coin_market_cap_id", None, "CoinMarketCap", CRYPTOCURRENCY_MARKET_DATA, url="https://coinmarketcap.com/"
 )
 GOOGLE_TRENDS = SourceData(
-    "source_google_trends_id", "Google Trends", WEB_SEARCH_DATA, url="https://trends.google.com/"
+    "source_google_trends_id", None, "Google Trends", WEB_SEARCH_DATA, url="https://trends.google.com/"
 )
-SOURCES = (BASE_DATA, COIN_MARKET_CAP, GOOGLE_TRENDS)
+SOURCES = (COIN_MARKET_CAP, GOOGLE_TRENDS)
 
 
 @dataclass
@@ -71,8 +71,7 @@ GOOGLE_TRENDS_PULL_GEOS = (WORLDWIDE, UNITED_STATES)
 
 
 def initialize_base_data() -> None:
-    Session = sessionmaker(database)
-    with Session() as session:
+    with DBSession() as session:
         for source_type in SOURCE_TYPES:
             instance = session.query(SourceType).filter(SourceType.description == source_type.description).first()
             if not instance:
