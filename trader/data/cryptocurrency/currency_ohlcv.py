@@ -1,7 +1,8 @@
 from datetime import date, datetime
 from typing import Dict, List, Optional, Union
 from ccxt.base.exchange import Exchange
-from trader.persistence.models import Currency, Timeframe
+from trader.persistence.models.currency import Currency
+from trader.persistence.models.timeframe import Timeframe
 from trader.utilities.functions import (
     clean_range_cap,
     datetime_to_ms_timestamp,

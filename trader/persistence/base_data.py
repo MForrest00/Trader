@@ -5,7 +5,10 @@ from typing import Optional
 from sqlalchemy.orm import sessionmaker
 from trader.connections.cache import cache
 from trader.connections.database import database
-from trader.persistence.models import Currency, CurrencyPlatform, GoogleTrendsPullGeo, Source, SourceType, Timeframe
+from trader.persistence.models.currency import Currency, CurrencyPlatform
+from trader.persistence.models.google_trends import GoogleTrendsPullGeo
+from trader.persistence.models.source import Source, SourceType
+from trader.persistence.models.timeframe import Timeframe
 
 
 @dataclass
@@ -17,8 +20,8 @@ class SourceTypeData:
 BASE_DATA_TYPE = SourceTypeData("source_type_base_data_type_id", "Base data type")
 CRYPTOCURRENCY_MARKET_DATA = SourceTypeData("source_type_cryptocurrency_market_data_id", "Cryptocurrency market data")
 CRYPTOCURRENCY_EXCHANGE = SourceTypeData("source_type_cryptocurrency_exchange_id", "Cryptocurrency exchange")
-SEARCH_DATA = SourceTypeData("source_type_search_data_id", "Search data")
-SOURCE_TYPES = (BASE_DATA_TYPE, CRYPTOCURRENCY_MARKET_DATA, CRYPTOCURRENCY_EXCHANGE, SEARCH_DATA)
+WEB_SEARCH_DATA = SourceTypeData("source_type_web_search_data_id", "Web search data")
+SOURCE_TYPES = (BASE_DATA_TYPE, CRYPTOCURRENCY_MARKET_DATA, CRYPTOCURRENCY_EXCHANGE, WEB_SEARCH_DATA)
 
 
 @dataclass
@@ -33,9 +36,8 @@ BASE_DATA = SourceData("source_base_data_id", "Base Data", BASE_DATA_TYPE)
 COIN_MARKET_CAP = SourceData(
     "source_coin_market_cap_id", "CoinMarketCap", CRYPTOCURRENCY_MARKET_DATA, url="https://coinmarketcap.com/"
 )
-BINANCE = SourceData("source_binance_id", "Binance", CRYPTOCURRENCY_EXCHANGE, url="https://www.binance.com/")
-GOOGLE_TRENDS = SourceData("source_google_trends_id", "Google Trends", SEARCH_DATA, url="https://trends.google.com/")
-SOURCES = (BASE_DATA, COIN_MARKET_CAP, BINANCE)
+GOOGLE_TRENDS = SourceData("source_google_trends_id", "Google Trends", WEB_SEARCH_DATA, url="https://trends.google.com/")
+SOURCES = (BASE_DATA, COIN_MARKET_CAP, GOOGLE_TRENDS)
 
 
 @dataclass
@@ -57,14 +59,13 @@ class CurrencyData:
     symbol: str
     is_cryptocurrency: bool = True
     max_supply: Optional[Decimal] = None
+    source_id: Optional[int] = None
+    source_slug: Optional[str] = None
     source_date_added: Optional[datetime] = None
     currency_platform: Optional[CurrencyPlatformData] = None
 
 
-UNITED_STATES_DOLLAR = CurrencyData(
-    "currency_united_states_dollar_id", BASE_DATA, "United States Dollar", "USD", is_cryptocurrency=False
-)
-CURRENCIES = (UNITED_STATES_DOLLAR,)
+CURRENCIES = ()
 
 
 @dataclass
@@ -72,16 +73,17 @@ class TimeframeData:
     cache_key: str
     base_label: str
     seconds_length: Optional[int]
+    ccxt_label: str
 
 
-ONE_MINUTE = TimeframeData("timeframe_1m", "1m", 60)
-FIVE_MINUTE = TimeframeData("timeframe_5m", "5m", 60 * 5)
-EIGHT_MINUTE = TimeframeData("timeframe_8m", "8m", 60 * 8)
-FIFTEEN_MINUTE = TimeframeData("timeframe_15m", "15m", 60 * 15)
-THIRTY_MINUTE = TimeframeData("timeframe_30m", "30m", 60 * 30)
-ONE_HOUR = TimeframeData("timeframe_1h", "1h", 60 * 60)
-ONE_DAY = TimeframeData("timeframe_1d", "1d", 60 * 60 * 24)
-ONE_MONTH = TimeframeData("timeframe_1M", "1M", None)
+ONE_MINUTE = TimeframeData("timeframe_1m", "1m", 60, "1m")
+FIVE_MINUTE = TimeframeData("timeframe_5m", "5m", 60 * 5, "5m")
+EIGHT_MINUTE = TimeframeData("timeframe_8m", "8m", 60 * 8, "8m")
+FIFTEEN_MINUTE = TimeframeData("timeframe_15m", "15m", 60 * 15, "15m")
+THIRTY_MINUTE = TimeframeData("timeframe_30m", "30m", 60 * 30, "30m")
+ONE_HOUR = TimeframeData("timeframe_1h", "1h", 60 * 60, "1h")
+ONE_DAY = TimeframeData("timeframe_1d", "1d", 60 * 60 * 24, "1d")
+ONE_MONTH = TimeframeData("timeframe_1M", "1M", None, "1M")
 TIMEFRAMES = (ONE_MINUTE, FIVE_MINUTE, EIGHT_MINUTE, FIFTEEN_MINUTE, THIRTY_MINUTE, ONE_HOUR, ONE_DAY, ONE_MONTH)
 
 
@@ -175,11 +177,16 @@ def initialize_base_data() -> None:
                 .filter(
                     Timeframe.base_label == timeframe.base_label,
                     Timeframe.seconds_length == timeframe.seconds_length,
+                    Timeframe.ccxt_label == timeframe.ccxt_label,
                 )
                 .first()
             )
             if not instance:
-                instance = Timeframe(base_label=timeframe.base_label, seconds_length=timeframe.seconds_length)
+                instance = Timeframe(
+                    base_label=timeframe.base_label,
+                    seconds_length=timeframe.seconds_length,
+                    ccxt_label=timeframe.ccxt_label,
+                )
                 session.add(instance)
                 session.commit()
             cache.set(timeframe.cache_key, instance.id)

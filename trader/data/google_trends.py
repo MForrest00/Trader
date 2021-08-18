@@ -4,7 +4,8 @@ from pytrends.request import TrendReq
 from sqlalchemy.orm import sessionmaker
 from trader.connections.cache import cache
 from trader.connections.database import database
-from trader.persistence.models import GoogleTrendsPullGeo, GoogleTrendsPullKeyword, Timeframe
+from trader.persistence.models.google_trends import GoogleTrendsPullGeo, GoogleTrendsPullKeyword
+from trader.persistence.models.timeframe import Timeframe
 from trader.utilities.functions import clean_range_cap, google_trends_date_ranges_to_timeframe
 
 

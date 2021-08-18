@@ -36,6 +36,8 @@ class Currency(Base):
     symbol = Column(String(25), nullable=False)
     is_cryptocurrency = Column(Boolean, nullable=False, default=True)
     max_supply = Column(Numeric(33, 15), nullable=True)
+    source_id = Column(Integer, nullable=True)
+    source_slug = Column(String(50), nullable=True)
     source_date_added = Column(DateTime, nullable=True)
     currency_platform_id = Column(Integer, ForeignKey("currency_platform.id"), nullable=True)
     date_created = Column(DateTime, nullable=False, server_default=func.now())

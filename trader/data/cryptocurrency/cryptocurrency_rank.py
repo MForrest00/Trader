@@ -8,15 +8,9 @@ from sqlalchemy.orm import Session, sessionmaker
 from trader.connections.cache import cache
 from trader.connections.database import database
 from trader.persistence.base_data import COIN_MARKET_CAP
-from trader.persistence.models import (
-    Currency,
-    CurrencyCurrencyTag,
-    CurrencyPlatform,
-    CurrencyTag,
-    TopCryptocurrencySnapshot,
-    TopCryptocurrency,
-)
-from trader.utilities.constants import TOP_CRYPTOCURRENCY_LIMIT
+from trader.persistence.models.currency import Currency, CurrencyCurrencyTag, CurrencyPlatform, CurrencyTag
+from trader.persistence.models.cryptocurrency_rank import CryptocurrencyRank, CryptocurrencyRankSnapshot
+from trader.utilities.constants import CRYPTOCURRENCY_RANK_LIMIT
 from trader.utilities.logging import logger
 
 
@@ -49,33 +43,36 @@ class CryptocurrencyPlatformRecord:
 
 
 @dataclass
-class TopCryptocurrencyRecord:
+class CryptocurrencyRankRecord:
     rank: int
     currency_name: str
     currency_symbol: str
     currency_max_supply: Optional[Decimal]
+    currency_source_id: int
+    currency_source_slug: str
     currency_source_date_added: datetime
     currency_tags: List[str]
     currency_platform: Optional[CryptocurrencyPlatformRecord]
     usd_market_cap: Decimal
     usd_price: Decimal
+    usd_volume_24h: Decimal
     circulating_supply: Decimal
     total_supply: Decimal
 
 
-def insert_top_cryptocurrencies(
+def insert_cryptocurrency_ranks(
     session: Session,
     source_id: int,
     snapshot_date: datetime,
     is_historical: bool,
-    data: List[TopCryptocurrencyRecord],
+    data: List[CryptocurrencyRankRecord],
 ) -> None:
-    top_cryptocurrency_snapshot = TopCryptocurrencySnapshot(
+    cryptocurrency_rank_snapshot = CryptocurrencyRankSnapshot(
         source_id=source_id,
         snapshot_date=snapshot_date,
         is_historical=is_historical,
     )
-    session.add(top_cryptocurrency_snapshot)
+    session.add(cryptocurrency_rank_snapshot)
     session.flush()
     for record in data:
         if record.currency_platform:
@@ -114,6 +111,8 @@ def insert_top_cryptocurrencies(
                 symbol=record.currency_symbol,
                 is_cryptocurrency=True,
                 max_supply=record.currency_max_supply,
+                source_id=record.currency_source_id,
+                source_slug=record.currency_source_slug,
                 source_date_added=record.currency_source_date_added,
                 currency_platform_id=currency_platform_id,
             )
@@ -141,29 +140,30 @@ def insert_top_cryptocurrencies(
                 )
                 session.add(currency_currency_tag)
                 session.flush()
-        top_cryptocurrency = TopCryptocurrency(
-            top_cryptocurrency_snapshot_id=top_cryptocurrency_snapshot.id,
+        cryptocurrency_rank = CryptocurrencyRank(
+            top_cryptocurrency_snapshot_id=cryptocurrency_rank_snapshot.id,
             rank=record.rank,
             currency_id=currency.id,
             usd_market_cap=record.usd_market_cap,
             usd_price=record.usd_price,
+            usd_volume_24h=record.usd_volume_24h,
             circulating_supply=record.circulating_supply,
             total_supply=record.total_supply,
         )
-        session.add(top_cryptocurrency)
+        session.add(cryptocurrency_rank)
     session.commit()
 
 
-def retrieve_historical_top_cryptocurrencies_from_coin_market_cap(
+def retrieve_historical_cryptocurrency_ranks_from_coin_market_cap(
     snapshot_date: datetime,
-) -> List[TopCryptocurrencyRecord]:
+) -> List[CryptocurrencyRankRecord]:
     url = (
         "https://web-api.coinmarketcap.com/v1/cryptocurrency/listings/historical?convert=USD,USD&date="
-        + f"{snapshot_date.strftime('%Y-%m-%d')}&limit={TOP_CRYPTOCURRENCY_LIMIT}&start=1"
+        + f"{snapshot_date.strftime('%Y-%m-%d')}&limit={CRYPTOCURRENCY_RANK_LIMIT}&start=1"
     )
     response = requests.get(url)
     data = response.json()
-    output: List[TopCryptocurrencyRecord] = []
+    output: List[CryptocurrencyRankRecord] = []
     for currency in data["data"]:
         if currency["platform"]:
             currency_platform = CryptocurrencyPlatformRecord(
@@ -173,11 +173,13 @@ def retrieve_historical_top_cryptocurrencies_from_coin_market_cap(
         else:
             currency_platform = None
         output.append(
-            TopCryptocurrencyRecord(
+            CryptocurrencyRankRecord(
                 rank=currency["cmc_rank"],
                 currency_name=currency["name"],
                 currency_symbol=currency["symbol"],
                 currency_max_supply=Decimal(currency["max_supply"]) if currency["max_supply"] is not None else None,
+                currency_source_id=currency["id"],
+                currency_source_slug=currency["slug"],
                 currency_source_date_added=datetime.strptime(currency["date_added"], "%Y-%m-%dT%H:%M:%S.%f%z"),
                 currency_tags=currency["tags"],
                 currency_platform=currency_platform,
@@ -185,6 +187,7 @@ def retrieve_historical_top_cryptocurrencies_from_coin_market_cap(
                 if currency["quote"]["USD"]["market_cap"] is not None
                 else None,
                 usd_price=Decimal(currency["quote"]["USD"]["price"]),
+                usd_volume_24h=Decimal(currency["quote"]["USD"]["volume_24h"]),
                 circulating_supply=Decimal(currency["circulating_supply"])
                 if currency["circulating_supply"] is not None
                 else None,
@@ -194,14 +197,14 @@ def retrieve_historical_top_cryptocurrencies_from_coin_market_cap(
     return output
 
 
-def retrieve_current_top_cryptocurrencies_from_coin_market_cap() -> List[TopCryptocurrencyRecord]:
+def retrieve_current_cryptocurrency_ranks_from_coin_market_cap() -> List[CryptocurrencyRankRecord]:
     url = (
-        f"https://api.coinmarketcap.com/data-api/v3/cryptocurrency/listing?start=1&limit={TOP_CRYPTOCURRENCY_LIMIT}&"
+        f"https://api.coinmarketcap.com/data-api/v3/cryptocurrency/listing?start=1&limit={CRYPTOCURRENCY_RANK_LIMIT}&"
         + "sortBy=market_cap&sortType=desc&convert=USD&cryptoType=all&tagType=all&audited=false"
     )
     response = requests.get(url)
     data = response.json()
-    output: List[TopCryptocurrencyRecord] = []
+    output: List[CryptocurrencyRankRecord] = []
     for currency in data["data"]["cryptoCurrencyList"]:
         if "platform" in currency and currency["platform"]:
             currency_platform = CryptocurrencyPlatformRecord(
@@ -211,16 +214,19 @@ def retrieve_current_top_cryptocurrencies_from_coin_market_cap() -> List[TopCryp
         else:
             currency_platform = None
         output.append(
-            TopCryptocurrencyRecord(
+            CryptocurrencyRankRecord(
                 rank=currency["cmcRank"],
                 currency_name=currency["name"],
                 currency_symbol=currency["symbol"],
                 currency_max_supply=Decimal(currency["maxSupply"]) if "maxSupply" in currency else None,
+                currency_source_id=currency["id"],
+                currency_source_slug=currency["slug"],
                 currency_source_date_added=datetime.strptime(currency["dateAdded"], "%Y-%m-%dT%H:%M:%S.%f%z"),
                 currency_tags=currency["tags"],
                 currency_platform=currency_platform,
                 usd_market_cap=Decimal(currency["quotes"][0]["marketCap"]),
                 usd_price=Decimal(currency["quotes"][0]["price"]),
+                usd_volume_24h=Decimal(currency["quote"][0]["volume24h"]),
                 circulating_supply=Decimal(currency["circulatingSupply"]),
                 total_supply=Decimal(currency["totalSupply"]),
             )
@@ -234,24 +240,24 @@ def update_top_cryptocurrencies_from_coin_market_cap() -> None:
     Session = sessionmaker(database)
     with Session() as session:
         for historical_snapshot in historical_snapshots:
-            top_cryptocurrency_snapshot = (
-                session.query(TopCryptocurrencySnapshot)
+            cryptocurrency_rank_snapshot = (
+                session.query(CryptocurrencyRankSnapshot)
                 .filter(
-                    TopCryptocurrencySnapshot.source_id == coin_market_cap_id,
-                    TopCryptocurrencySnapshot.snapshot_date == historical_snapshot,
-                    TopCryptocurrencySnapshot.is_historical.is_(True),
+                    CryptocurrencyRankSnapshot.source_id == coin_market_cap_id,
+                    CryptocurrencyRankSnapshot.snapshot_date == historical_snapshot,
+                    CryptocurrencyRankSnapshot.is_historical.is_(True),
                 )
                 .first()
             )
-            if not top_cryptocurrency_snapshot:
+            if not cryptocurrency_rank_snapshot:
                 logger.debug(
-                    "Fetching data for historical top cryptocurrencies snapshot for date %s",
+                    "Fetching data for historical cryptocurrency ranks snapshot for date %s",
                     historical_snapshot.strftime("%Y-%m-%d"),
                 )
-                data = retrieve_historical_top_cryptocurrencies_from_coin_market_cap(historical_snapshot)
+                data = retrieve_historical_cryptocurrency_ranks_from_coin_market_cap(historical_snapshot)
                 if data:
-                    insert_top_cryptocurrencies(session, coin_market_cap_id, historical_snapshot, True, data)
-        logger.debug("Fetching data for current top cryptocurrencies")
-        data = retrieve_current_top_cryptocurrencies_from_coin_market_cap()
+                    insert_cryptocurrency_ranks(session, coin_market_cap_id, historical_snapshot, True, data)
+        logger.debug("Fetching data for current cryptocurrency ranks")
+        data = retrieve_current_cryptocurrency_ranks_from_coin_market_cap()
         if data:
-            insert_top_cryptocurrencies(session, coin_market_cap_id, datetime.utcnow(), False, data)
+            insert_cryptocurrency_ranks(session, coin_market_cap_id, datetime.utcnow(), False, data)

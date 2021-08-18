@@ -5,7 +5,7 @@ from trader.persistence.models.currency_ohlcv import *
 from trader.persistence.models.google_trends import *
 from trader.persistence.models.source import *
 from trader.persistence.models.timeframe import *
-from trader.persistence.models.top_cryptocurrency import *
+from trader.persistence.models.cryptocurrency_rank import *
 
 
 def initialize_models() -> None:
