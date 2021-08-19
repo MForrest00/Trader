@@ -5,7 +5,7 @@ from sqlalchemy import (
     String,
 )
 from sqlalchemy.sql import func
-from trader.persistence.models.base import Base
+from trader.models.base import Base
 
 
 class Timeframe(Base):

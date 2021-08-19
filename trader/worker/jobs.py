@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from typing import Any, Callable, Dict, Tuple
 from rq import Queue
 from trader.connections.queue import data_retrieval_queue
-from trader.data.cryptocurrency.cryptocurrency_rank import update_cryptocurrency_ranks_from_coin_market_cap
+from trader.data.cryptocurrency_rank import update_cryptocurrency_ranks_from_coin_market_cap
 
 
 @dataclass

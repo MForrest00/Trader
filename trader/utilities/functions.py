@@ -3,7 +3,7 @@ from time import sleep
 from typing import Callable, Dict, Optional, Union
 from dateutil.relativedelta import relativedelta
 from selenium.webdriver.remote.webdriver import WebDriver
-from trader.persistence.base_data import EIGHT_MINUTE, ONE_DAY, ONE_MINUTE, ONE_MONTH, TimeframeData
+from trader.data.base import EIGHT_MINUTE, ONE_DAY, ONE_MINUTE, ONE_MONTH, TimeframeData
 from trader.utilities.constants import WEB_DRIVER_SCROLL_DELAY_SECONDS, WEB_DRIVER_SCROLL_INCREMENT
 
 

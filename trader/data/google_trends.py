@@ -3,8 +3,8 @@ from typing import Dict, List, Optional, Tuple, Union
 from pytrends.request import TrendReq
 from trader.connections.cache import cache
 from trader.connections.database import DBSession
-from trader.persistence.models.google_trends import GoogleTrendsPullGeo, GoogleTrendsPullKeyword
-from trader.persistence.models.timeframe import Timeframe
+from trader.models.google_trends import GoogleTrendsPullGeo, GoogleTrendsPullKeyword
+from trader.models.timeframe import Timeframe
 from trader.utilities.functions import clean_range_cap, google_trends_date_ranges_to_timeframe
 
 

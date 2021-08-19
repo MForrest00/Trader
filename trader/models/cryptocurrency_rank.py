@@ -9,7 +9,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.sql import func
-from trader.persistence.models.base import Base
+from trader.models.base import Base
 
 
 class CryptocurrencyRankSnapshot(Base):

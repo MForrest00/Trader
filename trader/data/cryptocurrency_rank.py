@@ -7,15 +7,10 @@ import requests
 from sqlalchemy.orm import Session
 from trader.connections.cache import cache
 from trader.connections.database import DBSession
-from trader.persistence.base_data import COIN_MARKET_CAP
-from trader.persistence.models.currency import (
-    Cryptocurrency,
-    CryptocurrencyPlatform,
-    Currency,
-    CurrencyCurrencyTag,
-    CurrencyTag,
-)
-from trader.persistence.models.cryptocurrency_rank import CryptocurrencyRank, CryptocurrencyRankSnapshot
+from trader.data.base import COIN_MARKET_CAP
+from trader.models.cryptocurrency import Cryptocurrency, CryptocurrencyPlatform
+from trader.models.currency import Currency, CurrencyCurrencyTag, CurrencyTag
+from trader.models.cryptocurrency_rank import CryptocurrencyRank, CryptocurrencyRankSnapshot
 from trader.utilities.constants import CRYPTOCURRENCY_RANK_LIMIT
 from trader.utilities.functions import iso_time_string_to_datetime
 from trader.utilities.logging import logger

@@ -2,9 +2,9 @@ from dataclasses import dataclass
 from typing import Optional
 from trader.connections.cache import cache
 from trader.connections.database import DBSession
-from trader.persistence.models.google_trends import GoogleTrendsPullGeo
-from trader.persistence.models.source import Source, SourceType
-from trader.persistence.models.timeframe import Timeframe
+from trader.models.google_trends import GoogleTrendsPullGeo
+from trader.models.source import Source, SourceType
+from trader.models.timeframe import Timeframe
 
 
 @dataclass
@@ -36,7 +36,7 @@ COIN_MARKET_CAP = SourceData(
 GOOGLE_TRENDS = SourceData(
     "source_google_trends_id", None, "Google Trends", WEB_SEARCH_DATA, url="https://trends.google.com/"
 )
-SOURCES = (COIN_MARKET_CAP, GOOGLE_TRENDS)
+SOURCES = (ISO, COIN_MARKET_CAP, GOOGLE_TRENDS)
 
 
 @dataclass

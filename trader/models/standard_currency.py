@@ -4,7 +4,7 @@ from sqlalchemy import (
     Integer,
     String,
 )
-from trader.persistence.models.base import Base
+from trader.models.base import Base
 
 
 class StandardCurrency(Base):

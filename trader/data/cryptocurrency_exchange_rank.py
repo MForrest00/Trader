@@ -3,9 +3,9 @@ from bs4 import BeautifulSoup
 import requests
 from trader.connections.cache import cache
 from trader.connections.database import DBSession
-from trader.persistence.base_data import COIN_MARKET_CAP, CRYPTOCURRENCY_EXCHANGE
-from trader.persistence.models.cryptocurrency_exchange import CryptocurrencyExchange
-from trader.persistence.models.source import Source
+from trader.data.base import COIN_MARKET_CAP, CRYPTOCURRENCY_EXCHANGE
+from trader.models.cryptocurrency_exchange import CryptocurrencyExchange
+from trader.models.source import Source
 
 
 def update_cryptocurrency_exchange_ranks_from_coin_market_cap() -> None:
