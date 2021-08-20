@@ -40,4 +40,4 @@ class CryptocurrencyPlatform(Base):
 
     cryptocurrencies = relationship("Cryptocurrency", lazy=True, backref=backref("cryptocurrency_platform", lazy=True))
 
-    __table_args__ = (UniqueConstraint("name", "symbol", name=f"uc_{__tablename__}_name_symbol"),)
+    __table_args__ = (UniqueConstraint("name", "symbol"),)

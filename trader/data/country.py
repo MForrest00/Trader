@@ -7,11 +7,11 @@ from trader.models.country import Country
 
 
 def update_country_data_from_iso() -> None:
+    iso_id = int(cache.get(ISO.cache_key).decode())
     response = requests.get("https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes")
     soup = BeautifulSoup(response.text, "lxml")
     table_h2 = soup.select("span#Current_ISO_3166_country_codes")[0]
     table_body_rows = table_h2.parent.next_sibling.next_sibling.next_sibling.next_sibling.find_all("tr")[2:]
-    iso_id = int(cache.get(ISO.cache_key).decode())
     with DBSession() as session:
         for table_body_row in table_body_rows:
             table_data = table_body_row.find_all("td")
@@ -22,7 +22,7 @@ def update_country_data_from_iso() -> None:
             iso_alpha_2_code = table_data[3].text.strip("\n")
             iso_alpha_3_code = table_data[4].text.strip("\n")
             iso_numeric_code = table_data[5].text.strip("\n")
-            country = session.query(Country).filter(Country.iso_alpha_3_code == iso_alpha_3_code).first()
+            country = session.query(Country).filter_by(iso_alpha_3_code=iso_alpha_3_code).one_or_none()
             if not country:
                 country = Country(
                     source_id=iso_id,

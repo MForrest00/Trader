@@ -4,6 +4,7 @@ from sqlalchemy import (
     Integer,
     String,
 )
+from sqlalchemy.orm import relationship
 from trader.models.base import Base
 
 
@@ -14,3 +15,7 @@ class StandardCurrency(Base):
     currency_id = Column(Integer, ForeignKey("currency.id"), nullable=False, unique=True)
     iso_numeric_code = Column(String(3), nullable=False, unique=True)
     minor_unit = Column(Integer, nullable=True)
+
+    cryptocurrency_exchanges = relationship(
+        "CryptocurrencyExchangeStandardCurrency", lazy=True, back_populates=__tablename__
+    )

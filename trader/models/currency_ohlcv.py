@@ -22,6 +22,12 @@ class CurrencyOHLCVPull(Base):
     to_exclusive = Column(DateTime, nullable=True)
     date_created = Column(DateTime, nullable=False, server_default=func.now())
 
+    base_currency = relationship(
+        "Currency", lazy=False, backref=backref(f"{__tablename__}s_base", lazy=True), foreign_keys=[base_currency_id]
+    )
+    quote_currency = relationship(
+        "Currency", lazy=False, backref=backref(f"{__tablename__}s_quote", lazy=True), foreign_keys=[quote_currency_id]
+    )
     currency_ohlcvs = relationship("CurrencyOHLCV", lazy=True, backref=backref(__tablename__, lazy=False))
 
 

@@ -24,25 +24,37 @@ class CryptocurrencyExchange(Base):
     cryptocurrency_exchange_ranks = relationship(
         "CryptocurrencyExchangeRank", lazy=True, backref=backref(__tablename__, lazy=False)
     )
-    currencies = relationship("CryptocurrencyExchangeCurrency", lazy=True, back_populates=__tablename__)
+    countries = relationship("CryptocurrencyExchangeCountry", lazy=True, back_populates=__tablename__)
+    standard_currencies = relationship(
+        "CryptocurrencyExchangeStandardCurrency", lazy=True, back_populates=__tablename__
+    )
 
 
-class CryptocurrencyExchangeCurrency(Base):
-    __tablename__ = "cryptocurrency_exchange_currency"
+class CryptocurrencyExchangeCountry(Base):
+    __tablename__ = "cryptocurrency_exchange_country"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
     cryptocurrency_exchange_id = Column(Integer, ForeignKey("cryptocurrency_exchange.id"), nullable=False)
-    currency_id = Column(Integer, ForeignKey("currency.id"), nullable=False)
+    country_id = Column(Integer, ForeignKey("country.id"), nullable=False)
     date_created = Column(DateTime, nullable=False, server_default=func.now())
 
-    cryptocurrency_exchange = relationship("CryptocurrencyExchange", lazy=False, back_populates="currencies")
-    currency = relationship("Currency", lazy=False, back_populates="cryptocurrency_exchanges")
+    cryptocurrency_exchange = relationship("CryptocurrencyExchange", lazy=False, back_populates="countries")
+    country = relationship("Country", lazy=False, back_populates="cryptocurrency_exchanges")
 
-    __table_args__ = (
-        UniqueConstraint(
-            "cryptocurrency_exchange_id",
-            "currency_id",
-            name=f"uc_{__tablename__}_cryptocurrency_exchange_id_currency_id",
-        ),
-    )
+    __table_args__ = (UniqueConstraint("cryptocurrency_exchange_id", "country_id"),)
+
+
+class CryptocurrencyExchangeStandardCurrency(Base):
+    __tablename__ = "cryptocurrency_exchange_standard_currency"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
+    cryptocurrency_exchange_id = Column(Integer, ForeignKey("cryptocurrency_exchange.id"), nullable=False)
+    standard_currency_id = Column(Integer, ForeignKey("standard_currency.id"), nullable=False)
+    date_created = Column(DateTime, nullable=False, server_default=func.now())
+
+    cryptocurrency_exchange = relationship("CryptocurrencyExchange", lazy=False, back_populates="standard_currencies")
+    standard_currency = relationship("StandardCurrency", lazy=False, back_populates="cryptocurrency_exchanges")
+
+    __table_args__ = (UniqueConstraint("cryptocurrency_exchange_id", "standard_currency_id"),)
