@@ -1,7 +1,7 @@
 from rq.exceptions import NoSuchJobError
 from rq.job import Job
 from trader.connections.cache import cache
-from trader.worker.jobs import JOBS
+from trader.jobs.worker import JOBS
 
 
 def main():

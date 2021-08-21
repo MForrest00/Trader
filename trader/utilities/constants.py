@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 import os
 import pathlib
 
@@ -9,3 +10,6 @@ WEB_DRIVER_SCROLL_INCREMENT = 500
 WEB_DRIVER_SCROLL_DELAY_SECONDS = 0.5
 
 CRYPTOCURRENCY_RANK_LIMIT = 500
+
+GOOGLE_TRENDS_WEB_SEARCH_BASE_DATE = datetime(2004, 1, 1, tzinfo=timezone.utc)
+GOOGLE_TRENDS_OTHER_SEARCH_BASE_DATE = datetime(2008, 1, 1, tzinfo=timezone.utc)

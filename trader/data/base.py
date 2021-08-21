@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from trader.connections.cache import cache
 from trader.connections.database import DBSession
 from trader.models.currency import CurrencyType
-from trader.models.google_trends import GoogleTrendsPullGeo
+from trader.models.google_trends import GoogleTrendsPullGeo, GoogleTrendsPullGprop
 from trader.models.source import Source, SourceType
 from trader.models.timeframe import Timeframe
 
@@ -15,9 +15,10 @@ class CurrencyTypeData:
     description: str
 
 
-STANDARD = CurrencyTypeData("currency_type_standard_currency_id", "Standard currency")
+UNKNOWN_CURRENCY = CurrencyTypeData("currency_type_unknown_id", "Unknown currency")
+STANDARD_CURRENCY = CurrencyTypeData("currency_type_standard_currency_id", "Standard currency")
 CRYPTOCURRENCY = CurrencyTypeData("currency_type_cryptocurrency_id", "Cryptocurrency")
-CURRENCY_TYPES = (STANDARD, CRYPTOCURRENCY)
+CURRENCY_TYPES = (UNKNOWN_CURRENCY, STANDARD_CURRENCY, CRYPTOCURRENCY)
 
 
 def initialize_currency_types(session: Session) -> None:
@@ -53,6 +54,31 @@ def initialize_google_trends_pull_geos(session: Session) -> None:
 
 
 @dataclass
+class GoogleTrendsPullGpropData:
+    cache_key: str
+    code: str
+    name: str
+
+
+WEB_SEARCH = GoogleTrendsPullGpropData("google_trends_pull_gprop_web_search_id", "", "Web search")
+IMAGE_SEARCH = GoogleTrendsPullGpropData("google_trends_pull_gprop_web_search_id", "image", "Image search")
+NEWS_SEARCH = GoogleTrendsPullGpropData("google_trends_pull_gprop_web_search_id", "news", "News search")
+GOOGLE_SHOPPING = GoogleTrendsPullGpropData("google_trends_pull_gprop_web_search_id", "froogle", "Google shopping")
+YOUTUBE_SEARCH = GoogleTrendsPullGpropData("google_trends_pull_gprop_web_search_id", "youtube", "YouTube search")
+GOOGLE_TRENDS_PULL_GPROPS = (WEB_SEARCH, IMAGE_SEARCH, NEWS_SEARCH, GOOGLE_SHOPPING, YOUTUBE_SEARCH)
+
+
+def initialize_google_trends_pull_gprops(session: Session) -> None:
+    for google_trends_pull_gprop in GOOGLE_TRENDS_PULL_GPROPS:
+        instance = session.query(GoogleTrendsPullGprop).filter_by(code=google_trends_pull_gprop.code).one_or_none()
+        if not instance:
+            instance = GoogleTrendsPullGprop(code=google_trends_pull_gprop.code, name=google_trends_pull_gprop.name)
+            session.add(instance)
+            session.commit()
+        cache.set(google_trends_pull_gprop.cache_key, instance.id)
+
+
+@dataclass
 class SourceTypeData:
     cache_key: str
     description: str
@@ -61,8 +87,8 @@ class SourceTypeData:
 MISCELLANEOUS_DATA = SourceTypeData("source_type_miscellaneous_data_id", "Miscellaneous data")
 CRYPTOCURRENCY_MARKET_DATA = SourceTypeData("source_type_cryptocurrency_market_data_id", "Cryptocurrency market data")
 CRYPTOCURRENCY_EXCHANGE = SourceTypeData("source_type_cryptocurrency_exchange_id", "Cryptocurrency exchange")
-WEB_SEARCH_DATA = SourceTypeData("source_type_web_search_data_id", "Web search data")
-SOURCE_TYPES = (MISCELLANEOUS_DATA, CRYPTOCURRENCY_MARKET_DATA, CRYPTOCURRENCY_EXCHANGE, WEB_SEARCH_DATA)
+SEARCH_DATA = SourceTypeData("source_type_search_data_id", "Search data")
+SOURCE_TYPES = (MISCELLANEOUS_DATA, CRYPTOCURRENCY_MARKET_DATA, CRYPTOCURRENCY_EXCHANGE, SEARCH_DATA)
 
 
 def initialize_source_types(session: Session) -> None:
@@ -89,7 +115,7 @@ COIN_MARKET_CAP = SourceData(
     "source_coin_market_cap_id", None, "CoinMarketCap", CRYPTOCURRENCY_MARKET_DATA, url="https://coinmarketcap.com/"
 )
 GOOGLE_TRENDS = SourceData(
-    "source_google_trends_id", None, "Google Trends", WEB_SEARCH_DATA, url="https://trends.google.com/"
+    "source_google_trends_id", None, "Google Trends", SEARCH_DATA, url="https://trends.google.com/"
 )
 SOURCES = (ISO, COIN_MARKET_CAP, GOOGLE_TRENDS)
 
@@ -146,6 +172,7 @@ def initialize_base_data() -> None:
     with DBSession() as session:
         initialize_currency_types(session)
         initialize_google_trends_pull_geos(session)
+        initialize_google_trends_pull_gprops(session)
         initialize_source_types(session)
         initialize_sources(session)
         initialize_timeframes(session)

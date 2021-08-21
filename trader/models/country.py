@@ -23,8 +23,23 @@ class Country(Base):
     iso_numeric_code = Column(String(3), nullable=False, unique=True)
     date_created = Column(DateTime, nullable=False, server_default=func.now())
 
+    cryptocurrency_exchanges = relationship("CountryCryptocurrencyExchange", lazy=True, back_populates=__tablename__)
     currencies = relationship("CountryCurrency", lazy=True, back_populates=__tablename__)
-    cryptocurrency_exchanges = relationship("CryptocurrencyExchangeCountry", lazy=True, back_populates=__tablename__)
+
+
+class CountryCryptocurrencyExchange(Base):
+    __tablename__ = "country_cryptocurrency_exchange"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
+    country_id = Column(Integer, ForeignKey("country.id"), nullable=False)
+    cryptocurrency_exchange_id = Column(Integer, ForeignKey("cryptocurrency_exchange.id"), nullable=False)
+    date_created = Column(DateTime, nullable=False, server_default=func.now())
+
+    country = relationship("Country", lazy=False, back_populates="cryptocurrency_exchanges")
+    cryptocurrency_exchange = relationship("CryptocurrencyExchange", lazy=False, back_populates="countries")
+
+    __table_args__ = (UniqueConstraint("country_id", "cryptocurrency_exchange_id"),)
 
 
 class CountryCurrency(Base):

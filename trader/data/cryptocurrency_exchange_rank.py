@@ -4,12 +4,8 @@ import requests
 from trader.connections.cache import cache
 from trader.connections.database import DBSession
 from trader.data.base import COIN_MARKET_CAP, CRYPTOCURRENCY_EXCHANGE
-from trader.models.country import Country
-from trader.models.cryptocurrency_exchange import (
-    CryptocurrencyExchange,
-    CryptocurrencyExchangeCountry,
-    CryptocurrencyExchangeStandardCurrency,
-)
+from trader.models.country import Country, CountryCryptocurrencyExchange
+from trader.models.cryptocurrency_exchange import CryptocurrencyExchange, CryptocurrencyExchangeStandardCurrency
 from trader.models.cryptocurrency_exchange_rank import CryptocurrencyExchangeRank, CryptocurrencyExchangeRankPull
 from trader.models.currency import Currency
 from trader.models.standard_currency import StandardCurrency
@@ -99,18 +95,18 @@ def update_cryptocurrency_exchange_ranks_from_coin_market_cap() -> None:
                     country = session.query(Country).filter_by(iso_alpha_2_code=country_iso_alpha_2_code).one_or_none()
                     if country:
                         cryptocurrency_exchange_country = (
-                            session.query(CryptocurrencyExchangeCountry)
+                            session.query(CountryCryptocurrencyExchange)
                             .filter_by(
-                                cryptocurrency_exchange_id=cryptocurrency_exchange.id,
                                 country_id=country.id,
+                                cryptocurrency_exchange_id=cryptocurrency_exchange.id,
                             )
                             .one_or_none()
                         )
                         if not cryptocurrency_exchange_country:
-                            cryptocurrency_exchange_country = CryptocurrencyExchangeCountry(
+                            cryptocurrency_exchange_country = CountryCryptocurrencyExchange(
                                 source_id=coin_market_cap_id,
-                                cryptocurrency_exchange_id=cryptocurrency_exchange.id,
                                 country_id=country.id,
+                                cryptocurrency_exchange_id=cryptocurrency_exchange.id,
                             )
                             session.add(cryptocurrency_exchange_country)
                 cryptocurrency_exchange_rank = CryptocurrencyExchangeRank(

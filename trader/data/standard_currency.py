@@ -2,15 +2,16 @@ from bs4 import BeautifulSoup
 import requests
 from trader.connections.cache import cache
 from trader.connections.database import DBSession
-from trader.data.base import ISO, STANDARD
+from trader.data.base import ISO, STANDARD_CURRENCY, UNKNOWN_CURRENCY
 from trader.models.country import Country, CountryCurrency
 from trader.models.currency import Currency
 from trader.models.standard_currency import StandardCurrency
 
 
-def update_standard_currency_data_from_iso() -> None:
+def update_standard_currencies_from_iso() -> None:
     iso_id = int(cache.get(ISO.cache_key).decode())
-    standard_id = int(cache.get(STANDARD.cache_key).decode())
+    standard_currency_id = int(cache.get(STANDARD_CURRENCY.cache_key).decode())
+    unknown_currency_id = int(cache.get(UNKNOWN_CURRENCY.cache_key).decode())
     response = requests.get("https://en.wikipedia.org/wiki/ISO_4217")
     soup = BeautifulSoup(response.text, "lxml")
     table_h2 = soup.select("span#Active_codes")[0]
@@ -24,12 +25,25 @@ def update_standard_currency_data_from_iso() -> None:
             minor_unit = table_data[2].text if table_data[2].text.isnumeric() else None
             country_names = {country_anchor.text for country_anchor in table_data[4].find_all("a")}
             currency = (
-                session.query(Currency).filter_by(name=name, symbol=symbol, currency_type_id=standard_id).one_or_none()
+                session.query(Currency)
+                .filter(
+                    Currency.symbol == symbol,
+                    Currency.currency_type_id.in_([standard_currency_id, unknown_currency_id]),
+                )
+                .one_or_none()
             )
             if not currency:
-                currency = Currency(source_id=iso_id, name=name, symbol=symbol, currency_type_id=standard_id)
+                currency = Currency(source_id=iso_id, name=name, symbol=symbol, currency_type_id=standard_currency_id)
                 session.add(currency)
                 session.flush()
+            elif currency.currency_type_id == unknown_currency_id:
+                currency.update(
+                    {
+                        "source_id": iso_id,
+                        "name": name,
+                        "currency_type_id": standard_currency_id,
+                    }
+                )
             else:
                 for item in currency.countries:
                     if item.country.name not in country_names:

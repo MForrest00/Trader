@@ -6,35 +6,13 @@ import requests
 from sqlalchemy.orm import Session
 from trader.connections.cache import cache
 from trader.connections.database import DBSession
-from trader.data.base import COIN_MARKET_CAP, CRYPTOCURRENCY
+from trader.data.base import COIN_MARKET_CAP, CRYPTOCURRENCY, UNKNOWN_CURRENCY
 from trader.models.cryptocurrency import Cryptocurrency, CryptocurrencyPlatform
 from trader.models.currency import Currency, CurrencyCurrencyTag, CurrencyTag
 from trader.models.cryptocurrency_rank import CryptocurrencyRank, CryptocurrencyRankSnapshot
 from trader.utilities.constants import CRYPTOCURRENCY_RANK_LIMIT
 from trader.utilities.functions import iso_time_string_to_datetime
 from trader.utilities.logging import logger
-
-
-def retrieve_historical_snapshot_list_from_coin_market_cap() -> List[datetime]:
-    response = requests.get("https://coinmarketcap.com/historical/")
-    soup = BeautifulSoup(response.text, "lxml")
-    table_wrapper = soup.select("div.cmc-bottom-margin-2x")[0]
-    year_rows = table_wrapper.find_all("div", recursive=False)[:-1]
-    month_name_to_number = {datetime(1970, i, 1).strftime("%B"): i for i in range(1, 13)}
-    output: List[datetime] = []
-    for year_row in year_rows:
-        header, body = year_row.find_all("div", recursive=False)
-        year = int(header.text)
-        month_sections = body.find_all("div", recursive=False)
-        for month_section in month_sections:
-            month = month_section.find("div", recursive=False).find("div", recursive=False).text
-            historical_snapshots = month_section.find("div", recursive=False).find_all("a", recursive=False, href=True)
-            for historical_snapshot in historical_snapshots:
-                day = int(historical_snapshot.text)
-                snapshot_date = datetime(year, month_name_to_number[month], day, tzinfo=timezone.utc)
-                if snapshot_date.date() != datetime.utcnow().date():
-                    output.append(snapshot_date)
-    return output
 
 
 @dataclass
@@ -67,10 +45,11 @@ class CryptocurrencyRankRecord:
 def insert_cryptocurrency_ranks(
     session: Session,
     source_id: int,
-    currency_type_id: int,
     cryptocurrency_rank_snapshot_id: int,
     data: List[CryptocurrencyRankRecord],
 ) -> None:
+    cryptocurrency_id = int(cache.get(CRYPTOCURRENCY.cache_key).decode())
+    unknown_currency_id = int(cache.get(UNKNOWN_CURRENCY.cache_key).decode())
     for record in data:
         if record.currency_platform:
             cryptocurrency_platform = (
@@ -93,7 +72,10 @@ def insert_cryptocurrency_ranks(
             cryptocurrency_platform_id = None
         currency = (
             session.query(Currency)
-            .filter_by(name=record.currency_name, symbol=record.currency_symbol, currency_type_id=currency_type_id)
+            .filter(
+                Currency.symbol == record.currency_symbol,
+                Currency.currency_type_id.in_([cryptocurrency_id, unknown_currency_id]),
+            )
             .one_or_none()
         )
         if not currency:
@@ -101,10 +83,18 @@ def insert_cryptocurrency_ranks(
                 source_id=source_id,
                 name=record.currency_name,
                 symbol=record.currency_symbol,
-                currency_type_id=currency_type_id,
+                currency_type_id=cryptocurrency_id,
             )
             session.add(currency)
             session.flush()
+        elif currency.currency_type_id == unknown_currency_id:
+            currency.update(
+                {
+                    "source_id": source_id,
+                    "name": record.currency_name,
+                    "currency_type_id": cryptocurrency_id,
+                }
+            )
         cryptocurrency = currency.cryptocurrency
         if not cryptocurrency:
             cryptocurrency = Cryptocurrency(
@@ -162,6 +152,28 @@ def insert_cryptocurrency_ranks(
         )
         session.add(cryptocurrency_rank)
     session.commit()
+
+
+def retrieve_historical_snapshot_list_from_coin_market_cap() -> List[datetime]:
+    response = requests.get("https://coinmarketcap.com/historical/")
+    soup = BeautifulSoup(response.text, "lxml")
+    table_wrapper = soup.select("div.cmc-bottom-margin-2x")[0]
+    year_rows = table_wrapper.find_all("div", recursive=False)[:-1]
+    month_name_to_number = {datetime(1970, i, 1).strftime("%B"): i for i in range(1, 13)}
+    output: List[datetime] = []
+    for year_row in year_rows:
+        header, body = year_row.find_all("div", recursive=False)
+        year = int(header.text)
+        month_sections = body.find_all("div", recursive=False)
+        for month_section in month_sections:
+            month = month_section.find("div", recursive=False).find("div", recursive=False).text
+            historical_snapshots = month_section.find("div", recursive=False).find_all("a", recursive=False, href=True)
+            for historical_snapshot in historical_snapshots:
+                day = int(historical_snapshot.text)
+                snapshot_date = datetime(year, month_name_to_number[month], day, tzinfo=timezone.utc)
+                if snapshot_date.date() != datetime.utcnow().date():
+                    output.append(snapshot_date)
+    return output
 
 
 def retrieve_historical_cryptocurrency_ranks_from_coin_market_cap(
@@ -252,7 +264,6 @@ def retrieve_current_cryptocurrency_ranks_from_coin_market_cap() -> List[Cryptoc
 
 def update_historical_cryptocurrency_ranks_from_coin_market_cap() -> None:
     coin_market_cap_id = int(cache.get(COIN_MARKET_CAP.cache_key).decode())
-    cryptocurrency_id = int(cache.get(CRYPTOCURRENCY.cache_key).decode())
     historical_snapshots = retrieve_historical_snapshot_list_from_coin_market_cap()
     with DBSession() as session:
         for historical_snapshot in historical_snapshots:
@@ -275,14 +286,11 @@ def update_historical_cryptocurrency_ranks_from_coin_market_cap() -> None:
                     )
                     session.add(cryptocurrency_rank_snapshot)
                     session.flush()
-                    insert_cryptocurrency_ranks(
-                        session, coin_market_cap_id, cryptocurrency_id, cryptocurrency_rank_snapshot.id, data
-                    )
+                    insert_cryptocurrency_ranks(session, coin_market_cap_id, cryptocurrency_rank_snapshot.id, data)
 
 
 def update_current_cryptocurrency_ranks_from_coin_market_cap() -> None:
     coin_market_cap_id = int(cache.get(COIN_MARKET_CAP.cache_key).decode())
-    cryptocurrency_id = int(cache.get(CRYPTOCURRENCY.cache_key).decode())
     logger.debug("Fetching data for current cryptocurrency ranks")
     data = retrieve_current_cryptocurrency_ranks_from_coin_market_cap()
     if data:
@@ -294,6 +302,4 @@ def update_current_cryptocurrency_ranks_from_coin_market_cap() -> None:
             )
             session.add(cryptocurrency_rank_snapshot)
             session.flush()
-            insert_cryptocurrency_ranks(
-                session, coin_market_cap_id, cryptocurrency_id, cryptocurrency_rank_snapshot.id, data
-            )
+            insert_cryptocurrency_ranks(session, coin_market_cap_id, cryptocurrency_rank_snapshot.id, data)

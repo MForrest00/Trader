@@ -6,7 +6,7 @@ from trader.data.base import ISO
 from trader.models.country import Country
 
 
-def update_country_data_from_iso() -> None:
+def update_countries_from_iso() -> None:
     iso_id = int(cache.get(ISO.cache_key).decode())
     response = requests.get("https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes")
     soup = BeautifulSoup(response.text, "lxml")

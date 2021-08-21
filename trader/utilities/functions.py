@@ -3,8 +3,14 @@ from time import sleep
 from typing import Callable, Dict, Optional, Union
 from dateutil.relativedelta import relativedelta
 from selenium.webdriver.remote.webdriver import WebDriver
-from trader.data.base import EIGHT_MINUTE, ONE_DAY, ONE_MINUTE, ONE_MONTH, TimeframeData
-from trader.utilities.constants import WEB_DRIVER_SCROLL_DELAY_SECONDS, WEB_DRIVER_SCROLL_INCREMENT
+from trader.data.base import EIGHT_MINUTE, ONE_DAY, ONE_MINUTE, ONE_MONTH, TimeframeData, WEB_SEARCH
+from trader.models.google_trends import GoogleTrendsPullGprop
+from trader.utilities.constants import (
+    GOOGLE_TRENDS_OTHER_SEARCH_BASE_DATE,
+    GOOGLE_TRENDS_WEB_SEARCH_BASE_DATE,
+    WEB_DRIVER_SCROLL_DELAY_SECONDS,
+    WEB_DRIVER_SCROLL_INCREMENT,
+)
 
 
 TIMEFRAME_UNIT_TO_TRANSFORM_FUNCTION: Dict[str, Callable[[datetime], datetime]] = {
@@ -59,13 +65,26 @@ def fully_scroll_page(web_driver: WebDriver) -> None:
         sleep(WEB_DRIVER_SCROLL_DELAY_SECONDS)
 
 
-def google_trends_date_ranges_to_timeframe(from_inclusive: datetime, to_exclusive: Optional[datetime]) -> TimeframeData:
-    if to_exclusive - from_inclusive == timedelta(seconds=60 * 60 * 4):
+def google_trends_date_ranges_to_timeframe(
+    from_inclusive: datetime, to_exclusive: Optional[datetime], gprop: GoogleTrendsPullGprop
+) -> TimeframeData:
+    if from_inclusive.microsecond != 0 or from_inclusive.second != 0 or from_inclusive.minute != 0:
+        raise ValueError(
+            "Google Trends date range values do not allow granularity to the minute, second, or microsecond"
+        )
+    if from_inclusive.hour % 4 == 0 and to_exclusive - from_inclusive == timedelta(seconds=60 * 60 * 4):
         return ONE_MINUTE
-    if to_exclusive - from_inclusive == timedelta(seconds=60 * 60 * 24):
+    if from_inclusive.hour == 0 and to_exclusive - from_inclusive == timedelta(seconds=60 * 60 * 24):
         return EIGHT_MINUTE
-    if from_inclusive.day == 1 and from_inclusive + relativedelta(months=1) == to_exclusive:
+    if (
+        from_inclusive.hour == 0
+        and from_inclusive.day == 0
+        and from_inclusive + relativedelta(months=1) == to_exclusive
+    ):
         return ONE_DAY
-    if from_inclusive == datetime(2004, 1, 1) and not to_exclusive:
+    if not to_exclusive and (
+        (gprop.name == WEB_SEARCH.name and from_inclusive == GOOGLE_TRENDS_WEB_SEARCH_BASE_DATE)
+        or from_inclusive == GOOGLE_TRENDS_OTHER_SEARCH_BASE_DATE
+    ):
         return ONE_MONTH
     raise ValueError("From and to arguments do not reflect a timeframe compatible with Google Trends")

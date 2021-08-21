@@ -24,25 +24,10 @@ class CryptocurrencyExchange(Base):
     cryptocurrency_exchange_ranks = relationship(
         "CryptocurrencyExchangeRank", lazy=True, backref=backref(__tablename__, lazy=False)
     )
-    countries = relationship("CryptocurrencyExchangeCountry", lazy=True, back_populates=__tablename__)
+    countries = relationship("CountryCryptocurrencyExchange", lazy=True, back_populates=__tablename__)
     standard_currencies = relationship(
         "CryptocurrencyExchangeStandardCurrency", lazy=True, back_populates=__tablename__
     )
-
-
-class CryptocurrencyExchangeCountry(Base):
-    __tablename__ = "cryptocurrency_exchange_country"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
-    cryptocurrency_exchange_id = Column(Integer, ForeignKey("cryptocurrency_exchange.id"), nullable=False)
-    country_id = Column(Integer, ForeignKey("country.id"), nullable=False)
-    date_created = Column(DateTime, nullable=False, server_default=func.now())
-
-    cryptocurrency_exchange = relationship("CryptocurrencyExchange", lazy=False, back_populates="countries")
-    country = relationship("Country", lazy=False, back_populates="cryptocurrency_exchanges")
-
-    __table_args__ = (UniqueConstraint("cryptocurrency_exchange_id", "country_id"),)
 
 
 class CryptocurrencyExchangeStandardCurrency(Base):

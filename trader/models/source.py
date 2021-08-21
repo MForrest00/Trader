@@ -18,7 +18,7 @@ class SourceType(Base):
     description = Column(String(250), nullable=False, unique=True)
     date_created = Column(DateTime, nullable=False, server_default=func.now())
 
-    sources = relationship("Source", lazy=True, backref=backref(__tablename__, lazy=True))
+    sources = relationship("Source", lazy=True, backref=backref(__tablename__, lazy=False))
 
 
 class Source(Base):

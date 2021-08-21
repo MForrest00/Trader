@@ -18,7 +18,7 @@ class CurrencyType(Base):
     description = Column(String(250), nullable=False, unique=True)
     date_created = Column(DateTime, nullable=False, server_default=func.now())
 
-    currencies = relationship("Currency", lazy=True, backref=backref(__tablename__, lazy=True))
+    currencies = relationship("Currency", lazy=True, backref=backref(__tablename__, lazy=False))
 
 
 class Currency(Base):
@@ -26,7 +26,7 @@ class Currency(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
-    name = Column(String(250), nullable=False)
+    name = Column(String(250), nullable=True)
     symbol = Column(String(25), nullable=False)
     currency_type_id = Column(Integer, ForeignKey("currency_type.id"), nullable=False)
     date_created = Column(DateTime, nullable=False, server_default=func.now())
@@ -41,7 +41,7 @@ class Currency(Base):
     currency_tags = relationship("CurrencyCurrencyTag", lazy=True, back_populates=__tablename__)
     countries = relationship("CountryCurrency", lazy=True, back_populates=__tablename__)
 
-    __table_args__ = (UniqueConstraint("name", "symbol", "currency_type_id"),)
+    __table_args__ = (UniqueConstraint("symbol", "currency_type_id"),)
 
 
 class CurrencyTag(Base):
