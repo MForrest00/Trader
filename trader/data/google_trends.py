@@ -58,13 +58,13 @@ def timeframe_base_label_to_date_ranges(
             output.append((from_val, to_val))
             from_val += relativedelta(months=1)
     if timeframe_base_label == EIGHT_MINUTE.base_label:
-        from_val = min(TIMEFRAME_UNIT_TO_TRANSFORM_FUNCTION["d"](from_inclusive), minute_granularity_cutoff)
+        from_val = max(TIMEFRAME_UNIT_TO_TRANSFORM_FUNCTION["d"](from_inclusive), minute_granularity_cutoff)
         while from_val < to_exclusive:
             to_val = from_val + timedelta(days=1)
             output.append((from_val, to_val))
             from_val = to_val
     if timeframe_base_label == ONE_MINUTE.base_label:
-        from_val = min(TIMEFRAME_UNIT_TO_TRANSFORM_FUNCTION["h"](from_inclusive), minute_granularity_cutoff)
+        from_val = max(TIMEFRAME_UNIT_TO_TRANSFORM_FUNCTION["h"](from_inclusive), minute_granularity_cutoff)
         from_val -= timedelta(seconds=60 * 60 * (from_val.hour % 4))
         while from_val < to_exclusive:
             to_val = from_val + timedelta(seconds=60 * 60 * 4)

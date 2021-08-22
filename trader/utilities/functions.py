@@ -12,8 +12,8 @@ TIMEFRAME_UNIT_TO_TRANSFORM_FUNCTION: Dict[str, Callable[[datetime], datetime]] 
     "h": lambda x: x.replace(minute=0, second=0, microsecond=0),
     "d": lambda x: x.replace(hour=0, minute=0, second=0, microsecond=0),
     "w": lambda x: x.replace(hour=0, minute=0, second=0, microsecond=0) - timedelta(days=x.weekday()),
-    "M": lambda x: x.replace(day=0, hour=0, minute=0, second=0, microsecond=0),
-    "y": lambda x: x.replace(month=0, day=0, hour=0, minute=0, second=0, microsecond=0),
+    "M": lambda x: x.replace(day=1, hour=0, minute=0, second=0, microsecond=0),
+    "y": lambda x: x.replace(month=1, day=1, hour=0, minute=0, second=0, microsecond=0),
 }
 
 
