@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import datetime, timezone
 from typing import Dict, List, Optional, Union
 from ccxt.base.exchange import Exchange
 from trader.models.currency import Currency
@@ -17,16 +17,16 @@ def retrieve_ohlcv_from_exchange_using_ccxt(
     base_currency: Currency,
     quote_currency: Currency,
     timeframe: Timeframe,
-    from_inclusive: Union[date, datetime],
-    to_exclusive: Optional[Union[date, datetime]] = None,
+    from_inclusive: datetime,
+    to_exclusive: Optional[datetime] = None,
     limit: Optional[int] = None,
 ) -> List[Dict[str, Union[datetime, float]]]:
     amount, unit = int(timeframe.base_label[:-1]), timeframe.base_label[-1:]
     from_inclusive = clean_range_cap(from_inclusive, unit)
     to_exclusive = (
-        clean_range_cap(min(to_exclusive, datetime.utcnow()), unit)
+        clean_range_cap(min(to_exclusive, datetime.now(timezone.utc)), unit)
         if to_exclusive
-        else clean_range_cap(datetime.utcnow(), unit)
+        else clean_range_cap(datetime.now(timezone.utc), unit)
     )
     if not from_inclusive < to_exclusive:
         raise ValueError("From argument must be less than the to argument")

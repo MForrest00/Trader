@@ -17,9 +17,9 @@ class CryptocurrencyRankSnapshot(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
-    snapshot_date = Column(DateTime, nullable=False)
+    snapshot_date = Column(DateTime(timezone=True), nullable=False)
     is_historical = Column(Boolean, nullable=False)
-    date_created = Column(DateTime, nullable=False, server_default=func.now())
+    date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     cryptocurrency_ranks = relationship("CryptocurrencyRank", lazy=True, backref=backref(__tablename__, lazy=False))
 

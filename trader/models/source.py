@@ -16,7 +16,7 @@ class SourceType(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     description = Column(String(250), nullable=False, unique=True)
-    date_created = Column(DateTime, nullable=False, server_default=func.now())
+    date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     sources = relationship("Source", lazy=True, backref=backref(__tablename__, lazy=False))
 
@@ -29,7 +29,7 @@ class Source(Base):
     name = Column(String(250), nullable=False)
     source_type_id = Column(Integer, ForeignKey("source_type.id"), nullable=False)
     url = Column(String(250), nullable=True)
-    date_created = Column(DateTime, nullable=False, server_default=func.now())
+    date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     populated_sources = relationship("Source", lazy=True, backref=backref(__tablename__, lazy=True), remote_side=[id])
     cryptocurrency_exchange = relationship(

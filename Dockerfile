@@ -16,4 +16,4 @@ RUN pipenv install --system --deploy --ignore-pipfile
 
 COPY . .
 
-CMD ["rq" "worker" "-c" "trader.utilities.worker_config" "--with-scheduler"]
+CMD ["rq" "worker" "-c" "trader.jobs.worker.config" "--with-scheduler"]

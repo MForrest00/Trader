@@ -21,7 +21,7 @@ class Country(Base):
     iso_alpha_2_code = Column(String(2), nullable=False, unique=True)
     iso_alpha_3_code = Column(String(3), nullable=False, unique=True)
     iso_numeric_code = Column(String(3), nullable=False, unique=True)
-    date_created = Column(DateTime, nullable=False, server_default=func.now())
+    date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     cryptocurrency_exchanges = relationship("CountryCryptocurrencyExchange", lazy=True, back_populates=__tablename__)
     currencies = relationship("CountryCurrency", lazy=True, back_populates=__tablename__)
@@ -34,7 +34,7 @@ class CountryCryptocurrencyExchange(Base):
     source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
     country_id = Column(Integer, ForeignKey("country.id"), nullable=False)
     cryptocurrency_exchange_id = Column(Integer, ForeignKey("cryptocurrency_exchange.id"), nullable=False)
-    date_created = Column(DateTime, nullable=False, server_default=func.now())
+    date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     country = relationship("Country", lazy=False, back_populates="cryptocurrency_exchanges")
     cryptocurrency_exchange = relationship("CryptocurrencyExchange", lazy=False, back_populates="countries")
@@ -49,7 +49,7 @@ class CountryCurrency(Base):
     source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
     country_id = Column(Integer, ForeignKey("country.id"), nullable=False)
     currency_id = Column(Integer, ForeignKey("currency.id"), nullable=False)
-    date_created = Column(DateTime, nullable=False, server_default=func.now())
+    date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     country = relationship("Country", lazy=False, back_populates="currencies")
     currency = relationship("Currency", lazy=False, back_populates="countries")

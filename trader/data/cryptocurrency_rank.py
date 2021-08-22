@@ -171,7 +171,7 @@ def retrieve_historical_snapshot_list_from_coin_market_cap() -> List[datetime]:
             for historical_snapshot in historical_snapshots:
                 day = int(historical_snapshot.text)
                 snapshot_date = datetime(year, month_name_to_number[month], day, tzinfo=timezone.utc)
-                if snapshot_date.date() != datetime.utcnow().date():
+                if snapshot_date.date() != datetime.now(timezone.utc).date():
                     output.append(snapshot_date)
     return output
 
@@ -297,7 +297,7 @@ def update_current_cryptocurrency_ranks_from_coin_market_cap() -> None:
         with DBSession() as session:
             cryptocurrency_rank_snapshot = CryptocurrencyRankSnapshot(
                 source_id=coin_market_cap_id,
-                snapshot_date=datetime.utcnow(),
+                snapshot_date=datetime.now(timezone.utc),
                 is_historical=False,
             )
             session.add(cryptocurrency_rank_snapshot)

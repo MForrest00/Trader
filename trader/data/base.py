@@ -15,7 +15,7 @@ class CurrencyTypeData:
     description: str
 
 
-UNKNOWN_CURRENCY = CurrencyTypeData("currency_type_unknown_id", "Unknown currency")
+UNKNOWN_CURRENCY = CurrencyTypeData("currency_type_unknown_currency_id", "Unknown currency")
 STANDARD_CURRENCY = CurrencyTypeData("currency_type_standard_currency_id", "Standard currency")
 CRYPTOCURRENCY = CurrencyTypeData("currency_type_cryptocurrency_id", "Cryptocurrency")
 CURRENCY_TYPES = (UNKNOWN_CURRENCY, STANDARD_CURRENCY, CRYPTOCURRENCY)
@@ -61,10 +61,10 @@ class GoogleTrendsPullGpropData:
 
 
 WEB_SEARCH = GoogleTrendsPullGpropData("google_trends_pull_gprop_web_search_id", "", "Web search")
-IMAGE_SEARCH = GoogleTrendsPullGpropData("google_trends_pull_gprop_web_search_id", "image", "Image search")
-NEWS_SEARCH = GoogleTrendsPullGpropData("google_trends_pull_gprop_web_search_id", "news", "News search")
-GOOGLE_SHOPPING = GoogleTrendsPullGpropData("google_trends_pull_gprop_web_search_id", "froogle", "Google shopping")
-YOUTUBE_SEARCH = GoogleTrendsPullGpropData("google_trends_pull_gprop_web_search_id", "youtube", "YouTube search")
+IMAGE_SEARCH = GoogleTrendsPullGpropData("google_trends_pull_gprop_image_search_id", "image", "Image search")
+NEWS_SEARCH = GoogleTrendsPullGpropData("google_trends_pull_gprop_news_search_id", "news", "News search")
+GOOGLE_SHOPPING = GoogleTrendsPullGpropData("google_trends_pull_gprop_google_shopping_id", "froogle", "Google shopping")
+YOUTUBE_SEARCH = GoogleTrendsPullGpropData("google_trends_pull_gprop_youtube_search_id", "youtube", "YouTube search")
 GOOGLE_TRENDS_PULL_GPROPS = (WEB_SEARCH, IMAGE_SEARCH, NEWS_SEARCH, GOOGLE_SHOPPING, YOUTUBE_SEARCH)
 
 

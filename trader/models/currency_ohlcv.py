@@ -18,9 +18,9 @@ class CurrencyOHLCVPull(Base):
     base_currency_id = Column(Integer, ForeignKey("currency.id"), nullable=False)
     quote_currency_id = Column(Integer, ForeignKey("currency.id"), nullable=False)
     timeframe_id = Column(Integer, ForeignKey("timeframe.id"), nullable=False)
-    from_inclusive = Column(DateTime, nullable=False)
-    to_exclusive = Column(DateTime, nullable=True)
-    date_created = Column(DateTime, nullable=False, server_default=func.now())
+    from_inclusive = Column(DateTime(timezone=True), nullable=False)
+    to_exclusive = Column(DateTime(timezone=True), nullable=True)
+    date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     base_currency = relationship(
         "Currency", lazy=False, backref=backref(f"base_{__tablename__}s", lazy=True), foreign_keys=[base_currency_id]
@@ -36,7 +36,7 @@ class CurrencyOHLCV(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     currency_ohlcv_pull_id = Column(Integer, ForeignKey("currency_ohlcv_pull.id"), nullable=False)
-    data_date = Column(DateTime, nullable=False)
+    data_date = Column(DateTime(timezone=True), nullable=False)
     open = Column(Numeric(33, 15), nullable=False)
     high = Column(Numeric(33, 15), nullable=False)
     low = Column(Numeric(33, 15), nullable=False)

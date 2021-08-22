@@ -15,4 +15,4 @@ class Timeframe(Base):
     base_label = Column(String(5), nullable=True, unique=True)
     seconds_length = Column(Integer, nullable=True)
     ccxt_label = Column(String(3), nullable=True, unique=True)
-    date_created = Column(DateTime, nullable=False, server_default=func.now())
+    date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
