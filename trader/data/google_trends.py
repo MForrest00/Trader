@@ -1,8 +1,8 @@
 from datetime import datetime, timedelta, timezone
-from trader.connections.database import DBSession
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 from dateutil.relativedelta import relativedelta
 from trader.connections.cache import cache
+from trader.connections.database import DBSession
 from trader.connections.trend_request import trend_request
 from trader.data.base import EIGHT_MINUTE, GOOGLE_TRENDS, ONE_DAY, ONE_MINUTE, ONE_MONTH, WEB_SEARCH
 from trader.models.google_trends import (
@@ -128,6 +128,7 @@ def update_interest_over_time_from_google_trends(
                 session.add(keyword)
                 session.flush()
             keyword_to_google_trends_keyword[keyword_string] = keyword
+        keyword_id_set = set(k.id for k in keyword_to_google_trends_keyword.values())
         google_trends_pull = GoogleTrendsPull(
             source_id=google_trends_id,
             google_trends_pull_geo_id=geo.id,
@@ -150,10 +151,26 @@ def update_interest_over_time_from_google_trends(
                 timeframe = session.query(Timeframe).filter_by(base_label=timeframe_base_label).one_or_none()
                 for from_val, to_val in date_ranges:
                     from_string, to_string = date_range_to_timeframe_string(from_val, to_val)
-                    timeframe_string = from_string if to_string is None else f"{from_string} {to_string}"
-                    data = retrieve_interest_over_time_from_google_trends(keywords, geo, gprop, timeframe_string)
-                    if timeframe_base_label[-1] == "m":
-                        data = data[:-1]
+                    competing_google_trends_pull_steps = (
+                        session.query(GoogleTrendsPullStep)
+                        .join(GoogleTrendsPull)
+                        .filter(
+                            GoogleTrendsPullStep.timeframe_id == timeframe.id,
+                            GoogleTrendsPullStep.from_string == from_string,
+                            GoogleTrendsPullStep.to_string == to_string,
+                            GoogleTrendsPullStep.is_current.is_(True),
+                            GoogleTrendsPull.google_trends_pull_geo_id == geo.id,
+                            GoogleTrendsPull.google_trends_pull_gprop_id == gprop.id,
+                        )
+                    )
+                    for competing_google_trends_pull_step in competing_google_trends_pull_steps:
+                        google_trends_pull = competing_google_trends_pull_step.google_trends_pull
+                        google_trends_pull_keywords = google_trends_pull.google_trends_pull_google_trends_keywords
+                        google_trends_pull_keyword_ids = set(
+                            k.google_trends_keyword.id for k in google_trends_pull_keywords
+                        )
+                        if google_trends_pull_keyword_ids == keyword_id_set:
+                            competing_google_trends_pull_step.is_current = False
                     google_trends_pull_step = GoogleTrendsPullStep(
                         google_trends_pull_id=google_trends_pull.id,
                         timeframe_id=timeframe.id,
@@ -162,6 +179,10 @@ def update_interest_over_time_from_google_trends(
                     )
                     session.add(google_trends_pull_step)
                     session.flush()
+                    timeframe_string = from_string if to_string is None else f"{from_string} {to_string}"
+                    data = retrieve_interest_over_time_from_google_trends(keywords, geo, gprop, timeframe_string)
+                    if timeframe_base_label[-1] == "m":
+                        data = data[:-1]
                     for record in data:
                         data_date = record.pop("time")
                         is_partial = bool(record.pop("isPartial"))

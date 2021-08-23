@@ -61,6 +61,7 @@ class GoogleTrendsPullStep(Base):
     timeframe_id = Column(Integer, ForeignKey("timeframe.id"), nullable=False)
     from_string = Column(String(13), nullable=False)
     to_string = Column(String(13), nullable=True)
+    is_current = Column(Boolean, nullable=False, default=True)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     google_trends_data = relationship("GoogleTrends", lazy=True, backref=backref(__tablename__, lazy=False))
@@ -96,4 +97,3 @@ class GoogleTrends(Base):
     data_date = Column(DateTime(timezone=True), nullable=False)
     value = Column(Integer, nullable=False)
     is_partial = Column(Boolean, nullable=False, default=False)
-    is_current = Column(Boolean, nullable=False, default=True)
