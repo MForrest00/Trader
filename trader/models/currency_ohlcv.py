@@ -22,6 +22,7 @@ class CurrencyOHLCVPull(Base):
     to_exclusive = Column(DateTime(timezone=True), nullable=True)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
+    # Many to one
     base_currency = relationship(
         "Currency", lazy=False, backref=backref(f"base_{__tablename__}s", lazy=True), foreign_keys=[base_currency_id]
     )
@@ -42,3 +43,5 @@ class CurrencyOHLCV(Base):
     low = Column(Numeric(33, 15), nullable=False)
     close = Column(Numeric(33, 15), nullable=False)
     volume = Column(Numeric(33, 15), nullable=False)
+    date_high = Column(DateTime(timezone=True), nullable=True)
+    date_low = Column(DateTime(timezone=True), nullable=True)

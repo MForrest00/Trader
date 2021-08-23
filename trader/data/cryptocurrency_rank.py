@@ -206,7 +206,7 @@ def retrieve_historical_cryptocurrency_ranks_from_coin_market_cap(
                 currency_source_slug=currency["slug"],
                 currency_source_date_added=iso_time_string_to_datetime(currency["date_added"]),
                 currency_source_date_last_updated=iso_time_string_to_datetime(currency["last_updated"]),
-                currency_tags=currency["tags"],
+                currency_tags=[t.lower() for t in currency["tags"]],
                 currency_platform=currency_platform,
                 usd_market_cap=currency["quote"]["USD"]["market_cap"]
                 if currency["quote"]["USD"]["market_cap"] is not None
@@ -250,7 +250,7 @@ def retrieve_current_cryptocurrency_ranks_from_coin_market_cap() -> List[Cryptoc
                 currency_source_slug=currency["slug"],
                 currency_source_date_added=iso_time_string_to_datetime(currency["dateAdded"]),
                 currency_source_date_last_updated=iso_time_string_to_datetime(currency["lastUpdated"]),
-                currency_tags=currency["tags"],
+                currency_tags=[t.lower() for t in currency["tags"]],
                 currency_platform=currency_platform,
                 usd_market_cap=currency["quotes"][0]["marketCap"],
                 usd_price=currency["quotes"][0]["price"],

@@ -21,6 +21,7 @@ class CryptocurrencyRankSnapshot(Base):
     is_historical = Column(Boolean, nullable=False)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
+    # One to many
     cryptocurrency_ranks = relationship("CryptocurrencyRank", lazy=True, backref=backref(__tablename__, lazy=False))
 
 

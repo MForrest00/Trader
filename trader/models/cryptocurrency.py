@@ -12,6 +12,23 @@ from sqlalchemy.sql import func
 from trader.models.base import Base
 
 
+class CryptocurrencyPlatform(Base):
+    __tablename__ = "cryptocurrency_platform"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
+    name = Column(String(250), nullable=False)
+    symbol = Column(String(25), nullable=False)
+    source_entity_id = Column(Integer, nullable=True)
+    source_slug = Column(String(50), nullable=True)
+    date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+    # One to many
+    cryptocurrencies = relationship("Cryptocurrency", lazy=True, backref=backref("cryptocurrency_platform", lazy=True))
+
+    __table_args__ = (UniqueConstraint("name", "symbol"),)
+
+
 class Cryptocurrency(Base):
     __tablename__ = "cryptocurrency"
 
@@ -24,20 +41,5 @@ class Cryptocurrency(Base):
     source_date_last_updated = Column(DateTime(timezone=True), nullable=True)
     cryptocurrency_platform_id = Column(Integer, ForeignKey("cryptocurrency_platform.id"), nullable=True)
 
+    # One to many
     cryptocurrency_ranks = relationship("CryptocurrencyRank", lazy=True, backref=backref(__tablename__, lazy=False))
-
-
-class CryptocurrencyPlatform(Base):
-    __tablename__ = "cryptocurrency_platform"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
-    name = Column(String(250), nullable=False)
-    symbol = Column(String(25), nullable=False)
-    source_entity_id = Column(Integer, nullable=True)
-    source_slug = Column(String(50), nullable=True)
-    date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
-
-    cryptocurrencies = relationship("Cryptocurrency", lazy=True, backref=backref("cryptocurrency_platform", lazy=True))
-
-    __table_args__ = (UniqueConstraint("name", "symbol"),)

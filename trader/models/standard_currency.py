@@ -16,6 +16,7 @@ class StandardCurrency(Base):
     iso_numeric_code = Column(String(3), nullable=False, unique=True)
     minor_unit = Column(Integer, nullable=True)
 
+    # Many to many
     cryptocurrency_exchanges = relationship(
         "CryptocurrencyExchangeStandardCurrency", lazy=True, back_populates=__tablename__
     )

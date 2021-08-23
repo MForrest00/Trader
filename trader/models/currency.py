@@ -18,6 +18,7 @@ class CurrencyType(Base):
     description = Column(String(250), nullable=False, unique=True)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
+    # One to many
     currencies = relationship("Currency", lazy=True, backref=backref(__tablename__, lazy=False))
 
 
@@ -31,6 +32,7 @@ class Currency(Base):
     currency_type_id = Column(Integer, ForeignKey("currency_type.id"), nullable=False)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
+    # One to one
     cryptocurrency = relationship(
         "Cryptocurrency", lazy=False, backref=backref(__tablename__, lazy=False), uselist=False
     )
@@ -38,6 +40,7 @@ class Currency(Base):
         "StandardCurrency", lazy=False, backref=backref(__tablename__, lazy=False), uselist=False
     )
 
+    # Many to many
     currency_tags = relationship("CurrencyCurrencyTag", lazy=True, back_populates=__tablename__)
     countries = relationship("CountryCurrency", lazy=True, back_populates=__tablename__)
 
@@ -52,6 +55,7 @@ class CurrencyTag(Base):
     tag = Column(String(250), nullable=False, unique=True)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
+    # Many to many
     currencies = relationship("CurrencyCurrencyTag", lazy=True, back_populates=__tablename__)
 
 
@@ -64,6 +68,7 @@ class CurrencyCurrencyTag(Base):
     currency_tag_id = Column(Integer, ForeignKey("currency_tag.id"), nullable=False)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
+    # Many to many
     currency = relationship("Currency", lazy=False, back_populates="currency_tags")
     currency_tag = relationship("CurrencyTag", lazy=False, back_populates="currencies")
 

@@ -18,6 +18,7 @@ class CryptocurrencyExchangeRankPull(Base):
     source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
+    # One to many
     cryptocurrency_exchange_ranks = relationship(
         "CryptocurrencyExchangeRank", lazy=True, backref=backref(__tablename__, lazy=False)
     )

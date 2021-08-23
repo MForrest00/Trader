@@ -21,9 +21,18 @@ class CryptocurrencyExchange(Base):
     source_date_launched = Column(DateTime(timezone=True), nullable=True)
     source_date_last_updated = Column(DateTime(timezone=True), nullable=True)
 
+    # One to many
+    cryptocurrency_exchange_markets = relationship(
+        "CryptocurrencyExchangeMarket", lazy=True, backref=backref(__tablename__, lazy=False)
+    )
+    cryptocurrency_exchange_market_stats_pulls = relationship(
+        "CryptocurrencyExchangeMarketStatsPull", lazy=True, backref=backref(__tablename__, lazy=False)
+    )
     cryptocurrency_exchange_ranks = relationship(
         "CryptocurrencyExchangeRank", lazy=True, backref=backref(__tablename__, lazy=False)
     )
+
+    # Many to many
     countries = relationship("CountryCryptocurrencyExchange", lazy=True, back_populates=__tablename__)
     standard_currencies = relationship(
         "CryptocurrencyExchangeStandardCurrency", lazy=True, back_populates=__tablename__
@@ -39,6 +48,7 @@ class CryptocurrencyExchangeStandardCurrency(Base):
     standard_currency_id = Column(Integer, ForeignKey("standard_currency.id"), nullable=False)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
+    # Many to many
     cryptocurrency_exchange = relationship("CryptocurrencyExchange", lazy=False, back_populates="standard_currencies")
     standard_currency = relationship("StandardCurrency", lazy=False, back_populates="cryptocurrency_exchanges")
 

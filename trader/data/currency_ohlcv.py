@@ -1,11 +1,17 @@
 from datetime import datetime, timezone
 from typing import Dict, List, Optional, Union
 from ccxt.base.exchange import Exchange
+import requests
+from trader.connections.cache import cache
+from trader.connections.database import DBSession
+from trader.data.base import COIN_MARKET_CAP, ONE_DAY, STANDARD_CURRENCY
 from trader.models.currency import Currency
+from trader.models.currency_ohlcv import CurrencyOHLCV, CurrencyOHLCVPull
 from trader.models.timeframe import Timeframe
 from trader.utilities.functions import (
     clean_range_cap,
     datetime_to_ms_timestamp,
+    iso_time_string_to_datetime,
     ms_timestamp_to_datetime,
     TIMEFRAME_UNIT_TO_INCREMENT_FUNCTION,
 )
@@ -55,7 +61,7 @@ def retrieve_ohlcv_from_exchange_using_ccxt(
                     break
                 output.append(
                     {
-                        "time": ms_timestamp_to_datetime(record[0]),
+                        "data_date": ms_timestamp_to_datetime(record[0]),
                         "open": record[1],
                         "high": record[2],
                         "low": record[3],
@@ -70,3 +76,62 @@ def retrieve_ohlcv_from_exchange_using_ccxt(
                 continue
             break
     return output
+
+
+def retrieve_daily_usd_ohlcv_from_coin_market_cap(
+    base_currency: Currency,
+    from_inclusive: datetime,
+    to_exclusive: Optional[datetime],
+) -> List[Dict[str, Union[datetime, float]]]:
+    from_timestamp = int(clean_range_cap(from_inclusive, "d").timestamp())
+    to_exclusive = to_exclusive or clean_range_cap(datetime.now(timezone.utc), "d")
+    to_timestamp = int(clean_range_cap(to_exclusive, "d").timestamp())
+    response = requests.get(
+        f"https://api.coinmarketcap.com/data-api/v3/cryptocurrency/historical?id={base_currency.source_id}&"
+        + f"convertId=2781&timeStart={from_timestamp}&timeEnd={to_timestamp}"
+    )
+    data = response.json()
+    output: List[Dict[str, Union[datetime, float]]] = []
+    for record in data["data"]["quotes"]:
+        output.append(
+            {
+                "data_date": iso_time_string_to_datetime(record["timeOpen"]),
+                "open": record["quote"]["open"],
+                "high": record["quote"]["high"],
+                "low": record["quote"]["low"],
+                "close": record["quote"]["close"],
+                "volume": record["quote"]["volume"],
+                "date_high": iso_time_string_to_datetime(record["timeOpen"]),
+                "date_low": iso_time_string_to_datetime(record["timeLow"]),
+            }
+        )
+    return output
+
+
+def update_daily_usd_ohlcv_from_coin_market_cap(
+    base_currency: Currency, from_inclusive: datetime, to_exclusive: Optional[datetime] = None
+) -> None:
+    coin_market_cap_id = int(cache.get(COIN_MARKET_CAP.cache_key).decode())
+    standard_currency_id = int(cache.get(STANDARD_CURRENCY.cache_key).decode())
+    one_day_id = int(cache.get(ONE_DAY.cache_key).decode())
+    data = retrieve_daily_usd_ohlcv_from_coin_market_cap(base_currency, from_inclusive, to_exclusive)
+    if data:
+        with DBSession() as session:
+            us_dollar_id = session.query(Currency).filter_by(symbol="USD", currency_type_id=standard_currency_id).one()
+            currency_ohlcv_pull = CurrencyOHLCVPull(
+                source_id=coin_market_cap_id,
+                base_currency_id=base_currency.id,
+                quote_currency_id=us_dollar_id,
+                timeframe_id=one_day_id,
+                from_inclusive=from_inclusive,
+                to_exclusive=to_exclusive,
+            )
+            session.add(currency_ohlcv_pull)
+            session.flush()
+            for record in data:
+                currency_ohlcv = CurrencyOHLCV(
+                    currency_ohlcv_pull_id=currency_ohlcv_pull.id,
+                    **record,
+                )
+                session.add(currency_ohlcv)
+            session.commit()
