@@ -85,6 +85,7 @@ def update_cryptocurrency_exchange_ranks_from_coin_market_cap() -> None:
             elif cryptocurrency_exchange.source_date_last_updated < source_date_last_updated:
                 cryptocurrency_exchange.update(
                     {
+                        "source_id": source.id,
                         "cryptocurrency_exchange_type_id": cryptocurrency_exchange_type_id,
                         "source_entity_id": source_entity_id,
                         "source_slug": source_slug,

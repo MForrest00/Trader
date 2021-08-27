@@ -37,13 +37,13 @@ def update_standard_currencies_from_iso() -> None:
                 session.add(currency)
                 session.flush()
             elif currency.currency_type_id == unknown_currency_id:
-                if currency.name == name:
-                    currency.update(
-                        {
-                            "source_id": iso_id,
-                            "currency_type_id": standard_currency_id,
-                        }
-                    )
+                currency.update(
+                    {
+                        "source_id": iso_id,
+                        "name": name,
+                        "currency_type_id": standard_currency_id,
+                    }
+                )
             else:
                 for item in currency.countries:
                     if item.country.name not in country_names:

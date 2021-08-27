@@ -71,4 +71,11 @@ class CryptocurrencyExchangeMarket(Base):
         "Currency", lazy=False, backref=backref(f"quote_{__tablename__}s", lazy=True), foreign_keys=[quote_currency_id]
     )
 
-    __table_args__ = (UniqueConstraint("cryptocurrency_exchange_id", "base_currency_id", "quote_currency_id"),)
+    __table_args__ = (
+        UniqueConstraint(
+            "cryptocurrency_exchange_id",
+            "cryptocurrency_exchange_market_category_id",
+            "base_currency_id",
+            "quote_currency_id",
+        ),
+    )

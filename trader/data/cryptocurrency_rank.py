@@ -99,13 +99,13 @@ def insert_cryptocurrency_ranks(
             session.add(currency)
             session.flush()
         elif currency.currency_type_id == unknown_currency_id:
-            if currency.name == record.currency_name:
-                currency.update(
-                    {
-                        "source_id": source_id,
-                        "currency_type_id": cryptocurrency_id,
-                    }
-                )
+            currency.update(
+                {
+                    "source_id": source_id,
+                    "name": record.currency_name,
+                    "currency_type_id": cryptocurrency_id,
+                }
+            )
         cryptocurrency = currency.cryptocurrency
         if not cryptocurrency:
             cryptocurrency = Cryptocurrency(
