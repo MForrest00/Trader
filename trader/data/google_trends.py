@@ -109,9 +109,9 @@ def update_interest_over_time_from_google_trends(
     keywords: Sequence[str],
     geo: GoogleTrendsPullGeo,
     gprop: GoogleTrendsPullGprop,
-    from_inclusive: Optional[datetime],
-    to_exclusive: Optional[datetime],
     timeframe: Timeframe,
+    from_inclusive: Optional[datetime],
+    to_exclusive: Optional[datetime] = None,
 ) -> None:
     google_trends_id = int(cache.get(GOOGLE_TRENDS.cache_key).decode())
     try:

@@ -4,7 +4,7 @@ from trader.models.country import *
 from trader.models.cryptocurrency import *
 from trader.models.cryptocurrency_exchange import *
 from trader.models.cryptocurrency_exchange_market import *
-from trader.models.cryptocurrency_exchange_market_stats import *
+from trader.models.cryptocurrency_exchange_market_stat import *
 from trader.models.cryptocurrency_exchange_rank import *
 from trader.models.cryptocurrency_rank import *
 from trader.models.currency import *

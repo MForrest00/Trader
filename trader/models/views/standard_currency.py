@@ -21,13 +21,10 @@ STANDARD_CURRENCY_SQL = dedent(
         INNER JOIN public.{standard_currency_table} sc ON
             c.id = sc.currency_id
     WHERE
-        ct.id = :standard_currency_currency_type_id
+        ct.description = 'Standard currency'
     """.format(
         currency_table=Currency.__tablename__,
         currency_type_table=CurrencyType.__tablename__,
         standard_currency_table=StandardCurrency.__tablename__,
     )
 ).strip()
-
-
-STANDARD_CURRENCY_PARAMS = {"standard_currency_currency_type_id": int(cache.get(STANDARD_CURRENCY.cache_key).decode())}

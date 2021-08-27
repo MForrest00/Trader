@@ -82,7 +82,7 @@ def retrieve_ohlcv_from_exchange_using_ccxt(
 def retrieve_daily_usd_ohlcv_from_coin_market_cap(
     base_currency: Currency,
     from_inclusive: datetime,
-    to_exclusive: Optional[datetime],
+    to_exclusive: Optional[datetime] = None,
 ) -> List[Dict[str, Union[datetime, float]]]:
     if base_currency.source_id is None:
         raise ValueError("Unable to pull data for currency {base_currency.name}")
@@ -124,11 +124,11 @@ def update_daily_usd_ohlcv_from_coin_market_cap(
     one_day_id = int(cache.get(ONE_DAY.cache_key).decode())
     data = retrieve_daily_usd_ohlcv_from_coin_market_cap(base_currency, from_inclusive, to_exclusive)
     with DBSession() as session:
-        us_dollar_id = session.query(Currency).filter_by(symbol="USD", currency_type_id=standard_currency_id).one()
+        us_dollar = session.query(Currency).filter_by(symbol="USD", currency_type_id=standard_currency_id).one()
         currency_ohlcv_pull = CurrencyOHLCVPull(
             source_id=coin_market_cap_id,
             base_currency_id=base_currency.id,
-            quote_currency_id=us_dollar_id,
+            quote_currency_id=us_dollar.id,
             timeframe_id=one_day_id,
             from_inclusive=from_inclusive,
             to_exclusive=to_exclusive,

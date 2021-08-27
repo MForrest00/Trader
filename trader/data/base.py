@@ -27,7 +27,7 @@ def initialize_currency_types(session: Session) -> None:
         if not instance:
             instance = CurrencyType(description=currency_type.description)
             session.add(instance)
-            session.commit()
+            session.flush()
         cache.set(currency_type.cache_key, instance.id)
 
 
@@ -49,7 +49,7 @@ def initialize_google_trends_pull_geos(session: Session) -> None:
         if not instance:
             instance = GoogleTrendsPullGeo(code=google_trends_pull_geo.code, name=google_trends_pull_geo.name)
             session.add(instance)
-            session.commit()
+            session.flush()
         cache.set(google_trends_pull_geo.cache_key, instance.id)
 
 
@@ -74,7 +74,7 @@ def initialize_google_trends_pull_gprops(session: Session) -> None:
         if not instance:
             instance = GoogleTrendsPullGprop(code=google_trends_pull_gprop.code, name=google_trends_pull_gprop.name)
             session.add(instance)
-            session.commit()
+            session.flush()
         cache.set(google_trends_pull_gprop.cache_key, instance.id)
 
 
@@ -97,7 +97,7 @@ def initialize_source_types(session: Session) -> None:
         if not instance:
             instance = SourceType(description=source_type.description)
             session.add(instance)
-            session.commit()
+            session.flush()
         cache.set(source_type.cache_key, instance.id)
 
 
@@ -131,7 +131,7 @@ def initialize_sources(session: Session) -> None:
                 url=source.url,
             )
             session.add(instance)
-            session.commit()
+            session.flush()
         cache.set(source.cache_key, instance.id)
 
 
@@ -164,7 +164,7 @@ def initialize_timeframes(session: Session) -> None:
                 ccxt_label=timeframe.ccxt_label,
             )
             session.add(instance)
-            session.commit()
+            session.flush()
         cache.set(timeframe.cache_key, instance.id)
 
 
@@ -176,3 +176,4 @@ def initialize_base_data() -> None:
         initialize_source_types(session)
         initialize_sources(session)
         initialize_timeframes(session)
+        session.commit()

@@ -7,7 +7,7 @@ from trader.models.currency import Currency, CurrencyType
 
 CRYPTOCURRENCY_SQL = dedent(
     """
-    CREATE OR REPLACE VIEW public.crypotocurrency_view AS
+    CREATE OR REPLACE VIEW public.cryptocurrency_view AS
     SELECT
         c1.id AS currency_id
         ,c1.name
@@ -31,7 +31,7 @@ CRYPTOCURRENCY_SQL = dedent(
         LEFT JOIN public.{cryptocurrency_platform_table} cp ON
             c2.cryptocurrency_platform_id = cp.id
     WHERE
-        ct.id = :cryptocurrency_currency_type_id
+        ct.description = 'Cryptocurrency'
     """.format(
         currency_table=Currency.__tablename__,
         currency_type_table=CurrencyType.__tablename__,
@@ -39,6 +39,3 @@ CRYPTOCURRENCY_SQL = dedent(
         cryptocurrency_platform_table=CryptocurrencyPlatform.__tablename__,
     )
 ).strip()
-
-
-CRYPTOCURRENCY_PARAMS = {"cryptocurrency_currency_type_id": int(cache.get(CRYPTOCURRENCY.cache_key).decode())}

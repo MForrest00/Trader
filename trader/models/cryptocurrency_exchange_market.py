@@ -21,7 +21,7 @@ class CryptocurrencyExchangeMarketCategory(Base):
 
     # One to many
     cryptocurrency_exchange_markets = relationship(
-        "CryptocurrencyExchangeMarkets", lazy=True, backref=backref(__tablename__, lazy=False)
+        "CryptocurrencyExchangeMarket", lazy=True, backref=backref(__tablename__, lazy=False)
     )
 
 
@@ -35,7 +35,7 @@ class CryptocurrencyExchangeMarketFeeType(Base):
 
     # One to many
     cryptocurrency_exchange_markets = relationship(
-        "CryptocurrencyExchangeMarkets", lazy=True, backref=backref(__tablename__, lazy=False)
+        "CryptocurrencyExchangeMarket", lazy=True, backref=backref(__tablename__, lazy=False)
     )
 
 
@@ -44,7 +44,7 @@ class CryptocurrencyExchangeMarket(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
-    cryptocurrency_exchange_id = Column(Integer, ForeignKey("crypotocurrency_exchange.id"), nullable=False)
+    cryptocurrency_exchange_id = Column(Integer, ForeignKey("cryptocurrency_exchange.id"), nullable=False)
     cryptocurrency_exchange_market_category_id = Column(
         Integer, ForeignKey("cryptocurrency_exchange_market_category.id"), nullable=False
     )
@@ -60,7 +60,7 @@ class CryptocurrencyExchangeMarket(Base):
 
     # One to many
     cryptocurrency_exchange_market_stats = relationship(
-        "CryptocurrencyExchangeMarketStats", lazy=True, backref=backref(__tablename__, lazy=False)
+        "CryptocurrencyExchangeMarketStat", lazy=True, backref=backref(__tablename__, lazy=False)
     )
 
     # Many to one

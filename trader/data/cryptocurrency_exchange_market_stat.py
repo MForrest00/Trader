@@ -18,7 +18,9 @@ from trader.models.cryptocurrency_exchange_market_stat import (
 from trader.utilities.functions import iso_time_string_to_datetime
 
 
-def update_cryptocurrency_exchange_ranks_from_coin_market_cap(cryptocurrency_exchange: CryptocurrencyExchange) -> None:
+def update_cryptocurrency_exchange_market_stats_from_coin_market_cap(
+    cryptocurrency_exchange: CryptocurrencyExchange,
+) -> None:
     if cryptocurrency_exchange.source_slug is None:
         raise ValueError("Unable to pull data for cryptocurrency exchange {cryptocurrency_exchange.source.name}")
     coin_market_cap_id = int(cache.get(COIN_MARKET_CAP.cache_key).decode())
@@ -190,8 +192,8 @@ def update_cryptocurrency_exchange_ranks_from_coin_market_cap(cryptocurrency_exc
                     usd_volume_24h=market_pair["volumeUsd"],
                     base_currency_volume_24h=market_pair["volumeBase"],
                     quote_currency_volume_24h=market_pair["volumeQuote"],
-                    usd_depth_negative_two=market_pair["depthUsdNegativeTwo"],
-                    usd_depth_positive_two=market_pair["depthUsdPositiveTwo"],
+                    usd_depth_negative_two=market_pair.get("depthUsdNegativeTwo"),
+                    usd_depth_positive_two=market_pair.get("depthUsdPositiveTwo"),
                     source_score=market_pair["marketScore"],
                     source_liquidity_score=market_pair["effectiveLiquidity"],
                     source_reputation=market_pair["marketReputation"],

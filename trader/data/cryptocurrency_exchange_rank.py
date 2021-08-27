@@ -1,7 +1,7 @@
 import json
+from typing import Dict
 from bs4 import BeautifulSoup
 import requests
-from typing import Dict
 from trader.connections.cache import cache
 from trader.connections.database import DBSession
 from trader.data.base import COIN_MARKET_CAP, CRYPTOCURRENCY_EXCHANGE

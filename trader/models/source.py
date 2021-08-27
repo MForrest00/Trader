@@ -55,8 +55,8 @@ class Source(Base):
     cryptocurrency_exchange_markets = relationship(
         "CryptocurrencyExchangeMarket", lazy=True, backref=backref(__tablename__, lazy=True)
     )
-    cryptocurrency_exchange_market_stats_pulls = relationship(
-        "CryptocurrencyExchangeMarketStatsPull", lazy=True, backref=backref(__tablename__, lazy=True)
+    cryptocurrency_exchange_market_stat_pulls = relationship(
+        "CryptocurrencyExchangeMarketStatPull", lazy=True, backref=backref(__tablename__, lazy=True)
     )
     cryptocurrency_exchange_rank_pulls = relationship(
         "CryptocurrencyExchangeRankPull", lazy=True, backref=backref(__tablename__, lazy=True)
