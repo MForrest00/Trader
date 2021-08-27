@@ -37,7 +37,7 @@ class CurrencyOHLCV(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     currency_ohlcv_pull_id = Column(Integer, ForeignKey("currency_ohlcv_pull.id"), nullable=False)
-    data_date = Column(DateTime(timezone=True), nullable=False)
+    date_open = Column(DateTime(timezone=True), nullable=False)
     open = Column(Numeric(33, 15), nullable=False)
     high = Column(Numeric(33, 15), nullable=False)
     low = Column(Numeric(33, 15), nullable=False)

@@ -15,13 +15,12 @@ update_current_cryptocurrency_ranks_data = JobData(
 
 
 @bind_self
-def update_current_cryptocurrency_ranks(self: Callable, job_data: JobData, iteration: int = 1) -> None:
+def update_current_cryptocurrency_ranks(self: Callable, iteration: int = 1) -> None:
     update_current_cryptocurrency_ranks_from_coin_market_cap()
-    job_data.target_queue.enqueue_at(
-        job_data.next_run(),
+    update_current_cryptocurrency_ranks_data.target_queue.enqueue_at(
+        update_current_cryptocurrency_ranks_data.next_run(),
         self,
-        job_id=f"{job_data.job_id}_{iteration}",
-        result_ttl=job_data.result_ttl,
-        args=(job_data,),
+        job_id=f"{update_current_cryptocurrency_ranks_data.job_id}_{iteration}",
+        result_ttl=update_current_cryptocurrency_ranks_data.result_ttl,
         kwargs={"iteration": iteration + 1},
     )

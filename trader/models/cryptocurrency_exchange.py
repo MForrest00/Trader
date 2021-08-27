@@ -11,11 +11,26 @@ from sqlalchemy.sql import func
 from trader.models.base import Base
 
 
+class CryptocurrencyExchangeType(Base):
+    __tablename__ = "cryptocurrency_exchange_type"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
+    description = Column(String(250), nullable=False, unique=True)
+    date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+    # One to many
+    cryptocurrency_exchanges = relationship(
+        "CryptocurrencyExchange", lazy=True, backref=backref(__tablename__, lazy=False)
+    )
+
+
 class CryptocurrencyExchange(Base):
     __tablename__ = "cryptocurrency_exchange"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     source_id = Column(Integer, ForeignKey("source.id"), nullable=False, unique=True)
+    cryptocurrency_exchange_type_id = Column(Integer, ForeignKey("cryptocurrency_exchange_type.id"), nullable=True)
     source_entity_id = Column(Integer, nullable=True)
     source_slug = Column(String(50), nullable=True)
     source_date_launched = Column(DateTime(timezone=True), nullable=True)

@@ -60,7 +60,7 @@ def check_jobs() -> None:
                     job.function,
                     job_id=f"{job.job_data.job_id}_0",
                     result_ttl=job.job_data.result_ttl,
-                    args=(job.job_data, *job.args),
+                    args=job.args,
                     kwargs=job.kwargs,
                 )
             else:
@@ -69,6 +69,6 @@ def check_jobs() -> None:
                     job.function,
                     job_id=f"{job.job_data.job_id}_0",
                     result_ttl=job.job_data.result_ttl,
-                    args=(job.job_data, *job.args),
+                    args=job.args,
                     kwargs=job.kwargs,
                 )

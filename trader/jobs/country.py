@@ -14,13 +14,12 @@ update_countries_data = JobData(
 
 
 @bind_self
-def update_countries(self: Callable, job_data: JobData, iteration: int = 1) -> None:
+def update_countries(self: Callable, iteration: int = 1) -> None:
     update_countries_from_iso()
-    job_data.target_queue.enqueue_at(
-        job_data.next_run(),
+    update_countries_data.target_queue.enqueue_at(
+        update_countries_data.next_run(),
         self,
-        job_id=f"{job_data.job_id}_{iteration}",
-        result_ttl=job_data.result_ttl,
-        args=(job_data,),
+        job_id=f"{update_countries_data.job_id}_{iteration}",
+        result_ttl=update_countries_data.result_ttl,
         kwargs={"iteration": iteration + 1},
     )

@@ -14,13 +14,12 @@ update_standard_currencies_data = JobData(
 
 
 @bind_self
-def update_standard_currencies(self: Callable, job_data: JobData, iteration: int = 1) -> None:
+def update_standard_currencies(self: Callable, iteration: int = 1) -> None:
     update_standard_currencies_from_iso()
-    job_data.target_queue.enqueue_at(
-        job_data.next_run(),
+    update_standard_currencies_data.target_queue.enqueue_at(
+        update_standard_currencies_data.next_run(),
         self,
-        job_id=f"{job_data.job_id}_{iteration}",
-        result_ttl=job_data.result_ttl,
-        args=(job_data,),
+        job_id=f"{update_standard_currencies_data.job_id}_{iteration}",
+        result_ttl=update_standard_currencies_data.result_ttl,
         kwargs={"iteration": iteration + 1},
     )

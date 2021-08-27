@@ -20,7 +20,7 @@ def update_standard_currencies_from_iso() -> None:
         for table_body_row in table_body_rows:
             table_data = table_body_row.find_all("td")
             name = table_data[3].find_all(text=True)[0]
-            symbol = table_data[0].text
+            symbol = table_data[0].find_all(text=True)[0]
             iso_numeric_code = table_data[1].text
             minor_unit = table_data[2].text if table_data[2].text.isnumeric() else None
             country_names = {country_anchor.text for country_anchor in table_data[4].find_all("a")}
@@ -37,13 +37,13 @@ def update_standard_currencies_from_iso() -> None:
                 session.add(currency)
                 session.flush()
             elif currency.currency_type_id == unknown_currency_id:
-                currency.update(
-                    {
-                        "source_id": iso_id,
-                        "name": name,
-                        "currency_type_id": standard_currency_id,
-                    }
-                )
+                if currency.name == name:
+                    currency.update(
+                        {
+                            "source_id": iso_id,
+                            "currency_type_id": standard_currency_id,
+                        }
+                    )
             else:
                 for item in currency.countries:
                     if item.country.name not in country_names:

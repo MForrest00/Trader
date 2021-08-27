@@ -208,4 +208,4 @@ def update_interest_over_time_from_google_trends(
                                 is_partial=is_partial,
                             )
                             session.add(google_trends)
-                    session.commit()
+        session.commit()

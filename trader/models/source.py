@@ -46,6 +46,12 @@ class Source(Base):
         "CountryCryptocurrencyExchange", lazy=True, backref=backref(__tablename__, lazy=True)
     )
     country_currencies = relationship("CountryCurrency", lazy=True, backref=backref(__tablename__, lazy=True))
+    cryptocurrency_exchange_market_category = relationship(
+        "CryptocurrencyExchangeMarketCategory", lazy=True, backref=backref(__tablename__, lazy=True)
+    )
+    cryptocurrency_exchange_market_fee_types = relationship(
+        "CryptocurrencyExchangeMarketFeeType", lazy=True, backref=backref(__tablename__, lazy=True)
+    )
     cryptocurrency_exchange_markets = relationship(
         "CryptocurrencyExchangeMarket", lazy=True, backref=backref(__tablename__, lazy=True)
     )
@@ -54,6 +60,9 @@ class Source(Base):
     )
     cryptocurrency_exchange_rank_pulls = relationship(
         "CryptocurrencyExchangeRankPull", lazy=True, backref=backref(__tablename__, lazy=True)
+    )
+    cryptocurrency_exchange_types = relationship(
+        "CryptocurrencyExchangeType", lazy=True, backref=backref(__tablename__, lazy=True)
     )
     cryptocurrency_platforms = relationship(
         "CryptocurrencyPlatform", lazy=True, backref=backref(__tablename__, lazy=True)
