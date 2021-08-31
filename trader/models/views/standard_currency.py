@@ -1,6 +1,4 @@
 from textwrap import dedent
-from trader.connections.cache import cache
-from trader.data.base import STANDARD_CURRENCY
 from trader.models.currency import Currency, CurrencyType
 from trader.models.standard_currency import StandardCurrency
 

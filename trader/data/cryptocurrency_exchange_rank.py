@@ -83,16 +83,12 @@ def update_cryptocurrency_exchange_ranks_from_coin_market_cap() -> None:
                 session.add(cryptocurrency_exchange)
                 session.flush()
             elif cryptocurrency_exchange.source_date_last_updated < source_date_last_updated:
-                cryptocurrency_exchange.update(
-                    {
-                        "source_id": source.id,
-                        "cryptocurrency_exchange_type_id": cryptocurrency_exchange_type_id,
-                        "source_entity_id": source_entity_id,
-                        "source_slug": source_slug,
-                        "source_date_launched": source_date_launched,
-                        "source_date_last_updated": source_date_last_updated,
-                    }
-                )
+                cryptocurrency_exchange.source_id = source.id
+                cryptocurrency_exchange.cryptocurrency_exchange_type_id = cryptocurrency_exchange_type_id
+                cryptocurrency_exchange.source_entity_id = source_entity_id
+                cryptocurrency_exchange.source_slug = source_slug
+                cryptocurrency_exchange.source_date_launched = source_date_launched
+                cryptocurrency_exchange.source_date_last_updated = source_date_last_updated
                 for item in cryptocurrency_exchange.standard_currencies:
                     if item.standard_currency.currency.symbol not in standard_currency_symbols:
                         session.delete(item)

@@ -99,13 +99,9 @@ def insert_cryptocurrency_ranks(
             session.add(currency)
             session.flush()
         elif currency.currency_type_id == unknown_currency_id:
-            currency.update(
-                {
-                    "source_id": source_id,
-                    "name": record.currency_name,
-                    "currency_type_id": cryptocurrency_id,
-                }
-            )
+            currency.source_id = source_id
+            currency.name = record.currency_name
+            currency.currency_type_id = cryptocurrency_id
         cryptocurrency = currency.cryptocurrency
         if not cryptocurrency:
             cryptocurrency = Cryptocurrency(
@@ -120,16 +116,12 @@ def insert_cryptocurrency_ranks(
             session.add(cryptocurrency)
             session.flush()
         elif cryptocurrency.source_date_last_updated < record.currency_source_date_last_updated:
-            cryptocurrency.update(
-                {
-                    "max_supply": record.currency_max_supply,
-                    "source_entity_id": record.currency_source_entity_id,
-                    "source_slug": record.currency_source_slug,
-                    "source_date_added": record.currency_source_date_added,
-                    "source_date_last_updated": record.currency_source_date_last_updated,
-                    "cryptocurrency_platform_id": cryptocurrency_platform_id,
-                }
-            )
+            cryptocurrency.max_supply = record.currency_max_supply
+            cryptocurrency.source_entity_id = record.currency_source_entity_id
+            cryptocurrency.source_slug = record.currency_source_slug
+            cryptocurrency.source_date_added = record.currency_source_date_added
+            cryptocurrency.source_date_last_updated = record.currency_source_date_last_updated
+            cryptocurrency.cryptocurrency_platform_id = cryptocurrency_platform_id
             for item in currency.currency_tags:
                 if item.currency_tag.tag not in record.currency_tags:
                     session.delete(item)

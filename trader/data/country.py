@@ -34,12 +34,8 @@ def update_countries_from_iso() -> None:
                 )
                 session.add(country)
             else:
-                country.update(
-                    {
-                        "name": name,
-                        "official_name": official_name,
-                        "iso_alpha_2_code": iso_alpha_2_code,
-                        "iso_numeric_code": iso_numeric_code,
-                    }
-                )
+                country.name = name
+                country.official_name = official_name
+                country.iso_alpha_2_code = iso_alpha_2_code
+                country.iso_numeric_code = iso_numeric_code
         session.commit()

@@ -114,10 +114,13 @@ ISO = SourceData("source_iso_id", None, "ISO", MISCELLANEOUS_DATA, url="https://
 COIN_MARKET_CAP = SourceData(
     "source_coin_market_cap_id", None, "CoinMarketCap", CRYPTOCURRENCY_MARKET_DATA, url="https://coinmarketcap.com/"
 )
+COIN_GECKO = SourceData(
+    "source_coin_gecko_id", None, "CoinGecko", CRYPTOCURRENCY_MARKET_DATA, url="https://www.coingecko.com/"
+)
 GOOGLE_TRENDS = SourceData(
     "source_google_trends_id", None, "Google Trends", SEARCH_DATA, url="https://trends.google.com/"
 )
-SOURCES = (ISO, COIN_MARKET_CAP, GOOGLE_TRENDS)
+SOURCES = (ISO, COIN_MARKET_CAP, COIN_GECKO, GOOGLE_TRENDS)
 
 
 def initialize_sources(session: Session) -> None:

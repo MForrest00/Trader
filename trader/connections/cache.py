@@ -1,5 +1,5 @@
 from redis import Redis
-from trader.utilities.environment import REDIS_DATABASE, REDIS_HOST, REDIS_PORT
+from trader.utilities.environment import CACHE_REDIS_DATABASE, CACHE_REDIS_HOST, CACHE_REDIS_PORT
 
 
-cache = Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DATABASE)
+cache = Redis(host=CACHE_REDIS_HOST, port=CACHE_REDIS_PORT, db=CACHE_REDIS_DATABASE)

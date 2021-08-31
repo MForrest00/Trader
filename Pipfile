@@ -6,6 +6,8 @@ name = "pypi"
 [packages]
 beautifulsoup4 = "==4.9.3"
 ccxt = "==1.54.72"
+celery = "==5.1.2"
+inflection = "==0.5.1"
 psycopg2-binary = "==2.9.1"
 python-dateutil = "==2.8.2"
 pytrends = "==4.7.3"

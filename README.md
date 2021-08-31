@@ -2,6 +2,9 @@
 
 ## Commands
 
++ Celery
+  + `pipenv run celery -A trader.tasks beat` - run the `celery beat` service (only have one instance running at a time)
+  + `pipenv run celery -A trader.tasks worker` - run a `celery` worker
 + Tooling
   + `pipenv run black trader tests scripts` - run `black` on `trader`, `tests`, and `scripts` directories
   + `pipenv run pylint trader tests scripts` - run `pylint` on `trader`, `tests`, and `scripts` directories

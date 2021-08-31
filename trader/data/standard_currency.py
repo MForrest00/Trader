@@ -37,13 +37,9 @@ def update_standard_currencies_from_iso() -> None:
                 session.add(currency)
                 session.flush()
             elif currency.currency_type_id == unknown_currency_id:
-                currency.update(
-                    {
-                        "source_id": iso_id,
-                        "name": name,
-                        "currency_type_id": standard_currency_id,
-                    }
-                )
+                currency.source_id = iso_id
+                currency.name = name
+                currency.currency_type_id = standard_currency_id
             else:
                 for item in currency.countries:
                     if item.country.name not in country_names:
@@ -55,12 +51,8 @@ def update_standard_currencies_from_iso() -> None:
                 )
                 session.add(standard_currency)
             else:
-                standard_currency.update(
-                    {
-                        "iso_numeric_code": iso_numeric_code,
-                        "minor_unit": minor_unit,
-                    }
-                )
+                standard_currency.iso_numeric_code = iso_numeric_code
+                standard_currency.minor_unit = minor_unit
             for country_name in country_names:
                 countries = session.query(Country).filter_by(name=country_name).all()
                 if len(countries) != 1:

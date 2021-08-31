@@ -20,21 +20,11 @@ services:
       - postgres_network
     ports:
       - "5432:5432"
-  selenium:
-    image: selenium/standalone-chrome:3.141.59
-    networks:
-      - selenium_network
-    ports:
-      - "4444:4444"
-    shm_size: 2gb
-
 
 networks:
   redis_network:
     driver: bridge
   postgres_network:
-    driver: bridge
-  selenium_network:
     driver: bridge
 volumes:
   redis_data:

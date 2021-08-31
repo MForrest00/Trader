@@ -1,6 +1,4 @@
 from textwrap import dedent
-from trader.connections.cache import cache
-from trader.data.base import CRYPTOCURRENCY
 from trader.models.cryptocurrency import Cryptocurrency, CryptocurrencyPlatform
 from trader.models.currency import Currency, CurrencyType
 

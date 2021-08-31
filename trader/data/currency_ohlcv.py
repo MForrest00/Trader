@@ -6,6 +6,7 @@ import requests
 from trader.connections.cache import cache
 from trader.connections.database import DBSession
 from trader.data.base import COIN_MARKET_CAP, ONE_DAY, STANDARD_CURRENCY
+from trader.models.cryptocurrency import Cryptocurrency
 from trader.models.currency import Currency
 from trader.models.currency_ohlcv import CurrencyOHLCV, CurrencyOHLCVPull
 from trader.models.timeframe import Timeframe
@@ -79,19 +80,19 @@ def retrieve_ohlcv_from_exchange_using_ccxt(
     return output
 
 
-def retrieve_daily_usd_ohlcv_from_coin_market_cap(
-    base_currency: Currency,
+def retrieve_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap(
+    base_currency: Cryptocurrency,
     from_inclusive: datetime,
     to_exclusive: Optional[datetime] = None,
 ) -> List[Dict[str, Union[datetime, float]]]:
-    if base_currency.source_id is None:
-        raise ValueError("Unable to pull data for currency {base_currency.name}")
+    if base_currency.source_entity_id is None:
+        raise ValueError("Unable to pull data for currency {base_currency.currency.name}")
     from_timestamp = int(clean_range_cap(from_inclusive, "d").timestamp())
     to_exclusive = min(to_exclusive, datetime.now(timezone.utc)) if to_exclusive else datetime.now(timezone.utc)
     to_timestamp = int(clean_range_cap(to_exclusive, "d").timestamp())
     query_string = urlencode(
         {
-            "id": base_currency.source_id,
+            "id": base_currency.source_entity_id,
             "convertId": 2781,
             "timeStart": from_timestamp,
             "timeEnd": to_timestamp,
@@ -116,18 +117,18 @@ def retrieve_daily_usd_ohlcv_from_coin_market_cap(
     return output
 
 
-def update_daily_usd_ohlcv_from_coin_market_cap(
-    base_currency: Currency, from_inclusive: datetime, to_exclusive: Optional[datetime] = None
+def update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap(
+    base_currency: Cryptocurrency, from_inclusive: datetime, to_exclusive: Optional[datetime] = None
 ) -> None:
     coin_market_cap_id = int(cache.get(COIN_MARKET_CAP.cache_key).decode())
     standard_currency_id = int(cache.get(STANDARD_CURRENCY.cache_key).decode())
     one_day_id = int(cache.get(ONE_DAY.cache_key).decode())
-    data = retrieve_daily_usd_ohlcv_from_coin_market_cap(base_currency, from_inclusive, to_exclusive)
+    data = retrieve_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap(base_currency, from_inclusive, to_exclusive)
     with DBSession() as session:
         us_dollar = session.query(Currency).filter_by(symbol="USD", currency_type_id=standard_currency_id).one()
         currency_ohlcv_pull = CurrencyOHLCVPull(
             source_id=coin_market_cap_id,
-            base_currency_id=base_currency.id,
+            base_currency_id=base_currency.currency.id,
             quote_currency_id=us_dollar.id,
             timeframe_id=one_day_id,
             from_inclusive=from_inclusive,

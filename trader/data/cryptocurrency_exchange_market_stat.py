@@ -176,14 +176,14 @@ def update_cryptocurrency_exchange_market_stats_from_coin_market_cap(
                     cryptocurrency_exchange_market.source_date_last_updated
                     < cryptocurrency_exchange_source_date_last_updated
                 ):
-                    cryptocurrency_exchange_market.update(
-                        {
-                            "source_id": coin_market_cap_id,
-                            "cryptocurrency_exchange_market_fee_type_id": cryptocurrency_exchange_market_fee_type.id,
-                            "market_url": cryptocurrency_exchange_market_url,
-                            "source_entity_id": cryptocurrency_exchange_market_source_entity_id,
-                            "source_date_last_updated": cryptocurrency_exchange_source_date_last_updated,
-                        }
+                    cryptocurrency_exchange_market.source_id = coin_market_cap_id
+                    cryptocurrency_exchange_market.cryptocurrency_exchange_market_fee_type_id = (
+                        cryptocurrency_exchange_market_fee_type.id
+                    )
+                    cryptocurrency_exchange_market.market_url = cryptocurrency_exchange_market_url
+                    cryptocurrency_exchange_market.source_entity_id = cryptocurrency_exchange_market_source_entity_id
+                    cryptocurrency_exchange_market.source_date_last_updated = (
+                        cryptocurrency_exchange_source_date_last_updated
                     )
                 cryptocurrency_exchange_market_stat = CryptocurrencyExchangeMarketStat(
                     cryptocurrency_exchange_market_stat_pull_id=cryptocurrency_exchange_market_stat_pull.id,
