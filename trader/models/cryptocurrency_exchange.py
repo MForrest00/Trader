@@ -36,6 +36,11 @@ class CryptocurrencyExchange(Base):
     source_date_launched = Column(DateTime(timezone=True), nullable=True)
     source_date_last_updated = Column(DateTime(timezone=True), nullable=True)
 
+    # One to one
+    enabled_cryptocurrency_exchange = relationship(
+        "EnabledCryptocurrencyExchange", lazy=False, backref=backref(__tablename__, lazy=False), uselist=False
+    )
+
     # One to many
     cryptocurrency_exchange_markets = relationship(
         "CryptocurrencyExchangeMarket", lazy=True, backref=backref(__tablename__, lazy=False)

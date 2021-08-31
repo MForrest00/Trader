@@ -1,7 +1,6 @@
 from urllib.parse import urlencode
 from typing import Dict, Tuple
 import requests
-from trader.connections.cache import cache
 from trader.connections.database import DBSession
 from trader.data.base import COIN_MARKET_CAP, CRYPTOCURRENCY, STANDARD_CURRENCY, UNKNOWN_CURRENCY
 from trader.models.cryptocurrency_exchange import CryptocurrencyExchange
@@ -15,7 +14,7 @@ from trader.models.cryptocurrency_exchange_market_stat import (
     CryptocurrencyExchangeMarketStat,
     CryptocurrencyExchangeMarketStatPull,
 )
-from trader.utilities.functions import iso_time_string_to_datetime
+from trader.utilities.functions import fetch_base_data_id, iso_time_string_to_datetime
 
 
 def update_cryptocurrency_exchange_market_stats_from_coin_market_cap(
@@ -23,10 +22,10 @@ def update_cryptocurrency_exchange_market_stats_from_coin_market_cap(
 ) -> None:
     if cryptocurrency_exchange.source_slug is None:
         raise ValueError("Unable to pull data for cryptocurrency exchange {cryptocurrency_exchange.source.name}")
-    coin_market_cap_id = int(cache.get(COIN_MARKET_CAP.cache_key).decode())
-    cryptocurrency_id = int(cache.get(CRYPTOCURRENCY.cache_key).decode())
-    standard_currency_id = int(cache.get(STANDARD_CURRENCY.cache_key).decode())
-    unknown_currency_id = int(cache.get(UNKNOWN_CURRENCY.cache_key).decode())
+    coin_market_cap_id = fetch_base_data_id(COIN_MARKET_CAP)
+    cryptocurrency_id = fetch_base_data_id(CRYPTOCURRENCY)
+    standard_currency_id = fetch_base_data_id(STANDARD_CURRENCY)
+    unknown_currency_id = fetch_base_data_id(UNKNOWN_CURRENCY)
     currency_type_ids = (cryptocurrency_id, standard_currency_id, unknown_currency_id)
     start = 1
     limit = 100

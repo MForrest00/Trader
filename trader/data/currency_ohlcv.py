@@ -3,7 +3,6 @@ from typing import Dict, List, Optional, Union
 from urllib.parse import urlencode
 from ccxt.base.exchange import Exchange
 import requests
-from trader.connections.cache import cache
 from trader.connections.database import DBSession
 from trader.data.base import COIN_MARKET_CAP, ONE_DAY, STANDARD_CURRENCY
 from trader.models.cryptocurrency import Cryptocurrency
@@ -13,11 +12,11 @@ from trader.models.timeframe import Timeframe
 from trader.utilities.functions import (
     clean_range_cap,
     datetime_to_ms_timestamp,
+    fetch_base_data_id,
     iso_time_string_to_datetime,
     ms_timestamp_to_datetime,
     TIMEFRAME_UNIT_TO_INCREMENT_FUNCTION,
 )
-from trader.utilities.logging import logger
 
 
 def retrieve_ohlcv_from_exchange_using_ccxt(
@@ -43,11 +42,6 @@ def retrieve_ohlcv_from_exchange_using_ccxt(
     output: List[Dict[str, Union[datetime, float]]] = []
     since = datetime_to_ms_timestamp(from_inclusive)
     while since < end:
-        logger.debug(
-            "Fetching records from exchange %s since %s",
-            exchange.id,
-            ms_timestamp_to_datetime(since).strftime("%Y-%m-%d %H:%M:%S"),
-        )
         data = exchange.fetch_ohlcv(symbol, timeframe=timeframe, since=since, limit=limit)
         if len(data) == 0:
             since = datetime_to_ms_timestamp(
@@ -57,7 +51,6 @@ def retrieve_ohlcv_from_exchange_using_ccxt(
                 )
             )
         else:
-            logger.debug("Retrieved %i records", len(data))
             for record in data:
                 if record[0] >= end:
                     break
@@ -120,9 +113,9 @@ def retrieve_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap(
 def update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap(
     base_currency: Cryptocurrency, from_inclusive: datetime, to_exclusive: Optional[datetime] = None
 ) -> None:
-    coin_market_cap_id = int(cache.get(COIN_MARKET_CAP.cache_key).decode())
-    standard_currency_id = int(cache.get(STANDARD_CURRENCY.cache_key).decode())
-    one_day_id = int(cache.get(ONE_DAY.cache_key).decode())
+    coin_market_cap_id = fetch_base_data_id(COIN_MARKET_CAP)
+    standard_currency_id = fetch_base_data_id(STANDARD_CURRENCY)
+    one_day_id = fetch_base_data_id(ONE_DAY)
     data = retrieve_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap(base_currency, from_inclusive, to_exclusive)
     with DBSession() as session:
         us_dollar = session.query(Currency).filter_by(symbol="USD", currency_type_id=standard_currency_id).one()

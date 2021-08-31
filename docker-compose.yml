@@ -20,6 +20,17 @@ services:
       - postgres_network
     ports:
       - "5432:5432"
+  metabase:
+    image: metabase/metabase:v0.40.3.1
+    volumes:
+      - metabase_data:/metabase-data
+    environment:
+      - MB_DB_FILE=/metabase-data/metabase.db
+      - JAVA_TIMEZONE=US/Central
+    networks:
+      - postgres_network
+    ports:
+      - "3000:3000"
 
 networks:
   redis_network:
@@ -29,3 +40,4 @@ networks:
 volumes:
   redis_data:
   postgres_data:
+  metabase_data:

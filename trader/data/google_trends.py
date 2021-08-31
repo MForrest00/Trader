@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 from dateutil.relativedelta import relativedelta
-from trader.connections.cache import cache
 from trader.connections.database import DBSession
 from trader.connections.trend_request import trend_request
 from trader.data.base import EIGHT_MINUTE, GOOGLE_TRENDS, ONE_DAY, ONE_MINUTE, ONE_MONTH, WEB_SEARCH
@@ -22,7 +21,7 @@ from trader.utilities.constants import (
     GOOGLE_TRENDS_WEB_SEARCH_BASE_DATE,
     GOOGLE_TRENDS_WEB_SEARCH_MINUTE_GRANULARITY_CUTOFF,
 )
-from trader.utilities.functions import clean_range_cap
+from trader.utilities.functions import clean_range_cap, fetch_base_data_id
 
 
 def timeframe_base_label_to_date_ranges(
@@ -113,7 +112,7 @@ def update_interest_over_time_from_google_trends(
     from_inclusive: Optional[datetime],
     to_exclusive: Optional[datetime] = None,
 ) -> None:
-    google_trends_id = int(cache.get(GOOGLE_TRENDS.cache_key).decode())
+    google_trends_id = fetch_base_data_id(GOOGLE_TRENDS)
     try:
         target_timeframe_rank = GOOGLE_TRENDS_TIMEFRAME_RANKS.index(timeframe.base_label)
     except ValueError as error:

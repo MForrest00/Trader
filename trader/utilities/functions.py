@@ -1,9 +1,19 @@
+from __future__ import annotations
 from datetime import datetime, timedelta
 from time import sleep
-from typing import Callable, Dict
+from typing import Callable, Dict, Union
 from dateutil.relativedelta import relativedelta
 from selenium.webdriver.remote.webdriver import WebDriver
-from trader.utilities.constants import WEB_DRIVER_SCROLL_DELAY_SECONDS, WEB_DRIVER_SCROLL_INCREMENT
+from trader.connections.cache import cache
+from trader.data.base import (
+    CurrencyTypeData,
+    GoogleTrendsPullGeoData,
+    GoogleTrendsPullGpropData,
+    initialize_base_data,
+    SourceData,
+    SourceTypeData,
+    TimeframeData,
+)
 
 
 TIMEFRAME_UNIT_TO_TRANSFORM_FUNCTION: Dict[str, Callable[[datetime], datetime]] = {
@@ -42,6 +52,22 @@ def ms_timestamp_to_datetime(ts: int) -> datetime:
 
 def iso_time_string_to_datetime(time_string: str) -> datetime:
     return datetime.strptime(time_string, "%Y-%m-%dT%H:%M:%S.%f%z")
+
+
+def fetch_base_data_id(
+    base_data: Union[
+        CurrencyTypeData, GoogleTrendsPullGeoData, GoogleTrendsPullGpropData, SourceData, SourceTypeData, TimeframeData
+    ]
+) -> int:
+    cache_value = cache.get(base_data.cache_key)
+    if not cache_value:
+        initialize_base_data()
+        cache_value = cache.get(base_data.cache_key)
+    return int(cache_value.decode())
+
+
+WEB_DRIVER_SCROLL_INCREMENT = 500
+WEB_DRIVER_SCROLL_DELAY_SECONDS = 0.5
 
 
 def fully_scroll_page(web_driver: WebDriver) -> None:

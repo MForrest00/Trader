@@ -2,7 +2,6 @@ import json
 from typing import Dict
 from bs4 import BeautifulSoup
 import requests
-from trader.connections.cache import cache
 from trader.connections.database import DBSession
 from trader.data.base import COIN_MARKET_CAP, CRYPTOCURRENCY_EXCHANGE
 from trader.models.country import Country, CountryCryptocurrencyExchange
@@ -15,12 +14,12 @@ from trader.models.cryptocurrency_exchange_rank import CryptocurrencyExchangeRan
 from trader.models.currency import Currency
 from trader.models.standard_currency import StandardCurrency
 from trader.models.source import Source
-from trader.utilities.functions import iso_time_string_to_datetime
+from trader.utilities.functions import fetch_base_data_id, iso_time_string_to_datetime
 
 
 def update_cryptocurrency_exchange_ranks_from_coin_market_cap() -> None:
-    coin_market_cap_id = int(cache.get(COIN_MARKET_CAP.cache_key).decode())
-    cryptocurrency_exchange_id = int(cache.get(CRYPTOCURRENCY_EXCHANGE.cache_key).decode())
+    coin_market_cap_id = fetch_base_data_id(COIN_MARKET_CAP)
+    cryptocurrency_exchange_id = fetch_base_data_id(CRYPTOCURRENCY_EXCHANGE)
     response = requests.get("https://coinmarketcap.com/rankings/exchanges/")
     soup = BeautifulSoup(response.text, "lxml")
     data = json.loads(soup.select("script#__NEXT_DATA__")[0].string)

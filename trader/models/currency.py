@@ -36,6 +36,9 @@ class Currency(Base):
     cryptocurrency = relationship(
         "Cryptocurrency", lazy=False, backref=backref(__tablename__, lazy=False), uselist=False
     )
+    enabled_quote_currency = relationship(
+        "EnabledQuoteCurrency", lazy=False, backref=backref(__tablename__, lazy=False), uselist=False
+    )
     standard_currency = relationship(
         "StandardCurrency", lazy=False, backref=backref(__tablename__, lazy=False), uselist=False
     )

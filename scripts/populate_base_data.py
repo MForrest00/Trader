@@ -6,7 +6,6 @@ import sys
 sys.path.append(os.path.split(pathlib.Path(__file__).parent.absolute())[0])
 
 
-from trader.connections.cache import cache
 from trader.connections.database import DBSession
 from trader.data.base import (
     CRYPTOCURRENCY,
@@ -23,6 +22,8 @@ from trader.data.cryptocurrency_exchange_market_stat import (
 from trader.data.cryptocurrency_exchange_rank import update_cryptocurrency_exchange_ranks_from_coin_market_cap
 from trader.data.cryptocurrency_rank import update_current_cryptocurrency_ranks_from_coin_market_cap
 from trader.data.currency_ohlcv import update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap
+from trader.data.enabled_cryptocurrency_exchange import set_initial_enabled_cryptocurrency_exchanges
+from trader.data.enabled_quote_currency import set_initial_enabled_quote_currencies
 from trader.data.google_trends import update_interest_over_time_from_google_trends
 from trader.data.standard_currency import update_standard_currencies_from_iso
 from trader.models import initialize_models
@@ -33,6 +34,7 @@ from trader.models.google_trends import GoogleTrendsPullGeo, GoogleTrendsPullGpr
 from trader.models.source import Source
 from trader.models.timeframe import Timeframe
 from trader.models.views import initialize_views
+from trader.utilities.functions import fetch_base_data_id
 
 
 def main():
@@ -42,8 +44,10 @@ def main():
     update_countries_from_iso()
     update_standard_currencies_from_iso()
     update_cryptocurrency_exchange_ranks_from_coin_market_cap()
+    set_initial_enabled_cryptocurrency_exchanges()
     update_current_cryptocurrency_ranks_from_coin_market_cap()
-    cryptocurrency_exchange_id = int(cache.get(CRYPTOCURRENCY_EXCHANGE.cache_key).decode())
+    set_initial_enabled_quote_currencies()
+    cryptocurrency_exchange_id = fetch_base_data_id(CRYPTOCURRENCY_EXCHANGE)
     with DBSession() as session:
         binance = (
             session.query(CryptocurrencyExchange)
@@ -53,7 +57,7 @@ def main():
         )
     if binance:
         update_cryptocurrency_exchange_market_stats_from_coin_market_cap(binance)
-    cryptocurrency_id = int(cache.get(CRYPTOCURRENCY.cache_key).decode())
+    cryptocurrency_id = fetch_base_data_id(CRYPTOCURRENCY)
     with DBSession() as session:
         bitcoin = (
             session.query(Cryptocurrency)
@@ -63,9 +67,9 @@ def main():
         )
     if bitcoin:
         update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap(bitcoin, bitcoin.source_date_added)
-        one_day_id = int(cache.get(ONE_DAY.cache_key).decode())
-        web_search_id = int(cache.get(WEB_SEARCH.cache_key).decode())
-        worldwide_id = int(cache.get(WORLDWIDE.cache_key).decode())
+        one_day_id = fetch_base_data_id(ONE_DAY)
+        web_search_id = fetch_base_data_id(WEB_SEARCH)
+        worldwide_id = fetch_base_data_id(WORLDWIDE)
         with DBSession() as session:
             one_day = session.query(Timeframe).get(one_day_id)
             web_search = session.query(GoogleTrendsPullGprop).get(web_search_id)

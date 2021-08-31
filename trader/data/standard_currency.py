@@ -1,17 +1,17 @@
 from bs4 import BeautifulSoup
 import requests
-from trader.connections.cache import cache
 from trader.connections.database import DBSession
 from trader.data.base import ISO, STANDARD_CURRENCY, UNKNOWN_CURRENCY
 from trader.models.country import Country, CountryCurrency
 from trader.models.currency import Currency
 from trader.models.standard_currency import StandardCurrency
+from trader.utilities.functions import fetch_base_data_id
 
 
 def update_standard_currencies_from_iso() -> None:
-    iso_id = int(cache.get(ISO.cache_key).decode())
-    standard_currency_id = int(cache.get(STANDARD_CURRENCY.cache_key).decode())
-    unknown_currency_id = int(cache.get(UNKNOWN_CURRENCY.cache_key).decode())
+    iso_id = fetch_base_data_id(ISO)
+    standard_currency_id = fetch_base_data_id(STANDARD_CURRENCY)
+    unknown_currency_id = fetch_base_data_id(UNKNOWN_CURRENCY)
     response = requests.get("https://en.wikipedia.org/wiki/ISO_4217")
     soup = BeautifulSoup(response.text, "lxml")
     table_h2 = soup.select("span#Active_codes")[0]

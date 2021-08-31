@@ -5,15 +5,13 @@ from urllib.parse import urlencode
 from bs4 import BeautifulSoup
 import requests
 from sqlalchemy.orm import Session
-from trader.connections.cache import cache
 from trader.connections.database import DBSession
 from trader.data.base import COIN_MARKET_CAP, CRYPTOCURRENCY, UNKNOWN_CURRENCY
 from trader.models.cryptocurrency import Cryptocurrency, CryptocurrencyPlatform
 from trader.models.currency import Currency, CurrencyCurrencyTag, CurrencyTag
 from trader.models.cryptocurrency_rank import CryptocurrencyRank, CryptocurrencyRankSnapshot
 from trader.utilities.constants import CRYPTOCURRENCY_RANK_LIMIT
-from trader.utilities.functions import iso_time_string_to_datetime
-from trader.utilities.logging import logger
+from trader.utilities.functions import fetch_base_data_id, iso_time_string_to_datetime
 
 
 @dataclass
@@ -49,8 +47,8 @@ def insert_cryptocurrency_ranks(
     cryptocurrency_rank_snapshot_id: int,
     data: List[CryptocurrencyRankRecord],
 ) -> None:
-    cryptocurrency_id = int(cache.get(CRYPTOCURRENCY.cache_key).decode())
-    unknown_currency_id = int(cache.get(UNKNOWN_CURRENCY.cache_key).decode())
+    cryptocurrency_id = fetch_base_data_id(CRYPTOCURRENCY)
+    unknown_currency_id = fetch_base_data_id(UNKNOWN_CURRENCY)
     cryptocurrency_platforms: Dict[Tuple[str, str], CryptocurrencyPlatform] = {}
     currency_tags: Dict[str, CurrencyTag] = {}
     for record in data:
@@ -282,7 +280,7 @@ def retrieve_current_cryptocurrency_ranks_from_coin_market_cap() -> List[Cryptoc
 
 
 def update_historical_cryptocurrency_ranks_from_coin_market_cap() -> None:
-    coin_market_cap_id = int(cache.get(COIN_MARKET_CAP.cache_key).decode())
+    coin_market_cap_id = fetch_base_data_id(COIN_MARKET_CAP)
     historical_snapshots = retrieve_historical_snapshot_list_from_coin_market_cap()
     with DBSession() as session:
         for historical_snapshot in historical_snapshots:
@@ -292,10 +290,6 @@ def update_historical_cryptocurrency_ranks_from_coin_market_cap() -> None:
                 .first()
             )
             if not cryptocurrency_rank_snapshot:
-                logger.debug(
-                    "Fetching data for historical cryptocurrency ranks snapshot for date %s",
-                    historical_snapshot.strftime("%Y-%m-%d"),
-                )
                 data = retrieve_historical_cryptocurrency_ranks_from_coin_market_cap(historical_snapshot)
                 cryptocurrency_rank_snapshot = CryptocurrencyRankSnapshot(
                     source_id=coin_market_cap_id,
@@ -308,8 +302,7 @@ def update_historical_cryptocurrency_ranks_from_coin_market_cap() -> None:
 
 
 def update_current_cryptocurrency_ranks_from_coin_market_cap() -> None:
-    coin_market_cap_id = int(cache.get(COIN_MARKET_CAP.cache_key).decode())
-    logger.debug("Fetching data for current cryptocurrency ranks")
+    coin_market_cap_id = fetch_base_data_id(COIN_MARKET_CAP)
     data = retrieve_current_cryptocurrency_ranks_from_coin_market_cap()
     with DBSession() as session:
         cryptocurrency_rank_snapshot = CryptocurrencyRankSnapshot(
