@@ -1,9 +1,12 @@
 /.git/
+/scripts/
+/tests/
 
 /.idea/
 /.vscode/
 
 /.mypy_cache/
+/.pytest_cache/
 /.coverage
 /.dockerignore
 /.env*
@@ -13,6 +16,7 @@
 /docker-compose.*.yml
 /Dockerfile
 /*.log*
+/pyproject.toml
 /README.md
 
 **/__pycache__/
