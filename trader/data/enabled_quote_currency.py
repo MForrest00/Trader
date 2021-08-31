@@ -2,7 +2,10 @@ from trader.connections.database import DBSession
 from trader.data.base import CRYPTOCURRENCY, STANDARD_CURRENCY
 from trader.models.currency import Currency
 from trader.models.enabled_quote_currency import EnabledQuoteCurrency
-from trader.utilities.constants import INITIAL_ENABLED_QUOTE_CRYPTOCURRENCY_SYMBOLS, INITIAL_ENABLED_QUOTE_STANDARD_CURRENCY_SYMBOLS
+from trader.utilities.constants import (
+    INITIAL_ENABLED_QUOTE_CRYPTOCURRENCY_SYMBOLS,
+    INITIAL_ENABLED_QUOTE_STANDARD_CURRENCY_SYMBOLS,
+)
 from trader.utilities.functions import fetch_base_data_id
 
 

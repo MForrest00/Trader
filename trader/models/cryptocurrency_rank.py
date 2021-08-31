@@ -35,5 +35,5 @@ class CryptocurrencyRank(Base):
     usd_market_cap = Column(Numeric(33, 15), nullable=True)
     usd_price = Column(Numeric(33, 15), nullable=False)
     usd_volume_24h = Column(Numeric(33, 15), nullable=False)
-    circulating_supply = Column(Numeric(33, 15), nullable=True)
-    total_supply = Column(Numeric(33, 15), nullable=True)
+    circulating_supply = Column(Numeric(36, 15), nullable=True)
+    total_supply = Column(Numeric(36, 15), nullable=True)

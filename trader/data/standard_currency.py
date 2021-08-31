@@ -1,8 +1,9 @@
+from typing import Dict
 from bs4 import BeautifulSoup
 import requests
 from trader.connections.database import DBSession
 from trader.data.base import ISO, STANDARD_CURRENCY, UNKNOWN_CURRENCY
-from trader.models.country import Country, CountryCurrency
+from trader.models.country import Country, CountryXCurrency
 from trader.models.currency import Currency
 from trader.models.standard_currency import StandardCurrency
 from trader.utilities.functions import fetch_base_data_id
@@ -17,6 +18,7 @@ def update_standard_currencies_from_iso() -> None:
     table_h2 = soup.select("span#Active_codes")[0]
     table_body_rows = table_h2.parent.next_sibling.next_sibling.next_sibling.next_sibling.find_all("tr")[1:]
     with DBSession() as session:
+        countries: Dict[str, Country] = {}
         for table_body_row in table_body_rows:
             table_data = table_body_row.find_all("td")
             name = table_data[3].find_all(text=True)[0]
@@ -43,7 +45,7 @@ def update_standard_currencies_from_iso() -> None:
             else:
                 for item in currency.countries:
                     if item.country.name not in country_names:
-                        session.delete(item)
+                        item.is_active = False
             standard_currency = currency.standard_currency
             if not standard_currency:
                 standard_currency = StandardCurrency(
@@ -54,19 +56,25 @@ def update_standard_currencies_from_iso() -> None:
                 standard_currency.iso_numeric_code = iso_numeric_code
                 standard_currency.minor_unit = minor_unit
             for country_name in country_names:
-                countries = session.query(Country).filter_by(name=country_name).all()
-                if len(countries) != 1:
+                if country_name not in countries:
+                    country = session.query(Country).filter_by(name=country_name).all()
+                    countries[country_name] = country
+                else:
+                    country = countries[country_name]
+                if len(country) != 1:
                     continue
                 country_currency = (
-                    session.query(CountryCurrency)
-                    .filter_by(country_id=countries[0].id, currency_id=currency.id)
+                    session.query(CountryXCurrency)
+                    .filter_by(country_id=country[0].id, currency_id=currency.id)
                     .one_or_none()
                 )
                 if not country_currency:
-                    country_currency = CountryCurrency(
+                    country_currency = CountryXCurrency(
                         source_id=iso_id,
-                        country_id=countries[0].id,
+                        country_id=country[0].id,
                         currency_id=currency.id,
                     )
                     session.add(country_currency)
+                elif not country_currency.is_active:
+                    country_currency.is_active = True
         session.commit()

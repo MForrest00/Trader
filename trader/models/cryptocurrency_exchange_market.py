@@ -1,4 +1,5 @@
 from sqlalchemy import (
+    Boolean,
     Column,
     DateTime,
     ForeignKey,
@@ -56,6 +57,7 @@ class CryptocurrencyExchangeMarket(Base):
     market_url = Column(String(250), nullable=False)
     source_entity_id = Column(Integer, nullable=True)
     source_date_last_updated = Column(DateTime(timezone=True), nullable=True)
+    is_active = Column(Boolean, nullable=False, default=True)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # One to many

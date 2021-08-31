@@ -1,4 +1,5 @@
 from sqlalchemy import (
+    Boolean,
     Column,
     DateTime,
     ForeignKey,
@@ -24,17 +25,18 @@ class Country(Base):
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # Many to many
-    cryptocurrency_exchanges = relationship("CountryCryptocurrencyExchange", lazy=True, back_populates=__tablename__)
-    currencies = relationship("CountryCurrency", lazy=True, back_populates=__tablename__)
+    cryptocurrency_exchanges = relationship("CountryXCryptocurrencyExchange", lazy=True, back_populates=__tablename__)
+    currencies = relationship("CountryXCurrency", lazy=True, back_populates=__tablename__)
 
 
-class CountryCryptocurrencyExchange(Base):
-    __tablename__ = "country_cryptocurrency_exchange"
+class CountryXCryptocurrencyExchange(Base):
+    __tablename__ = "country_x_cryptocurrency_exchange"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
     country_id = Column(Integer, ForeignKey("country.id"), nullable=False)
     cryptocurrency_exchange_id = Column(Integer, ForeignKey("cryptocurrency_exchange.id"), nullable=False)
+    is_active = Column(Boolean, nullable=False, default=True)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # Many to many
@@ -44,13 +46,14 @@ class CountryCryptocurrencyExchange(Base):
     __table_args__ = (UniqueConstraint("country_id", "cryptocurrency_exchange_id"),)
 
 
-class CountryCurrency(Base):
-    __tablename__ = "country_currency"
+class CountryXCurrency(Base):
+    __tablename__ = "country_x_currency"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
     country_id = Column(Integer, ForeignKey("country.id"), nullable=False)
     currency_id = Column(Integer, ForeignKey("currency.id"), nullable=False)
+    is_active = Column(Boolean, nullable=False, default=True)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # Many to many

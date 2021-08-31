@@ -42,18 +42,18 @@ class Source(Base):
 
     # One to many
     countries = relationship("Country", lazy=True, backref=backref(__tablename__, lazy=True))
-    country_cryptocurrency_exchanges = relationship(
-        "CountryCryptocurrencyExchange", lazy=True, backref=backref(__tablename__, lazy=True)
+    countries_x_cryptocurrency_exchanges = relationship(
+        "CountryXCryptocurrencyExchange", lazy=True, backref=backref(__tablename__, lazy=True)
     )
-    country_currencies = relationship("CountryCurrency", lazy=True, backref=backref(__tablename__, lazy=True))
+    countries_x_currencies = relationship("CountryXCurrency", lazy=True, backref=backref(__tablename__, lazy=True))
+    cryptocurrency_exchange_markets = relationship(
+        "CryptocurrencyExchangeMarket", lazy=True, backref=backref(__tablename__, lazy=True)
+    )
     cryptocurrency_exchange_market_category = relationship(
         "CryptocurrencyExchangeMarketCategory", lazy=True, backref=backref(__tablename__, lazy=True)
     )
     cryptocurrency_exchange_market_fee_types = relationship(
         "CryptocurrencyExchangeMarketFeeType", lazy=True, backref=backref(__tablename__, lazy=True)
-    )
-    cryptocurrency_exchange_markets = relationship(
-        "CryptocurrencyExchangeMarket", lazy=True, backref=backref(__tablename__, lazy=True)
     )
     cryptocurrency_exchange_market_stat_pulls = relationship(
         "CryptocurrencyExchangeMarketStatPull", lazy=True, backref=backref(__tablename__, lazy=True)
@@ -64,6 +64,9 @@ class Source(Base):
     cryptocurrency_exchange_types = relationship(
         "CryptocurrencyExchangeType", lazy=True, backref=backref(__tablename__, lazy=True)
     )
+    cryptocurrency_exchanges_x_standard_currencies = relationship(
+        "CryptocurrencyExchangeXStandardCurrency", lazy=True, backref=backref(__tablename__, lazy=True)
+    )
     cryptocurrency_platforms = relationship(
         "CryptocurrencyPlatform", lazy=True, backref=backref(__tablename__, lazy=True)
     )
@@ -71,9 +74,11 @@ class Source(Base):
         "CryptocurrencyRankSnapshot", lazy=True, backref=backref(__tablename__, lazy=True)
     )
     currencies = relationship("Currency", lazy=True, backref=backref(__tablename__, lazy=True))
-    currency_currency_tags = relationship("CurrencyCurrencyTag", lazy=True, backref=backref(__tablename__, lazy=True))
     currency_ohlcv_pulls = relationship("CurrencyOHLCVPull", lazy=True, backref=backref(__tablename__, lazy=True))
     currency_tags = relationship("CurrencyTag", lazy=True, backref=backref(__tablename__, lazy=True))
+    currencies_x_currency_tags = relationship(
+        "CurrencyXCurrencyTag", lazy=True, backref=backref(__tablename__, lazy=True)
+    )
     google_trends_pulls = relationship("GoogleTrendsPull", lazy=True, backref=backref(__tablename__, lazy=True))
 
     __table_args__ = (UniqueConstraint("name", "source_type_id"),)

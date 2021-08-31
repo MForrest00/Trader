@@ -1,4 +1,5 @@
 from sqlalchemy import (
+    Boolean,
     Column,
     DateTime,
     ForeignKey,
@@ -44,8 +45,8 @@ class Currency(Base):
     )
 
     # Many to many
-    currency_tags = relationship("CurrencyCurrencyTag", lazy=True, back_populates=__tablename__)
-    countries = relationship("CountryCurrency", lazy=True, back_populates=__tablename__)
+    currency_tags = relationship("CurrencyXCurrencyTag", lazy=True, back_populates=__tablename__)
+    countries = relationship("CountryXCurrency", lazy=True, back_populates=__tablename__)
 
     __table_args__ = (UniqueConstraint("symbol", "currency_type_id"),)
 
@@ -59,16 +60,17 @@ class CurrencyTag(Base):
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # Many to many
-    currencies = relationship("CurrencyCurrencyTag", lazy=True, back_populates=__tablename__)
+    currencies = relationship("CurrencyXCurrencyTag", lazy=True, back_populates=__tablename__)
 
 
-class CurrencyCurrencyTag(Base):
-    __tablename__ = "currency_currency_tag"
+class CurrencyXCurrencyTag(Base):
+    __tablename__ = "currency_x_currency_tag"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
     currency_id = Column(Integer, ForeignKey("currency.id"), nullable=False)
     currency_tag_id = Column(Integer, ForeignKey("currency_tag.id"), nullable=False)
+    is_active = Column(Boolean, nullable=False, default=True)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # Many to many

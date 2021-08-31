@@ -1,4 +1,5 @@
 from sqlalchemy import (
+    Boolean,
     Column,
     DateTime,
     ForeignKey,
@@ -53,19 +54,20 @@ class CryptocurrencyExchange(Base):
     )
 
     # Many to many
-    countries = relationship("CountryCryptocurrencyExchange", lazy=True, back_populates=__tablename__)
+    countries = relationship("CountryXCryptocurrencyExchange", lazy=True, back_populates=__tablename__)
     standard_currencies = relationship(
-        "CryptocurrencyExchangeStandardCurrency", lazy=True, back_populates=__tablename__
+        "CryptocurrencyExchangeXStandardCurrency", lazy=True, back_populates=__tablename__
     )
 
 
-class CryptocurrencyExchangeStandardCurrency(Base):
-    __tablename__ = "cryptocurrency_exchange_standard_currency"
+class CryptocurrencyExchangeXStandardCurrency(Base):
+    __tablename__ = "cryptocurrency_exchange_x_standard_currency"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
     cryptocurrency_exchange_id = Column(Integer, ForeignKey("cryptocurrency_exchange.id"), nullable=False)
     standard_currency_id = Column(Integer, ForeignKey("standard_currency.id"), nullable=False)
+    is_active = Column(Boolean, nullable=False, default=True)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # Many to many

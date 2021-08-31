@@ -55,7 +55,7 @@ class GoogleTrendsPull(Base):
 
     # Many to many
     google_trends_keywords = relationship(
-        "GoogleTrendsKeywordGoogleTrendsPull", lazy=True, back_populates=__tablename__
+        "GoogleTrendsKeywordXGoogleTrendsPull", lazy=True, back_populates=__tablename__
     )
 
 
@@ -85,11 +85,11 @@ class GoogleTrendsKeyword(Base):
     google_trends_data = relationship("GoogleTrends", lazy=True, backref=backref(__tablename__, lazy=False))
 
     # Many to many
-    google_trends_pulls = relationship("GoogleTrendsKeywordGoogleTrendsPull", lazy=True, back_populates=__tablename__)
+    google_trends_pulls = relationship("GoogleTrendsKeywordXGoogleTrendsPull", lazy=True, back_populates=__tablename__)
 
 
-class GoogleTrendsKeywordGoogleTrendsPull(Base):
-    __tablename__ = "google_trends_keyword_google_trends_pull"
+class GoogleTrendsKeywordXGoogleTrendsPull(Base):
+    __tablename__ = "google_trends_keyword_x_google_trends_pull"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     google_trends_keyword_id = Column(Integer, ForeignKey("google_trends_keyword.id"), nullable=False)

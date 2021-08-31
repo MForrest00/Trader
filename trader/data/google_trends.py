@@ -8,7 +8,7 @@ from trader.models.google_trends import (
     GoogleTrends,
     GoogleTrendsKeyword,
     GoogleTrendsPull,
-    GoogleTrendsKeywordGoogleTrendsPull,
+    GoogleTrendsKeywordXGoogleTrendsPull,
     GoogleTrendsPullStep,
     GoogleTrendsPullGeo,
     GoogleTrendsPullGprop,
@@ -139,7 +139,7 @@ def update_interest_over_time_from_google_trends(
         session.add(google_trends_pull)
         session.flush()
         for keyword in keywords:
-            google_trends_keyword_google_trends_pull = GoogleTrendsKeywordGoogleTrendsPull(
+            google_trends_keyword_google_trends_pull = GoogleTrendsKeywordXGoogleTrendsPull(
                 google_trends_keyword_id=keyword_to_google_trends_keyword[keyword].id,
                 google_trends_pull_id=google_trends_pull.id,
             )

@@ -18,5 +18,5 @@ class StandardCurrency(Base):
 
     # Many to many
     cryptocurrency_exchanges = relationship(
-        "CryptocurrencyExchangeStandardCurrency", lazy=True, back_populates=__tablename__
+        "CryptocurrencyExchangeXStandardCurrency", lazy=True, back_populates=__tablename__
     )
