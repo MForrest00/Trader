@@ -5,9 +5,15 @@ services:
     image: selenium/standalone-chrome:3.141.59
     networks:
       - selenium_network
-    ports:
-      - "4444:4444"
     shm_size: 2gb
+  celery_worker:
+    environment:
+      - REMOTE_WEBDRIVER_HOST=http://selenium
+    networks:
+      - selenium_network
+    depends_on:
+      - selenium
+
 
 networks:
   selenium_network:
