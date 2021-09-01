@@ -26,7 +26,7 @@ class Country(Base):
 
     # Many to many
     cryptocurrency_exchanges = relationship("CountryXCryptocurrencyExchange", lazy=True, back_populates=__tablename__)
-    currencies = relationship("CountryXCurrency", lazy=True, back_populates=__tablename__)
+    standard_currencies = relationship("CountryXStandardCurrency", lazy=True, back_populates=__tablename__)
 
 
 class CountryXCryptocurrencyExchange(Base):
@@ -46,18 +46,18 @@ class CountryXCryptocurrencyExchange(Base):
     __table_args__ = (UniqueConstraint("country_id", "cryptocurrency_exchange_id"),)
 
 
-class CountryXCurrency(Base):
-    __tablename__ = "country_x_currency"
+class CountryXStandardCurrency(Base):
+    __tablename__ = "country_x_standard_currency"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
     country_id = Column(Integer, ForeignKey("country.id"), nullable=False)
-    currency_id = Column(Integer, ForeignKey("currency.id"), nullable=False)
+    standard_currency_id = Column(Integer, ForeignKey("standard_currency.id"), nullable=False)
     is_active = Column(Boolean, nullable=False, default=True)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # Many to many
-    country = relationship("Country", lazy=False, back_populates="currencies")
-    currency = relationship("Currency", lazy=False, back_populates="countries")
+    country = relationship("Country", lazy=False, back_populates="standard_currencies")
+    standard_currency = relationship("Currency", lazy=False, back_populates="countries")
 
     __table_args__ = (UniqueConstraint("country_id", "currency_id"),)

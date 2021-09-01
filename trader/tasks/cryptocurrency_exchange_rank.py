@@ -1,0 +1,7 @@
+from trader.data.cryptocurrency_exchange_rank import update_cryptocurrency_exchange_ranks_from_coin_market_cap
+from trader.tasks import app
+
+
+update_cryptocurrency_exchange_ranks_from_coin_market_cap_task = app.task(
+    update_cryptocurrency_exchange_ranks_from_coin_market_cap
+)

@@ -40,5 +40,5 @@ class CryptocurrencyExchangeRank(Base):
     market_share_percentage = Column(Numeric(7, 4), nullable=True)
     maker_fee = Column(Numeric(8, 4), nullable=False)
     taker_fee = Column(Numeric(8, 4), nullable=False)
-    source_score = Column(Numeric(6, 4), nullable=True)
+    source_score = Column(Numeric(7, 4), nullable=True)
     source_liquidity_score = Column(Numeric(8, 4), nullable=True)

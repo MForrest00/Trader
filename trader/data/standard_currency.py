@@ -3,7 +3,7 @@ from bs4 import BeautifulSoup
 import requests
 from trader.connections.database import DBSession
 from trader.data.base import ISO, STANDARD_CURRENCY, UNKNOWN_CURRENCY
-from trader.models.country import Country, CountryXCurrency
+from trader.models.country import Country, CountryXStandardCurrency
 from trader.models.currency import Currency
 from trader.models.standard_currency import StandardCurrency
 from trader.utilities.functions import fetch_base_data_id
@@ -64,15 +64,15 @@ def update_standard_currencies_from_iso() -> None:
                 if len(country) != 1:
                     continue
                 country_currency = (
-                    session.query(CountryXCurrency)
-                    .filter_by(country_id=country[0].id, currency_id=currency.id)
+                    session.query(CountryXStandardCurrency)
+                    .filter_by(country_id=country[0].id, standard_currency_id=standard_currency.id)
                     .one_or_none()
                 )
                 if not country_currency:
-                    country_currency = CountryXCurrency(
+                    country_currency = CountryXStandardCurrency(
                         source_id=iso_id,
                         country_id=country[0].id,
-                        currency_id=currency.id,
+                        standard_currency_id=standard_currency.id,
                     )
                     session.add(country_currency)
                 elif not country_currency.is_active:

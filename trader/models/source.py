@@ -45,7 +45,9 @@ class Source(Base):
     countries_x_cryptocurrency_exchanges = relationship(
         "CountryXCryptocurrencyExchange", lazy=True, backref=backref(__tablename__, lazy=True)
     )
-    countries_x_currencies = relationship("CountryXCurrency", lazy=True, backref=backref(__tablename__, lazy=True))
+    countries_x_standard_currencies = relationship(
+        "CountryXStandardCurrency", lazy=True, backref=backref(__tablename__, lazy=True)
+    )
     cryptocurrency_exchange_markets = relationship(
         "CryptocurrencyExchangeMarket", lazy=True, backref=backref(__tablename__, lazy=True)
     )

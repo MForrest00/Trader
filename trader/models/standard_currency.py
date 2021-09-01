@@ -17,6 +17,7 @@ class StandardCurrency(Base):
     minor_unit = Column(Integer, nullable=True)
 
     # Many to many
+    countries = relationship("CountryXStandardCurrency", lazy=True, back_populates=__tablename__)
     cryptocurrency_exchanges = relationship(
         "CryptocurrencyExchangeXStandardCurrency", lazy=True, back_populates=__tablename__
     )

@@ -1,4 +1,4 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Union
 from urllib.parse import urlencode
 from ccxt.base.exchange import Exchange
@@ -19,9 +19,9 @@ from trader.utilities.functions import (
 )
 
 
-def retrieve_ohlcv_from_exchange_using_ccxt(
+def retrieve_cryptocurrency_ohlcv_from_exchange_using_ccxt(
     exchange: Exchange,
-    base_currency: Currency,
+    base_cryptocurrency: Cryptocurrency,
     quote_currency: Currency,
     timeframe: Timeframe,
     from_inclusive: datetime,
@@ -37,7 +37,7 @@ def retrieve_ohlcv_from_exchange_using_ccxt(
     )
     if not from_inclusive < to_exclusive:
         raise ValueError("From argument must be less than the to argument")
-    symbol = f"{base_currency.symbol}/{quote_currency.symbol}"
+    symbol = f"{base_cryptocurrency.currency.symbol}/{quote_currency.symbol}"
     end = datetime_to_ms_timestamp(to_exclusive)
     output: List[Dict[str, Union[datetime, float]]] = []
     since = datetime_to_ms_timestamp(from_inclusive)
@@ -82,7 +82,7 @@ def retrieve_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap(
         raise ValueError("Unable to pull data for currency {base_currency.currency.name}")
     from_timestamp = int(clean_range_cap(from_inclusive, "d").timestamp())
     to_exclusive = min(to_exclusive, datetime.now(timezone.utc)) if to_exclusive else datetime.now(timezone.utc)
-    to_timestamp = int(clean_range_cap(to_exclusive, "d").timestamp())
+    to_timestamp = int((clean_range_cap(to_exclusive, "d") - timedelta(days=1)).timestamp())
     query_string = urlencode(
         {
             "id": base_currency.source_entity_id,

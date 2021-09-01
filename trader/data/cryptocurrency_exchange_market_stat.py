@@ -209,9 +209,9 @@ def update_cryptocurrency_exchange_market_stats_from_coin_market_cap(
                 source_score=market_pair["marketScore"],
                 source_liquidity_score=market_pair["effectiveLiquidity"],
                 source_reputation=market_pair["marketReputation"],
-                source_outlier_detected=market_pair["outlierDetected"],
-                source_price_excluded=market_pair["priceExcluded"],
-                source_volume_excluded=market_pair["volumeExcluded"],
+                source_outlier_detected=bool(market_pair["outlierDetected"]),
+                source_price_excluded=bool(market_pair["priceExcluded"]),
+                source_volume_excluded=bool(market_pair["volumeExcluded"]),
             )
             session.add(cryptocurrency_exchange_market_stat)
         session.commit()

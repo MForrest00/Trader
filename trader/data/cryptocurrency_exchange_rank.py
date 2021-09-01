@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup
 import requests
 from trader.connections.database import DBSession
 from trader.data.base import COIN_MARKET_CAP, CRYPTOCURRENCY_EXCHANGE
-from trader.models.country import Country, CountryXCryptocurrencyExchange, CountryXCurrency
+from trader.models.country import Country, CountryXCryptocurrencyExchange
 from trader.models.cryptocurrency_exchange import (
     CryptocurrencyExchange,
     CryptocurrencyExchangeXStandardCurrency,

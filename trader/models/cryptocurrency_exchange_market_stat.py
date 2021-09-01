@@ -1,4 +1,5 @@
 from sqlalchemy import (
+    Boolean,
     Column,
     DateTime,
     ForeignKey,
@@ -37,9 +38,9 @@ class CryptocurrencyExchangeMarketStat(Base):
     quote_currency_volume_24h = Column(Numeric(33, 15), nullable=False)
     usd_depth_negative_two = Column(Numeric(33, 15), nullable=True)
     usd_depth_positive_two = Column(Numeric(33, 15), nullable=True)
-    source_score = Column(Numeric(6, 4), nullable=True)
+    source_score = Column(Numeric(7, 4), nullable=True)
     source_liquidity_score = Column(Numeric(19, 15), nullable=True)
-    source_reputation = Column(Numeric(6, 5), nullable=True)
-    source_outlier_detected = Column(Integer, nullable=False)
-    source_price_excluded = Column(Integer, nullable=False)
-    source_volume_excluded = Column(Integer, nullable=False)
+    source_reputation = Column(Numeric(5, 4), nullable=True)
+    source_outlier_detected = Column(Boolean, nullable=False)
+    source_price_excluded = Column(Boolean, nullable=False)
+    source_volume_excluded = Column(Boolean, nullable=False)
