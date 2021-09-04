@@ -1,0 +1,24 @@
+version: "3.8"
+
+services:
+  metabase:
+    environment:
+      - MB_SITE_URL=http://localhost:3000/metabase/
+    networks:
+      - metabase_network
+  nginx:
+    image: nginx:1.20-alpine
+    volumes:
+      - ./tools/nginx.conf:/etc/nginx/nginx.conf
+      - /etc/letsencrypt:/etc/letscrypt
+    networks:
+      - metabase_network
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - metabase
+
+networks:
+  metabase_network:
+    driver: bridge

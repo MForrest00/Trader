@@ -118,7 +118,7 @@ def update_interest_over_time_from_google_trends(
     except ValueError as error:
         raise ValueError("Timeframe was not a compatible value for Google Trends") from error
     keywords = [keyword.lower() for keyword in keywords]
-    keyword_to_google_trends_keyword: Dict[str, GoogleTrendsKeyword] = {}
+    google_trends_keywords_lookup: Dict[str, GoogleTrendsKeyword] = {}
     with DBSession() as session:
         for keyword_string in keywords:
             keyword = session.query(GoogleTrendsKeyword).filter_by(keyword=keyword_string).one_or_none()
@@ -126,8 +126,8 @@ def update_interest_over_time_from_google_trends(
                 keyword = GoogleTrendsKeyword(keyword=keyword_string)
                 session.add(keyword)
                 session.flush()
-            keyword_to_google_trends_keyword[keyword_string] = keyword
-        keyword_id_set = set(k.id for k in keyword_to_google_trends_keyword.values())
+            google_trends_keywords_lookup[keyword_string] = keyword
+        keyword_id_set = set(k.id for k in google_trends_keywords_lookup.values())
         google_trends_pull = GoogleTrendsPull(
             source_id=google_trends_id,
             google_trends_pull_geo_id=geo.id,
@@ -140,7 +140,7 @@ def update_interest_over_time_from_google_trends(
         session.flush()
         for keyword in keywords:
             google_trends_keyword_google_trends_pull = GoogleTrendsKeywordXGoogleTrendsPull(
-                google_trends_keyword_id=keyword_to_google_trends_keyword[keyword].id,
+                google_trends_keyword_id=google_trends_keywords_lookup[keyword].id,
                 google_trends_pull_id=google_trends_pull.id,
             )
             session.add(google_trends_keyword_google_trends_pull)
@@ -198,7 +198,7 @@ def update_interest_over_time_from_google_trends(
                         data_date = record.pop("data_date")
                         is_partial = bool(record.pop("isPartial"))
                         for keyword, value in record.items():
-                            keyword_id = keyword_to_google_trends_keyword[keyword].id
+                            keyword_id = google_trends_keywords_lookup[keyword].id
                             google_trends = GoogleTrends(
                                 google_trends_pull_step_id=google_trends_pull_step.id,
                                 google_trends_keyword_id=keyword_id,

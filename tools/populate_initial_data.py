@@ -25,6 +25,7 @@ from trader.models.cryptocurrency_exchange_market import CryptocurrencyExchangeM
 from trader.models.enabled_cryptocurrency_exchange import EnabledCryptocurrencyExchange
 from trader.models.enabled_quote_currency import EnabledQuoteCurrency
 from trader.models.views import initialize_views
+from trader.utilities.functions import fetch_enabled_base_currency_ids_for_cryptocurrency_exchanges
 from trader.utilities.logging import logger
 
 
@@ -44,12 +45,9 @@ def main():
     update_current_cryptocurrency_ranks_from_coin_market_cap(5000)
     set_initial_enabled_quote_currencies()
     with DBSession() as session:
-        enabled_quote_currencies = session.query(EnabledQuoteCurrency).filter_by(is_disabled=False).all()
-        enabled_quote_currency_ids = [c.currency.id for c in enabled_quote_currencies]
         enabled_cryptocurrency_exchanges = (
             session.query(EnabledCryptocurrencyExchange).filter_by(is_disabled=False).all()
         )
-        base_currency_ids: Set[int] = set()
         for enabled_cryptocurrency_exchange in enabled_cryptocurrency_exchanges:
             logger.debug(
                 "Loading CoinMarketCap cryptocurrency exchange market stats for exchange %s",
@@ -58,17 +56,9 @@ def main():
             update_cryptocurrency_exchange_market_stats_from_coin_market_cap(
                 enabled_cryptocurrency_exchange.cryptocurrency_exchange
             )
-            markets = (
-                session.query(CryptocurrencyExchangeMarket)
-                .filter(
-                    CryptocurrencyExchangeMarket.cryptocurrency_exchange_id == enabled_cryptocurrency_exchange.id,
-                    CryptocurrencyExchangeMarket.quote_currency_id.in_(enabled_quote_currency_ids),
-                    CryptocurrencyExchangeMarket.is_active.is_(True),
-                )
-                .all()
-            )
-            for market in markets:
-                base_currency_ids.add(market.base_currency_id)
+        base_currency_ids = fetch_enabled_base_currency_ids_for_cryptocurrency_exchanges(
+            session, (e.cryptocurrency_exchange for e in enabled_cryptocurrency_exchanges)
+        )
         for base_currency_id in base_currency_ids:
             base_currency = session.query(Currency).get(base_currency_id)
             if base_currency:

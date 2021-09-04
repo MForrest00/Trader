@@ -95,6 +95,14 @@ def retrieve_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap(
     data = response.json()
     output: List[Dict[str, Union[datetime, float]]] = []
     for record in data["data"]["quotes"]:
+        try:
+            date_high = iso_time_string_to_datetime(record["timeHigh"]) if "timeHigh" in record else None
+        except ValueError:
+            date_high = None
+        try:
+            date_low = iso_time_string_to_datetime(record["timeLow"]) if "timeLow" in record else None
+        except ValueError:
+            date_low = None
         output.append(
             {
                 "date_open": iso_time_string_to_datetime(record["timeOpen"]),
@@ -103,8 +111,8 @@ def retrieve_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap(
                 "low": record["quote"]["low"],
                 "close": record["quote"]["close"],
                 "volume": record["quote"]["volume"],
-                "date_high": iso_time_string_to_datetime(record["timeHigh"]),
-                "date_low": iso_time_string_to_datetime(record["timeLow"]),
+                "date_high": date_high,
+                "date_low": date_low,
             }
         )
     return output

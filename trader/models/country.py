@@ -58,6 +58,6 @@ class CountryXStandardCurrency(Base):
 
     # Many to many
     country = relationship("Country", lazy=False, back_populates="standard_currencies")
-    standard_currency = relationship("Currency", lazy=False, back_populates="countries")
+    standard_currency = relationship("StandardCurrency", lazy=False, back_populates="countries")
 
-    __table_args__ = (UniqueConstraint("country_id", "currency_id"),)
+    __table_args__ = (UniqueConstraint("country_id", "standard_currency_id"),)

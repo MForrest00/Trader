@@ -1,9 +1,9 @@
-from __future__ import annotations
 from datetime import datetime, timedelta
 from time import sleep
-from typing import Callable, Dict, Union
+from typing import Callable, Dict, Set, Sequence, Union
 from dateutil.relativedelta import relativedelta
 from selenium.webdriver.remote.webdriver import WebDriver
+from sqlalchemy.orm import Session
 from trader.connections.cache import cache
 from trader.data.base import (
     CurrencyTypeData,
@@ -14,6 +14,9 @@ from trader.data.base import (
     SourceTypeData,
     TimeframeData,
 )
+from trader.models.cryptocurrency_exchange import CryptocurrencyExchange
+from trader.models.cryptocurrency_exchange_market import CryptocurrencyExchangeMarket
+from trader.models.enabled_quote_currency import EnabledQuoteCurrency
 
 
 TIMEFRAME_UNIT_TO_TRANSFORM_FUNCTION: Dict[str, Callable[[datetime], datetime]] = {
@@ -79,3 +82,24 @@ def fully_scroll_page(web_driver: WebDriver) -> None:
             break
         current_y_offset = new_y_offset
         sleep(WEB_DRIVER_SCROLL_DELAY_SECONDS)
+
+
+def fetch_enabled_base_currency_ids_for_cryptocurrency_exchanges(
+    session: Session, cryptocurrency_exchanges: Sequence[CryptocurrencyExchange]
+) -> Set[int]:
+    enabled_quote_currencies = session.query(EnabledQuoteCurrency).filter_by(is_disabled=False).all()
+    enabled_quote_currency_ids = [c.currency.id for c in enabled_quote_currencies]
+    base_currency_ids: Set[int] = set()
+    for cryptocurrency_exchange in cryptocurrency_exchanges:
+        markets = (
+            session.query(CryptocurrencyExchangeMarket)
+            .filter(
+                CryptocurrencyExchangeMarket.cryptocurrency_exchange_id == cryptocurrency_exchange.id,
+                CryptocurrencyExchangeMarket.quote_currency_id.in_(enabled_quote_currency_ids),
+                CryptocurrencyExchangeMarket.is_active.is_(True),
+            )
+            .all()
+        )
+        for market in markets:
+            base_currency_ids.add(market.base_currency_id)
+    return base_currency_ids

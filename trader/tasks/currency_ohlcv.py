@@ -10,7 +10,7 @@ from trader.models.currency_ohlcv import CurrencyOHLCV, CurrencyOHLCVPull
 from trader.models.enabled_cryptocurrency_exchange import EnabledCryptocurrencyExchange
 from trader.models.enabled_quote_currency import EnabledQuoteCurrency
 from trader.tasks import app
-from trader.utilities.functions import fetch_base_data_id
+from trader.utilities.functions import fetch_base_data_id, fetch_enabled_base_currency_ids_for_cryptocurrency_exchanges
 
 
 update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap_task = app.task(
@@ -21,24 +21,12 @@ update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap_task = app.task(
 @app.task
 def queue_update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap_task() -> None:
     with DBSession() as session:
-        enabled_quote_currencies = session.query(EnabledQuoteCurrency).filter_by(is_disabled=False).all()
-        enabled_quote_currency_ids = [c.currency.id for c in enabled_quote_currencies]
         enabled_cryptocurrency_exchanges = (
             session.query(EnabledCryptocurrencyExchange).filter_by(is_disabled=False).all()
         )
-        base_currency_ids: Set[int] = set()
-        for enabled_cryptocurrency_exchange in enabled_cryptocurrency_exchanges:
-            markets = (
-                session.query(CryptocurrencyExchangeMarket)
-                .filter(
-                    CryptocurrencyExchangeMarket.cryptocurrency_exchange_id == enabled_cryptocurrency_exchange.id,
-                    CryptocurrencyExchangeMarket.quote_currency_id.in_(enabled_quote_currency_ids),
-                    CryptocurrencyExchangeMarket.is_active.is_(True),
-                )
-                .all()
-            )
-            for market in markets:
-                base_currency_ids.add(market.base_currency_id)
+        base_currency_ids = fetch_enabled_base_currency_ids_for_cryptocurrency_exchanges(
+            session, (e.cryptocurrency_exchange for e in enabled_cryptocurrency_exchanges)
+        )
         coin_market_cap_id = fetch_base_data_id(COIN_MARKET_CAP)
         standard_currency_id = fetch_base_data_id(STANDARD_CURRENCY)
         one_day_id = fetch_base_data_id(ONE_DAY)
