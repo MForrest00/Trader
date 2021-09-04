@@ -6,7 +6,6 @@ import sys
 sys.path.append(os.path.split(pathlib.Path(__file__).parent.absolute())[0])
 
 
-from typing import Set
 from trader.connections.database import DBSession
 from trader.data.base import initialize_base_data
 from trader.data.country import update_countries_from_iso
@@ -21,11 +20,11 @@ from trader.data.enabled_quote_currency import set_initial_enabled_quote_currenc
 from trader.data.standard_currency import update_standard_currencies_from_iso
 from trader.models import initialize_models
 from trader.models.currency import Currency
-from trader.models.cryptocurrency_exchange_market import CryptocurrencyExchangeMarket
 from trader.models.enabled_cryptocurrency_exchange import EnabledCryptocurrencyExchange
-from trader.models.enabled_quote_currency import EnabledQuoteCurrency
 from trader.models.views import initialize_views
-from trader.utilities.functions import fetch_enabled_base_currency_ids_for_cryptocurrency_exchanges
+from trader.utilities.functions.cryptocurrency_exchange import (
+    fetch_enabled_base_currency_ids_for_cryptocurrency_exchanges,
+)
 from trader.utilities.logging import logger
 
 

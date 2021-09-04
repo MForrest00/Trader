@@ -127,6 +127,18 @@ def update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap(
     data = retrieve_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap(base_currency, from_inclusive, to_exclusive)
     with DBSession() as session:
         us_dollar = session.query(Currency).filter_by(symbol="USD", currency_type_id=standard_currency_id).one()
+        existing_records = (
+            session.query(CurrencyOHLCV)
+            .join(CurrencyOHLCVPull)
+            .filter(
+                CurrencyOHLCVPull.source_id == coin_market_cap_id,
+                CurrencyOHLCVPull.base_currency_id == base_currency.currency.id,
+                CurrencyOHLCVPull.quote_currency_id == us_dollar.id,
+                CurrencyOHLCVPull.timeframe_id == one_day_id,
+            )
+            .all()
+        )
+        existing_date_opens = set(r.date_open for r in existing_records)
         currency_ohlcv_pull = CurrencyOHLCVPull(
             source_id=coin_market_cap_id,
             base_currency_id=base_currency.currency.id,
@@ -138,6 +150,7 @@ def update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap(
         session.add(currency_ohlcv_pull)
         session.flush()
         for record in data:
-            currency_ohlcv = CurrencyOHLCV(currency_ohlcv_pull_id=currency_ohlcv_pull.id, **record)
-            session.add(currency_ohlcv)
+            if record.date_open not in existing_date_opens:
+                currency_ohlcv = CurrencyOHLCV(currency_ohlcv_pull_id=currency_ohlcv_pull.id, **record)
+                session.add(currency_ohlcv)
         session.commit()

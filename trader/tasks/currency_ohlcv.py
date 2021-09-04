@@ -1,16 +1,16 @@
 from datetime import timedelta
-from typing import Set
 from sqlalchemy.sql import func
 from trader.connections.database import DBSession
 from trader.data.base import COIN_MARKET_CAP, ONE_DAY, STANDARD_CURRENCY
 from trader.data.currency_ohlcv import update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap
-from trader.models.cryptocurrency_exchange_market import CryptocurrencyExchangeMarket
 from trader.models.currency import Currency
 from trader.models.currency_ohlcv import CurrencyOHLCV, CurrencyOHLCVPull
 from trader.models.enabled_cryptocurrency_exchange import EnabledCryptocurrencyExchange
-from trader.models.enabled_quote_currency import EnabledQuoteCurrency
 from trader.tasks import app
-from trader.utilities.functions import fetch_base_data_id, fetch_enabled_base_currency_ids_for_cryptocurrency_exchanges
+from trader.utilities.functions import fetch_base_data_id
+from trader.utilities.functions.cryptocurrency_exchange import (
+    fetch_enabled_base_currency_ids_for_cryptocurrency_exchanges,
+)
 
 
 update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap_task = app.task(
