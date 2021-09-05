@@ -10,8 +10,10 @@ from trader.data.base import COIN_MARKET_CAP, CRYPTOCURRENCY, UNKNOWN_CURRENCY
 from trader.models.cryptocurrency import Cryptocurrency, CryptocurrencyPlatform
 from trader.models.currency import Currency, CurrencyXCurrencyTag, CurrencyTag
 from trader.models.cryptocurrency_rank import CryptocurrencyRank, CryptocurrencyRankSnapshot
-from trader.utilities.constants import CRYPTOCURRENCY_RANK_LIMIT
 from trader.utilities.functions import fetch_base_data_id, iso_time_string_to_datetime
+
+
+CRYPTOCURRENCY_RANK_LIMIT = 500
 
 
 @dataclass

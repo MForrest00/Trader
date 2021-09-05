@@ -29,3 +29,10 @@ app.conf.beat_schedule = {
         "schedule": crontab(minute=0, hour=2),
     },
 }
+
+
+from trader.tasks.country import update_countries_from_iso_task
+from trader.tasks.cryptocurrency_exchange_rank import update_cryptocurrency_exchange_ranks_from_coin_market_cap_task
+from trader.tasks.cryptocurrency_rank import update_current_cryptocurrency_ranks_from_coin_market_cap_task
+from trader.tasks.currency_ohlcv import queue_update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap_task
+from trader.tasks.standard_currency import update_standard_currencies_from_iso_task

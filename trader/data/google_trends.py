@@ -14,14 +14,19 @@ from trader.models.google_trends import (
     GoogleTrendsPullGprop,
 )
 from trader.models.timeframe import Timeframe
-from trader.utilities.constants import (
-    GOOGLE_TRENDS_OTHER_SEARCH_BASE_DATE,
-    GOOGLE_TRENDS_OTHER_SEARCH_MINUTE_GRANULARITY_CUTOFF,
-    GOOGLE_TRENDS_TIMEFRAME_RANKS,
-    GOOGLE_TRENDS_WEB_SEARCH_BASE_DATE,
-    GOOGLE_TRENDS_WEB_SEARCH_MINUTE_GRANULARITY_CUTOFF,
-)
 from trader.utilities.functions import clean_range_cap, fetch_base_data_id
+
+
+GOOGLE_TRENDS_WEB_SEARCH_BASE_DATE = datetime(2004, 1, 1, tzinfo=timezone.utc)
+GOOGLE_TRENDS_WEB_SEARCH_MINUTE_GRANULARITY_CUTOFF = datetime(2015, 1, 1, tzinfo=timezone.utc)
+GOOGLE_TRENDS_OTHER_SEARCH_BASE_DATE = datetime(2008, 1, 1, tzinfo=timezone.utc)
+GOOGLE_TRENDS_OTHER_SEARCH_MINUTE_GRANULARITY_CUTOFF = datetime(2017, 9, 12, tzinfo=timezone.utc)
+GOOGLE_TRENDS_TIMEFRAME_RANKS = (
+    ONE_MINUTE.base_label,
+    EIGHT_MINUTE.base_label,
+    ONE_DAY.base_label,
+    ONE_MONTH.base_label,
+)
 
 
 def timeframe_base_label_to_date_ranges(
