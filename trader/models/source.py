@@ -27,8 +27,8 @@ class Source(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     source_id = Column(Integer, ForeignKey("source.id"), nullable=True)
-    name = Column(String(250), nullable=False)
     source_type_id = Column(Integer, ForeignKey("source_type.id"), nullable=False)
+    name = Column(String(250), nullable=False)
     url = Column(String(250), nullable=True)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 

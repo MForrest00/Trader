@@ -3,19 +3,10 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Set, Optional
 import pandas as pd
+from trader.models.currency_ohlcv_position import CurrencyOHLCVPosition
 
 
-@dataclass
-class Position:
-    open_record_id: int
-    size: float
-    purchased_price: float
-    data: Dict[str, Any]
-    closed_record_id: Optional[int] = None
-    sold_price: Optional[float] = None
-
-
-class BaseStrategy(ABC):
+class Implementation(ABC):
     def __init__(
         self,
         base_ohlcv_df: pd.DataFrame,

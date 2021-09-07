@@ -28,9 +28,9 @@ class Currency(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
+    currency_type_id = Column(Integer, ForeignKey("currency_type.id"), nullable=False)
     name = Column(String(250), nullable=True)
     symbol = Column(String(25), nullable=False)
-    currency_type_id = Column(Integer, ForeignKey("currency_type.id"), nullable=False)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # One to one

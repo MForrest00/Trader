@@ -22,6 +22,7 @@ from trader.models import initialize_models
 from trader.models.currency import Currency
 from trader.models.enabled_cryptocurrency_exchange import EnabledCryptocurrencyExchange
 from trader.models.views import initialize_views
+from trader.strategies import initialize_strategies
 from trader.utilities.functions.cryptocurrency_exchange import (
     fetch_enabled_base_currency_ids_for_cryptocurrency_exchanges,
 )
@@ -69,6 +70,7 @@ def main():
                     update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap(
                         cryptocurrency, cryptocurrency.source_date_added
                     )
+    initialize_strategies()
 
 
 if __name__ == "__main__":

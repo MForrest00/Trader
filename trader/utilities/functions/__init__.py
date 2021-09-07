@@ -3,6 +3,7 @@ from typing import Callable, Dict, Union
 from dateutil.relativedelta import relativedelta
 from trader.connections.cache import cache
 from trader.data.base import (
+    CurrencyOHLCVStrategyTypeData,
     CurrencyTypeData,
     GoogleTrendsPullGeoData,
     GoogleTrendsPullGpropData,
@@ -53,7 +54,13 @@ def iso_time_string_to_datetime(time_string: str) -> datetime:
 
 def fetch_base_data_id(
     base_data: Union[
-        CurrencyTypeData, GoogleTrendsPullGeoData, GoogleTrendsPullGpropData, SourceData, SourceTypeData, TimeframeData
+        CurrencyOHLCVStrategyTypeData,
+        CurrencyTypeData,
+        GoogleTrendsPullGeoData,
+        GoogleTrendsPullGpropData,
+        SourceData,
+        SourceTypeData,
+        TimeframeData,
     ]
 ) -> int:
     cache_value = cache.get(base_data.cache_key)

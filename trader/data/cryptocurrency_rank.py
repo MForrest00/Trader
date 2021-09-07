@@ -294,7 +294,7 @@ def update_historical_cryptocurrency_ranks_from_coin_market_cap(limit: int = CRY
             cryptocurrency_rank_snapshot = (
                 session.query(CryptocurrencyRankSnapshot)
                 .filter_by(source_id=coin_market_cap_id, snapshot_date=historical_snapshot, is_historical=True)
-                .first()
+                .one_or_none()
             )
             if not cryptocurrency_rank_snapshot:
                 data = retrieve_historical_cryptocurrency_ranks_from_coin_market_cap(historical_snapshot, limit)

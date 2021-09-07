@@ -17,7 +17,7 @@ def set_initial_enabled_quote_currencies() -> None:
             cryptocurrency = (
                 session.query(Currency)
                 .filter_by(symbol=quote_cryptocurrency_symbol, currency_type_id=cryptocurrency_id)
-                .first()
+                .one_or_none()
             )
             if cryptocurrency:
                 if not cryptocurrency.enabled_quote_currency:
@@ -27,7 +27,7 @@ def set_initial_enabled_quote_currencies() -> None:
             standard_currency = (
                 session.query(Currency)
                 .filter_by(symbol=quote_standard_currency_symbol, currency_type_id=standard_currency_id)
-                .first()
+                .one_or_none()
             )
             if standard_currency:
                 if not standard_currency.enabled_quote_currency:

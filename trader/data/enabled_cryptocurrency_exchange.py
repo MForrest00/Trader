@@ -12,7 +12,7 @@ def set_initial_enabled_cryptocurrency_exchanges() -> None:
                 session.query(CryptocurrencyExchange)
                 .join(Source)
                 .filter(Source.name == cryptocurrency_exchange_source_name)
-                .first()
+                .one_or_none()
             )
             if cryptocurrency_exchange:
                 if not cryptocurrency_exchange.enabled_cryptocurrency_exchange:
