@@ -7,12 +7,13 @@ class BollingerBandsCurrencyOHLCVEntranceCurrencyStrategy(EntranceCurrencyStrate
     NAME = "Bollinger Bands"
     VERSION = "1.0.0"
 
-    @staticmethod
-    def refine_dataframe(dataframe: pd.DataFrame, bollinger_bands_period: int) -> pd.DataFrame:
-        return dataframe.join(TA.BBANDS(dataframe, bollinger_bands_period))
+    def __init__(self, bollinger_bands_period: int):
+        self.bollinger_bands_period = bollinger_bands_period
 
-    @staticmethod
-    def should_open_position(dataframe: pd.DataFrame, row_index: int) -> bool:
+    def refine_dataframe(self, dataframe: pd.DataFrame) -> pd.DataFrame:
+        return dataframe.join(TA.BBANDS(dataframe, self.bollinger_bands_period))
+
+    def should_open_position(self, dataframe: pd.DataFrame, row_index: int) -> bool:
         row = dataframe.iloc[row_index]
         if pd.isna(row["BB_LOWER"]):
             return False

@@ -27,7 +27,6 @@ def fetch_currency_ohlcv_as_dataframe(
                 CurrencyOHLCVPull.timeframe_id == timeframe.id,
             )
             .order_by(CurrencyOHLCV.date_open.asc())
-            .all()
         )
         if from_inclusive:
             records_query.filter(CurrencyOHLCV.date_open >= from_inclusive)

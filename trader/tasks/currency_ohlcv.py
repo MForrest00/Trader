@@ -1,21 +1,29 @@
-from datetime import timedelta
+from datetime import datetime, timedelta
+from typing import Optional
 from sqlalchemy.sql import func
 from trader.connections.database import DBSession
 from trader.data.base import COIN_MARKET_CAP, ONE_DAY, STANDARD_CURRENCY
 from trader.data.currency_ohlcv import update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap
+from trader.models.cryptocurrency import Cryptocurrency
 from trader.models.currency import Currency
 from trader.models.currency_ohlcv import CurrencyOHLCV, CurrencyOHLCVPull
 from trader.models.enabled_cryptocurrency_exchange import EnabledCryptocurrencyExchange
 from trader.tasks import app
-from trader.utilities.functions import fetch_base_data_id
+from trader.utilities.functions import datetime_to_ms_timestamp, fetch_base_data_id, ms_timestamp_to_datetime
 from trader.utilities.functions.cryptocurrency_exchange import (
     fetch_enabled_base_currency_ids_for_cryptocurrency_exchanges,
 )
 
 
-update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap_task = app.task(
-    update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap
-)
+@app.task
+def update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap_task(
+    base_currency_id: int, from_inclusive_ms_timestamp: int, to_exclusive_ms_timestamp: Optional[int] = None
+) -> None:
+    with DBSession() as session:
+        base_currency = session.query(Cryptocurrency).get(base_currency_id)
+    from_inclusive = ms_timestamp_to_datetime(from_inclusive_ms_timestamp)
+    to_exclusive = ms_timestamp_to_datetime(to_exclusive_ms_timestamp) if to_exclusive_ms_timestamp else None
+    update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap(base_currency, from_inclusive, to_exclusive=to_exclusive)
 
 
 @app.task
@@ -52,4 +60,6 @@ def queue_update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap_task() -> N
                         target_date = last_date[0] + timedelta(days=1)
                     else:
                         target_date = cryptocurrency.source_date_added
-                    update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap_task.delay(cryptocurrency, target_date)
+                    update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap_task.delay(
+                        cryptocurrency.id, datetime_to_ms_timestamp(target_date)
+                    )

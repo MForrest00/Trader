@@ -13,7 +13,6 @@ class CurrencyStrategy(ABC):
     def VERSION(self) -> str:
         ...
 
-    @staticmethod
     @abstractmethod
-    def refine_dataframe(dataframe: pd.DataFrame, *args, **kwargs) -> pd.DataFrame:
+    def refine_dataframe(self, dataframe: pd.DataFrame) -> pd.DataFrame:
         ...
