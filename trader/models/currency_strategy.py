@@ -51,6 +51,7 @@ class CurrencyStrategyVersion(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     currency_strategy_id = Column(Integer, ForeignKey("currency_strategy.id"), nullable=False)
     version = Column(String(250), nullable=False)
+    source_code_md5_hash = Column(String(32), nullable=False)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # Many to many

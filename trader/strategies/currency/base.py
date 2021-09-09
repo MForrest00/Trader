@@ -13,6 +13,11 @@ class CurrencyStrategy(ABC):
     def VERSION(self) -> str:
         ...
 
+    @property
+    @abstractmethod
+    def IS_ENTRANCE(self) -> bool:
+        ...
+
     @abstractmethod
     def refine_dataframe(self, dataframe: pd.DataFrame) -> pd.DataFrame:
         ...

@@ -6,6 +6,7 @@ from trader.strategies.currency.entrance.base import EntranceCurrencyStrategy
 class BollingerBandsCurrencyOHLCVEntranceCurrencyStrategy(EntranceCurrencyStrategy):
     NAME = "Bollinger Bands"
     VERSION = "1.0.0"
+    IS_ENTRANCE = True
 
     def __init__(self, bollinger_bands_period: int):
         self.bollinger_bands_period = bollinger_bands_period

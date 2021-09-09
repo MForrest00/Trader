@@ -7,6 +7,7 @@ from trader.strategies.currency.exit.base import ExitCurrencyStrategy
 class TrailingStopLossCurrencyOHLCVExitCurrencyStrategy(ExitCurrencyStrategy):
     NAME = "Trailing Stop Loss"
     VERSION = "1.0.0"
+    IS_ENTRANCE = False
 
     def __init__(self, grace_periods: int, trailing_stop_loss_percentage: float):
         self.grace_periods = grace_periods

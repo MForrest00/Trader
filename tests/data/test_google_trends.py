@@ -1,8 +1,7 @@
 from datetime import datetime, timezone
 import pytest
 from trader.data.base import EIGHT_MINUTE, ONE_DAY, ONE_MINUTE, ONE_MONTH
-from trader.data.google_trends import timeframe_base_label_to_date_ranges
-from trader.utilities.constants import GOOGLE_TRENDS_OTHER_SEARCH_BASE_DATE, GOOGLE_TRENDS_WEB_SEARCH_BASE_DATE
+from trader.data.google_trends import GOOGLE_TRENDS_OTHER_SEARCH_BASE_DATE, GOOGLE_TRENDS_WEB_SEARCH_BASE_DATE, timeframe_base_label_to_date_ranges
 
 
 @pytest.mark.integration

@@ -1,5 +1,7 @@
 from datetime import datetime, timedelta
-from typing import Callable, Dict, Union
+from hashlib import md5
+from inspect import getsource, signature
+from typing import Callable, Dict, List, Type, Union
 from dateutil.relativedelta import relativedelta
 from trader.connections.cache import cache
 from trader.data.base import (
@@ -68,3 +70,12 @@ def fetch_base_data_id(
         initialize_base_data()
         cache_value = cache.get(base_data.cache_key)
     return int(cache_value.decode())
+
+
+def get_init_parameters(source_object: Type) -> List[str]:
+    parameters = signature(source_object.__init__).parameters.keys()
+    return sorted(list(parameters - set(["self"])))
+
+
+def get_hash_of_source(source_object: Union[Callable, Type]) -> str:
+    return md5(getsource(source_object).encode()).hexdigest()
