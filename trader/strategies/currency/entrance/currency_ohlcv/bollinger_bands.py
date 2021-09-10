@@ -3,12 +3,13 @@ import pandas as pd
 from trader.strategies.currency.entrance.base import EntranceCurrencyStrategy
 
 
-class BollingerBandsCurrencyOHLCVEntranceCurrencyStrategy(EntranceCurrencyStrategy):
+class BollingerBandsEntranceCurrencyOHLCVStrategy(EntranceCurrencyStrategy):
     NAME = "Bollinger Bands"
     VERSION = "1.0.0"
     IS_ENTRANCE = True
+    NORMAL_PARAMETER_SPACE = {"bollinger_bands_period": range(5, 45, 5)}
 
-    def __init__(self, bollinger_bands_period: int):
+    def __init__(self, bollinger_bands_period: int = 20):
         self.bollinger_bands_period = bollinger_bands_period
 
     def refine_dataframe(self, dataframe: pd.DataFrame) -> pd.DataFrame:

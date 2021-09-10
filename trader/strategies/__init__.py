@@ -1,78 +1,73 @@
 from sqlalchemy.orm import Session
 from trader.connections.database import DBSession
-from trader.data.base import CURRENCY_OHLCV
-from trader.models.currency_strategy import (
-    CurrencyStrategy,
-    CurrencyStrategyVersion,
-    CurrencyStrategyVersionParameter,
-    CurrencyStrategyVersionXCurrencyStrategyVersionParameter,
+from trader.models.currency_ohlcv_strategy import (
+    CurrencyOHLCVStrategy,
+    CurrencyOHLCVStrategyVersion,
+    CurrencyOHLCVStrategyVersionParameter,
+    CurrencyOHLCVStrategyVersionXCurrencyOHLCVStrategyVersionParameter,
 )
-from trader.strategies.currency.base import CurrencyStrategy as CurrencyStrategyObject
+from trader.strategies.currency.base import CurrencyStrategy
 from trader.strategies.currency.entrance.currency_ohlcv.bollinger_bands import (
-    BollingerBandsCurrencyOHLCVEntranceCurrencyStrategy,
+    BollingerBandsEntranceCurrencyOHLCVStrategy,
 )
-from trader.strategies.currency.exit.currency_ohlcv.trailing_stop_loss import (
-    TrailingStopLossCurrencyOHLCVExitCurrencyStrategy,
-)
-from trader.utilities.functions import fetch_base_data_id, get_hash_of_source, get_init_parameters
+from trader.strategies.currency.exit.currency_ohlcv.trailing_stop_loss import TrailingStopLossExitCurrencyOHLCVStrategy
+from trader.utilities.functions import get_hash_of_source, get_init_parameters
 
 
-def initialize_strategy(
-    session: Session,
-    currency_strategy_implementation_type_id: int,
-    strategy: CurrencyStrategyObject,
-) -> None:
+def initialize_ohlcv_strategy(session: Session, strategy: CurrencyStrategy) -> None:
+    parameters = get_init_parameters(strategy)
+    if set(parameters) != strategy.NORMAL_PARAMETER_SPACE.keys():
+        raise Exception(f"Init parameters and NORMAL_PARAMETER_SPACE keys do not match for strategy {strategy.NAME}")
     strategy = (
-        session.query(CurrencyStrategy)
+        session.query(CurrencyOHLCVStrategy)
         .filter_by(
-            currency_strategy_implementation_type_id=currency_strategy_implementation_type_id,
             name=strategy.NAME,
             is_entrance=strategy.IS_ENTRANCE,
         )
         .one_or_none()
     )
     if not strategy:
-        strategy = CurrencyStrategy(
-            currency_strategy_implementation_type_id=currency_strategy_implementation_type_id,
+        strategy = CurrencyOHLCVStrategy(
             name=strategy.NAME,
             is_entrance=strategy.IS_ENTRANCE,
         )
         session.add(strategy)
         session.flush()
     version = (
-        session.query(CurrencyStrategyVersion)
+        session.query(CurrencyOHLCVStrategyVersion)
         .filter_by(currency_ohlcv_strategy_id=strategy.id, version=strategy.VERSION)
         .one_or_none()
     )
     if not version:
-        version = CurrencyStrategyVersion(
+        version = CurrencyOHLCVStrategyVersion(
             currency_ohlcv_strategy_id=strategy.id,
             version=strategy.VERSION,
             source_code_md5_hash=get_hash_of_source(strategy),
         )
         session.add(version)
         session.flush()
-        for parameter in get_init_parameters(strategy):
+        for parameter in parameters:
             parameter = parameter.lower()
             version_parameter = (
-                session.query(CurrencyStrategyVersionParameter).filter_by(parameter=parameter).one_or_none()
+                session.query(CurrencyOHLCVStrategyVersionParameter).filter_by(parameter=parameter).one_or_none()
             )
             if not version_parameter:
-                version_parameter = CurrencyStrategyVersionParameter(parameter=parameter)
+                version_parameter = CurrencyOHLCVStrategyVersionParameter(parameter=parameter)
                 session.add(version_parameter)
                 session.flush()
-            link = CurrencyStrategyVersionXCurrencyStrategyVersionParameter(
+            link = CurrencyOHLCVStrategyVersionXCurrencyOHLCVStrategyVersionParameter(
                 currency_strategy_version_id=version.id, currency_strategy_version_parameter_id=version_parameter.id
             )
             session.add(link)
+    elif version.source_code_md5_hash != get_hash_of_source(strategy):
+        raise Exception("MD5 hash of source does not match persisted value for strategy {strategy.NAME}")
 
 
 def initialize_strategies() -> None:
-    currency_ohlcv_id = fetch_base_data_id(CURRENCY_OHLCV)
     with DBSession() as session:
         for item in (
-            BollingerBandsCurrencyOHLCVEntranceCurrencyStrategy,
-            TrailingStopLossCurrencyOHLCVExitCurrencyStrategy,
+            BollingerBandsEntranceCurrencyOHLCVStrategy,
+            TrailingStopLossExitCurrencyOHLCVStrategy,
         ):
-            initialize_strategy(session, currency_ohlcv_id, item)
+            initialize_ohlcv_strategy(session, item)
         session.commit()

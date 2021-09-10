@@ -4,7 +4,6 @@ from sqlalchemy.orm import Session
 from trader.connections.cache import cache
 from trader.connections.database import DBSession
 from trader.models.currency import CurrencyType
-from trader.models.currency_strategy import CurrencyStrategyImplementationType
 from trader.models.google_trends import GoogleTrendsPullGeo, GoogleTrendsPullGprop
 from trader.models.source import Source, SourceType
 from trader.models.timeframe import Timeframe
@@ -172,32 +171,6 @@ def initialize_timeframes(session: Session) -> None:
         cache.set(timeframe.cache_key, instance.id)
 
 
-@dataclass
-class CurrencyStrategyImplementationTypeData:
-    cache_key: str
-    description: str
-
-
-CURRENCY_OHLCV = CurrencyStrategyImplementationTypeData(
-    "currency_strategy_implementation_type_currency_ohlcv_id", "Currency OHLCV"
-)
-CURRENCY_STRATEGY_IMPLEMENTATION_TYPES = (CURRENCY_OHLCV,)
-
-
-def initialize_currency_strategy_implementation_types(session: Session) -> None:
-    for currency_strategy_implementation_type in CurrencyStrategyImplementationTypeData:
-        instance = (
-            session.query(CurrencyStrategyImplementationType)
-            .filter_by(description=currency_strategy_implementation_type.description)
-            .one_or_none()
-        )
-        if not instance:
-            instance = CurrencyStrategyImplementationType(description=currency_strategy_implementation_type.description)
-            session.add(instance)
-            session.flush()
-        cache.set(currency_strategy_implementation_type.cache_key, instance.id)
-
-
 def initialize_base_data() -> None:
     with DBSession() as session:
         initialize_currency_types(session)
@@ -206,5 +179,4 @@ def initialize_base_data() -> None:
         initialize_source_types(session)
         initialize_sources(session)
         initialize_timeframes(session)
-        initialize_currency_strategy_implementation_types(session)
         session.commit()

@@ -1,4 +1,5 @@
 from abc import ABC, abstractmethod
+from typing import Any, Dict, Sequence
 import pandas as pd
 
 
@@ -16,6 +17,11 @@ class CurrencyStrategy(ABC):
     @property
     @abstractmethod
     def IS_ENTRANCE(self) -> bool:
+        ...
+
+    @property
+    @abstractmethod
+    def NORMAL_PARAMETER_SPACE(self) -> Dict[str, Sequence[Any]]:
         ...
 
     @abstractmethod
