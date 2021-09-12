@@ -18,8 +18,8 @@ class GoogleTrendsGeo(Base):
     __tablename__ = "google_trends_geo"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    code = Column(String(25), nullable=False, unique=True)
-    name = Column(String(250), nullable=False)
+    code = Column(String, nullable=False, unique=True)
+    name = Column(String, nullable=False)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # One to many
@@ -30,8 +30,8 @@ class GoogleTrendsGprop(Base):
     __tablename__ = "google_trends_gprop"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    code = Column(String(25), nullable=False, unique=True)
-    name = Column(String(250), nullable=False)
+    code = Column(String, nullable=False, unique=True)
+    name = Column(String, nullable=False)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # One to many

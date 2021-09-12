@@ -17,8 +17,8 @@ class Country(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
-    name = Column(String(250), nullable=False)
-    official_name = Column(String(250), nullable=False)
+    name = Column(String, nullable=False)
+    official_name = Column(String, nullable=False)
     iso_alpha_2_code = Column(String(2), nullable=False, unique=True)
     iso_alpha_3_code = Column(String(3), nullable=False, unique=True)
     iso_numeric_code = Column(String(3), nullable=False, unique=True)

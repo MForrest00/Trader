@@ -17,7 +17,7 @@ class CryptocurrencyExchangeMarketCategory(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
-    description = Column(String(250), nullable=False, unique=True)
+    description = Column(String, nullable=False, unique=True)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # One to many
@@ -31,7 +31,7 @@ class CryptocurrencyExchangeMarketFeeType(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
-    description = Column(String(250), nullable=False, unique=True)
+    description = Column(String, nullable=False, unique=True)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # One to many
@@ -54,7 +54,7 @@ class CryptocurrencyExchangeMarket(Base):
     cryptocurrency_exchange_market_fee_type_id = Column(
         Integer, ForeignKey("cryptocurrency_exchange_market_fee_type.id"), nullable=False
     )
-    market_url = Column(String(250), nullable=False)
+    market_url = Column(String, nullable=False)
     source_entity_id = Column(Integer, nullable=True)
     source_date_last_updated = Column(DateTime(timezone=True), nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)

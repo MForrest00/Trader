@@ -16,7 +16,7 @@ class CurrencyType(Base):
     __tablename__ = "currency_type"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    description = Column(String(250), nullable=False, unique=True)
+    description = Column(String, nullable=False, unique=True)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # One to many
@@ -29,8 +29,8 @@ class Currency(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
     currency_type_id = Column(Integer, ForeignKey("currency_type.id"), nullable=False)
-    name = Column(String(250), nullable=True)
-    symbol = Column(String(25), nullable=False)
+    name = Column(String, nullable=True)
+    symbol = Column(String, nullable=False)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # One to one
@@ -55,7 +55,7 @@ class CurrencyTag(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
-    tag = Column(String(250), nullable=False, unique=True)
+    tag = Column(String, nullable=False, unique=True)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # Many to many

@@ -17,10 +17,10 @@ class CryptocurrencyPlatform(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
-    name = Column(String(250), nullable=False)
-    symbol = Column(String(25), nullable=False)
+    name = Column(String, nullable=False)
+    symbol = Column(String, nullable=False)
     source_entity_id = Column(Integer, nullable=True)
-    source_slug = Column(String(50), nullable=True)
+    source_slug = Column(String, nullable=True)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # One to many
@@ -36,7 +36,7 @@ class Cryptocurrency(Base):
     currency_id = Column(Integer, ForeignKey("currency.id"), nullable=False, unique=True)
     max_supply = Column(Numeric(36, 15), nullable=True)
     source_entity_id = Column(Integer, nullable=True)
-    source_slug = Column(String(50), nullable=True)
+    source_slug = Column(String, nullable=True)
     source_date_added = Column(DateTime(timezone=True), nullable=True)
     source_date_last_updated = Column(DateTime(timezone=True), nullable=True)
     cryptocurrency_platform_id = Column(Integer, ForeignKey("cryptocurrency_platform.id"), nullable=True)

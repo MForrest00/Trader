@@ -16,7 +16,7 @@ class CurrencyOHLCVImplementation(Base):
     __tablename__ = "currency_ohlcv_implementation"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(250), nullable=False, unique=True)
+    name = Column(String, nullable=False, unique=True)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # One to many
@@ -30,7 +30,7 @@ class CurrencyOHLCVImplementationVersion(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     currency_ohlcv_implementation_id = Column(Integer, ForeignKey("currency_implementation.id"), nullable=False)
-    version = Column(String(250), nullable=False)
+    version = Column(String, nullable=False)
     source_code_md5_hash = Column(String(32), nullable=False)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 

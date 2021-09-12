@@ -16,7 +16,7 @@ class Strategy(Base):
     __tablename__ = "strategy"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    name = Column(String(250), nullable=False, unique=True)
+    name = Column(String, nullable=False, unique=True)
     is_entry = Column(Boolean, nullable=False)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
@@ -31,7 +31,7 @@ class StrategyVersion(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     strategy_id = Column(Integer, ForeignKey("strategy.id"), nullable=False)
-    version = Column(String(250), nullable=False)
+    version = Column(String, nullable=False)
     source_code_md5_hash = Column(String(32), nullable=False)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
@@ -47,7 +47,7 @@ class StrategyVersionParameter(Base):
     __tablename__ = "strategy_version_parameter"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    parameter = Column(String(250), nullable=False, unique=True)
+    parameter = Column(String, nullable=False, unique=True)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # Many to many
