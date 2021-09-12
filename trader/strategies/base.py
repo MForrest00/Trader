@@ -3,7 +3,7 @@ from typing import Any, Dict, Sequence
 import pandas as pd
 
 
-class CurrencyStrategy(ABC):
+class Strategy(ABC):
     @property
     @abstractmethod
     def NAME(self) -> str:
@@ -16,7 +16,7 @@ class CurrencyStrategy(ABC):
 
     @property
     @abstractmethod
-    def IS_ENTRANCE(self) -> bool:
+    def IS_ENTRY(self) -> bool:
         ...
 
     @property

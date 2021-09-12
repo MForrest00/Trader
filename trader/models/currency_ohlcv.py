@@ -4,23 +4,25 @@ from sqlalchemy import (
     ForeignKey,
     Integer,
     Numeric,
+    UniqueConstraint,
 )
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.sql import func
 from trader.models.base import Base
 
 
-class CurrencyOHLCVPull(Base):
-    __tablename__ = "currency_ohlcv_pull"
+class CurrencyOHLCVGroup(Base):
+    __tablename__ = "currency_ohlcv_group"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
     base_currency_id = Column(Integer, ForeignKey("currency.id"), nullable=False)
     quote_currency_id = Column(Integer, ForeignKey("currency.id"), nullable=False)
     timeframe_id = Column(Integer, ForeignKey("timeframe.id"), nullable=False)
-    from_inclusive = Column(DateTime(timezone=True), nullable=False)
-    to_exclusive = Column(DateTime(timezone=True), nullable=True)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+    # One to many
+    currency_ohlcv_pulls = relationship("CurrencyOHLCVPull", lazy=True, backref=backref(__tablename__, lazy=False))
 
     # Many to one
     base_currency = relationship(
@@ -29,6 +31,20 @@ class CurrencyOHLCVPull(Base):
     quote_currency = relationship(
         "Currency", lazy=False, backref=backref(f"quote_{__tablename__}s", lazy=True), foreign_keys=[quote_currency_id]
     )
+
+    __table_args__ = (UniqueConstraint("source_id", "base_currency_id", "quote_currency_id", "timeframe_id"),)
+
+
+class CurrencyOHLCVPull(Base):
+    __tablename__ = "currency_ohlcv_pull"
+
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    currency_ohlcv_group_id = Column(Integer, ForeignKey("currency_ohlcv_group.id"), nullable=False)
+    from_inclusive = Column(DateTime(timezone=True), nullable=False)
+    to_exclusive = Column(DateTime(timezone=True), nullable=True)
+    date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+    # One to many
     currency_ohlcvs = relationship("CurrencyOHLCV", lazy=True, backref=backref(__tablename__, lazy=False))
 
 

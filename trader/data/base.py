@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from trader.connections.cache import cache
 from trader.connections.database import DBSession
 from trader.models.currency import CurrencyType
-from trader.models.google_trends import GoogleTrendsPullGeo, GoogleTrendsPullGprop
+from trader.models.google_trends import GoogleTrendsGeo, GoogleTrendsGprop
 from trader.models.source import Source, SourceType
 from trader.models.timeframe import Timeframe
 
@@ -32,50 +32,50 @@ def initialize_currency_types(session: Session) -> None:
 
 
 @dataclass
-class GoogleTrendsPullGeoData:
+class GoogleTrendsGeoData:
     cache_key: str
     code: str
     name: str
 
 
-WORLDWIDE = GoogleTrendsPullGeoData("google_trends_pull_geo_worldwide_id", "", "Worldwide")
-UNITED_STATES = GoogleTrendsPullGeoData("google_trends_pull_geo_united_states_id", "US", "United States")
-GOOGLE_TRENDS_PULL_GEOS = (WORLDWIDE, UNITED_STATES)
+WORLDWIDE = GoogleTrendsGeoData("google_trends_geo_worldwide_id", "", "Worldwide")
+UNITED_STATES = GoogleTrendsGeoData("google_trends_geo_united_states_id", "US", "United States")
+GOOGLE_TRENDS_GEOS = (WORLDWIDE, UNITED_STATES)
 
 
-def initialize_google_trends_pull_geos(session: Session) -> None:
-    for google_trends_pull_geo in GOOGLE_TRENDS_PULL_GEOS:
-        instance = session.query(GoogleTrendsPullGeo).filter_by(code=google_trends_pull_geo.code).one_or_none()
+def initialize_google_trends_geos(session: Session) -> None:
+    for google_trends_geo in GOOGLE_TRENDS_GEOS:
+        instance = session.query(GoogleTrendsGeo).filter_by(code=google_trends_geo.code).one_or_none()
         if not instance:
-            instance = GoogleTrendsPullGeo(code=google_trends_pull_geo.code, name=google_trends_pull_geo.name)
+            instance = GoogleTrendsGeo(code=google_trends_geo.code, name=google_trends_geo.name)
             session.add(instance)
             session.flush()
-        cache.set(google_trends_pull_geo.cache_key, instance.id)
+        cache.set(google_trends_geo.cache_key, instance.id)
 
 
 @dataclass
-class GoogleTrendsPullGpropData:
+class GoogleTrendsGpropData:
     cache_key: str
     code: str
     name: str
 
 
-WEB_SEARCH = GoogleTrendsPullGpropData("google_trends_pull_gprop_web_search_id", "", "Web search")
-IMAGE_SEARCH = GoogleTrendsPullGpropData("google_trends_pull_gprop_image_search_id", "image", "Image search")
-NEWS_SEARCH = GoogleTrendsPullGpropData("google_trends_pull_gprop_news_search_id", "news", "News search")
-GOOGLE_SHOPPING = GoogleTrendsPullGpropData("google_trends_pull_gprop_google_shopping_id", "froogle", "Google shopping")
-YOUTUBE_SEARCH = GoogleTrendsPullGpropData("google_trends_pull_gprop_youtube_search_id", "youtube", "YouTube search")
-GOOGLE_TRENDS_PULL_GPROPS = (WEB_SEARCH, IMAGE_SEARCH, NEWS_SEARCH, GOOGLE_SHOPPING, YOUTUBE_SEARCH)
+WEB_SEARCH = GoogleTrendsGpropData("google_trends_gprop_web_search_id", "", "Web search")
+IMAGE_SEARCH = GoogleTrendsGpropData("google_trends_gprop_image_search_id", "image", "Image search")
+NEWS_SEARCH = GoogleTrendsGpropData("google_trends_gprop_news_search_id", "news", "News search")
+GOOGLE_SHOPPING = GoogleTrendsGpropData("google_trends_gprop_google_shopping_id", "froogle", "Google shopping")
+YOUTUBE_SEARCH = GoogleTrendsGpropData("google_trends_gprop_youtube_search_id", "youtube", "YouTube search")
+GOOGLE_TRENDS_GPROPS = (WEB_SEARCH, IMAGE_SEARCH, NEWS_SEARCH, GOOGLE_SHOPPING, YOUTUBE_SEARCH)
 
 
-def initialize_google_trends_pull_gprops(session: Session) -> None:
-    for google_trends_pull_gprop in GOOGLE_TRENDS_PULL_GPROPS:
-        instance = session.query(GoogleTrendsPullGprop).filter_by(code=google_trends_pull_gprop.code).one_or_none()
+def initialize_google_trends_gprops(session: Session) -> None:
+    for google_trends_gprop in GOOGLE_TRENDS_GPROPS:
+        instance = session.query(GoogleTrendsGprop).filter_by(code=google_trends_gprop.code).one_or_none()
         if not instance:
-            instance = GoogleTrendsPullGprop(code=google_trends_pull_gprop.code, name=google_trends_pull_gprop.name)
+            instance = GoogleTrendsGprop(code=google_trends_gprop.code, name=google_trends_gprop.name)
             session.add(instance)
             session.flush()
-        cache.set(google_trends_pull_gprop.cache_key, instance.id)
+        cache.set(google_trends_gprop.cache_key, instance.id)
 
 
 @dataclass
@@ -174,8 +174,8 @@ def initialize_timeframes(session: Session) -> None:
 def initialize_base_data() -> None:
     with DBSession() as session:
         initialize_currency_types(session)
-        initialize_google_trends_pull_geos(session)
-        initialize_google_trends_pull_gprops(session)
+        initialize_google_trends_geos(session)
+        initialize_google_trends_gprops(session)
         initialize_source_types(session)
         initialize_sources(session)
         initialize_timeframes(session)

@@ -3,7 +3,7 @@ from typing import Optional
 import pandas as pd
 from trader.connections.database import DBSession
 from trader.models.currency import Currency
-from trader.models.currency_ohlcv import CurrencyOHLCV, CurrencyOHLCVPull
+from trader.models.currency_ohlcv import CurrencyOHLCV, CurrencyOHLCVGroup, CurrencyOHLCVPull
 from trader.models.source import Source
 from trader.models.timeframe import Timeframe
 
@@ -20,11 +20,12 @@ def fetch_currency_ohlcv_as_dataframe(
         records_query = (
             session.query(CurrencyOHLCV)
             .join(CurrencyOHLCVPull)
+            .join(CurrencyOHLCVGroup)
             .filter(
-                CurrencyOHLCVPull.source_id == source.id,
-                CurrencyOHLCVPull.base_currency_id == base_currency.id,
-                CurrencyOHLCVPull.quote_currency_id == quote_currency.id,
-                CurrencyOHLCVPull.timeframe_id == timeframe.id,
+                CurrencyOHLCVGroup.source_id == source.id,
+                CurrencyOHLCVGroup.base_currency_id == base_currency.id,
+                CurrencyOHLCVGroup.quote_currency_id == quote_currency.id,
+                CurrencyOHLCVGroup.timeframe_id == timeframe.id,
             )
             .order_by(CurrencyOHLCV.date_open.asc())
         )

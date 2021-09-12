@@ -6,7 +6,7 @@ from trader.data.base import COIN_MARKET_CAP, ONE_DAY, STANDARD_CURRENCY
 from trader.data.currency_ohlcv import update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap
 from trader.models.cryptocurrency import Cryptocurrency
 from trader.models.currency import Currency
-from trader.models.currency_ohlcv import CurrencyOHLCV, CurrencyOHLCVPull
+from trader.models.currency_ohlcv import CurrencyOHLCV, CurrencyOHLCVGroup, CurrencyOHLCVPull
 from trader.models.enabled_cryptocurrency_exchange import EnabledCryptocurrencyExchange
 from trader.tasks import app
 from trader.utilities.functions import datetime_to_ms_timestamp, fetch_base_data_id, ms_timestamp_to_datetime
@@ -46,13 +46,14 @@ def queue_update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap_task() -> N
                 if cryptocurrency:
                     last_date = (
                         session.query(func.max(CurrencyOHLCV.date_open))
-                        .select_from(CurrencyOHLCVPull)
-                        .join(CurrencyOHLCV)
+                        .select_from(CurrencyOHLCV)
+                        .join(CurrencyOHLCVPull)
+                        .join(CurrencyOHLCVGroup)
                         .filter(
-                            CurrencyOHLCVPull.source_id == coin_market_cap_id,
-                            CurrencyOHLCVPull.base_currency_id == base_currency.id,
-                            CurrencyOHLCVPull.quote_currency_id == us_dollar.id,
-                            CurrencyOHLCVPull.timeframe_id == one_day_id,
+                            CurrencyOHLCVGroup.source_id == coin_market_cap_id,
+                            CurrencyOHLCVGroup.base_currency_id == base_currency.id,
+                            CurrencyOHLCVGroup.quote_currency_id == us_dollar.id,
+                            CurrencyOHLCVGroup.timeframe_id == one_day_id,
                         )
                         .one_or_none()
                     )

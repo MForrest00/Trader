@@ -6,12 +6,12 @@ from trader.connections.trend_request import trend_request
 from trader.data.base import EIGHT_MINUTE, GOOGLE_TRENDS, ONE_DAY, ONE_MINUTE, ONE_MONTH, WEB_SEARCH
 from trader.models.google_trends import (
     GoogleTrends,
-    GoogleTrendsKeyword,
+    GoogleTrendsGeo,
+    GoogleTrendsGprop,
+    GoogleTrendsGroup,
+    GoogleTrendsKeywords,
     GoogleTrendsPull,
-    GoogleTrendsKeywordXGoogleTrendsPull,
     GoogleTrendsPullStep,
-    GoogleTrendsPullGeo,
-    GoogleTrendsPullGprop,
 )
 from trader.models.timeframe import Timeframe
 from trader.utilities.functions import clean_range_cap, fetch_base_data_id
@@ -31,7 +31,7 @@ GOOGLE_TRENDS_TIMEFRAME_RANKS = (
 
 def timeframe_base_label_to_date_ranges(
     timeframe_base_label: str,
-    gprop: GoogleTrendsPullGprop,
+    gprop: GoogleTrendsGprop,
     from_inclusive: Optional[datetime],
     to_exclusive: Optional[datetime],
 ) -> List[Tuple[datetime, Optional[datetime]]]:
@@ -95,8 +95,8 @@ def date_range_to_timeframe_string(
 
 def retrieve_interest_over_time_from_google_trends(
     keywords: Sequence[str],
-    geo: GoogleTrendsPullGeo,
-    gprop: GoogleTrendsPullGprop,
+    geo: GoogleTrendsGeo,
+    gprop: GoogleTrendsGprop,
     timeframe_string: str,
 ) -> Tuple[Timeframe, List[Dict[str, Union[datetime, int, bool]]]]:
     trend_request.build_payload(keywords, timeframe=timeframe_string, geo=geo.code, gprop=gprop.code)
@@ -111,8 +111,8 @@ def retrieve_interest_over_time_from_google_trends(
 
 def update_interest_over_time_from_google_trends(
     keywords: Sequence[str],
-    geo: GoogleTrendsPullGeo,
-    gprop: GoogleTrendsPullGprop,
+    geo: GoogleTrendsGeo,
+    gprop: GoogleTrendsGprop,
     timeframe: Timeframe,
     from_inclusive: Optional[datetime],
     to_exclusive: Optional[datetime] = None,
@@ -122,33 +122,43 @@ def update_interest_over_time_from_google_trends(
         target_timeframe_rank = GOOGLE_TRENDS_TIMEFRAME_RANKS.index(timeframe.base_label)
     except ValueError as error:
         raise ValueError("Timeframe was not a compatible value for Google Trends") from error
-    keywords = [keyword.lower() for keyword in keywords]
-    google_trends_keywords_lookup: Dict[str, GoogleTrendsKeyword] = {}
+    keywords = sorted([keyword.lower() for keyword in keywords if keyword])
+    if not keywords:
+        raise ValueError("Must include a keywords sequence with at least one valid keyword")
     with DBSession() as session:
-        for keyword_string in keywords:
-            keyword = session.query(GoogleTrendsKeyword).filter_by(keyword=keyword_string).one_or_none()
-            if not keyword:
-                keyword = GoogleTrendsKeyword(keyword=keyword_string)
-                session.add(keyword)
-                session.flush()
-            google_trends_keywords_lookup[keyword_string] = keyword
-        keyword_id_set = set(k.id for k in google_trends_keywords_lookup.values())
+        google_trends_keywords = session.query(GoogleTrendsKeywords).filter_by(keywords=keywords).one_or_none()
+        if not google_trends_keywords:
+            google_trends_keywords = GoogleTrendsKeywords(keywords=keywords)
+            session.add(google_trends_keywords)
+            session.flush()
+        google_trends_group = (
+            session.query(GoogleTrendsGroup)
+            .filter_by(
+                source_id=google_trends_id,
+                google_trends_geo_id=geo.id,
+                google_trends_gprop_id=gprop.id,
+                google_trends_keywords_id=google_trends_keywords.id,
+                timeframe_id=timeframe.id,
+            )
+            .one_or_none()
+        )
+        if not google_trends_group:
+            google_trends_group = GoogleTrendsGroup(
+                source_id=google_trends_id,
+                google_trends_geo_id=geo.id,
+                google_trends_gprop_id=gprop.id,
+                google_trends_keywords_id=google_trends_keywords.id,
+                timeframe_id=timeframe.id,
+            )
+            session.add(google_trends_group)
+            session.flush()
         google_trends_pull = GoogleTrendsPull(
-            source_id=google_trends_id,
-            google_trends_pull_geo_id=geo.id,
-            google_trends_pull_gprop_id=gprop.id,
-            timeframe_id=timeframe.id,
+            google_trends_group_id=google_trends_group.id,
             from_inclusive=from_inclusive,
             to_exclusive=to_exclusive,
         )
         session.add(google_trends_pull)
         session.flush()
-        for keyword in keywords:
-            google_trends_keyword_google_trends_pull = GoogleTrendsKeywordXGoogleTrendsPull(
-                google_trends_keyword_id=google_trends_keywords_lookup[keyword].id,
-                google_trends_pull_id=google_trends_pull.id,
-            )
-            session.add(google_trends_keyword_google_trends_pull)
         for timeframe_base_label in reversed(GOOGLE_TRENDS_TIMEFRAME_RANKS[target_timeframe_rank:]):
             date_ranges = timeframe_base_label_to_date_ranges(timeframe_base_label, gprop, from_inclusive, to_exclusive)
             if date_ranges:
@@ -157,33 +167,28 @@ def update_interest_over_time_from_google_trends(
                     competing_google_trends_pull_steps = (
                         session.query(GoogleTrendsPullStep)
                         .join(GoogleTrendsPull)
+                        .join(GoogleTrendsGroup)
                         .filter(
                             GoogleTrendsPullStep.timeframe_id == timeframe.id,
                             GoogleTrendsPullStep.from_date == from_val,
                             GoogleTrendsPullStep.to_date == to_val,
                             GoogleTrendsPullStep.is_current.is_(True),
-                            GoogleTrendsPull.google_trends_pull_geo_id == geo.id,
-                            GoogleTrendsPull.google_trends_pull_gprop_id == gprop.id,
+                            GoogleTrendsGroup.google_trends_geo_id == geo.id,
+                            GoogleTrendsGroup.google_trends_gprop_id == gprop.id,
+                            GoogleTrendsGroup.google_trends_keywords_id == google_trends_keywords.id,
                         )
                         .all()
                     )
                     valid_competing_found = False
                     for competing_google_trends_pull_step in competing_google_trends_pull_steps:
-                        google_trends_pull_keywords = (
-                            competing_google_trends_pull_step.google_trends_pull.google_trends_keywords
-                        )
-                        google_trends_pull_keyword_ids = set(
-                            k.google_trends_keyword.id for k in google_trends_pull_keywords
-                        )
-                        if google_trends_pull_keyword_ids == keyword_id_set:
-                            for datum in competing_google_trends_pull_step.google_trends_data:
-                                if datum.is_partial:
-                                    competing_google_trends_pull_step.is_current = False
-                                    break
-                            else:
-                                if valid_competing_found:
-                                    competing_google_trends_pull_step.is_current = False
-                                valid_competing_found = True
+                        for datum in competing_google_trends_pull_step.google_trends_data:
+                            if datum.is_partial:
+                                competing_google_trends_pull_step.is_current = False
+                                break
+                        else:
+                            if valid_competing_found:
+                                competing_google_trends_pull_step.is_current = False
+                            valid_competing_found = True
                     if valid_competing_found:
                         continue
                     google_trends_pull_step = GoogleTrendsPullStep(
@@ -203,10 +208,10 @@ def update_interest_over_time_from_google_trends(
                         data_date = record.pop("data_date")
                         is_partial = bool(record.pop("isPartial"))
                         for keyword, value in record.items():
-                            keyword_id = google_trends_keywords_lookup[keyword].id
+                            keyword_index = keywords.index(keyword)
                             google_trends = GoogleTrends(
                                 google_trends_pull_step_id=google_trends_pull_step.id,
-                                google_trends_keyword_id=keyword_id,
+                                google_trends_keyword_index=keyword_index + 1,
                                 data_date=data_date,
                                 value=value,
                                 is_partial=is_partial,

@@ -76,11 +76,11 @@ class Source(Base):
         "CryptocurrencyRankSnapshot", lazy=True, backref=backref(__tablename__, lazy=True)
     )
     currencies = relationship("Currency", lazy=True, backref=backref(__tablename__, lazy=True))
-    currency_ohlcv_pulls = relationship("CurrencyOHLCVPull", lazy=True, backref=backref(__tablename__, lazy=True))
+    currency_ohlcv_groups = relationship("CurrencyOHLCVGroup", lazy=True, backref=backref(__tablename__, lazy=True))
     currency_tags = relationship("CurrencyTag", lazy=True, backref=backref(__tablename__, lazy=True))
     currencies_x_currency_tags = relationship(
         "CurrencyXCurrencyTag", lazy=True, backref=backref(__tablename__, lazy=True)
     )
-    google_trends_pulls = relationship("GoogleTrendsPull", lazy=True, backref=backref(__tablename__, lazy=True))
+    google_trends_groups = relationship("GoogleTrendsGroup", lazy=True, backref=backref(__tablename__, lazy=True))
 
     __table_args__ = (UniqueConstraint("name", "source_type_id"),)

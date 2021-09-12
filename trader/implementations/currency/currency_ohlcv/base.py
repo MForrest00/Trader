@@ -7,8 +7,8 @@ from trader.models.currency_ohlcv_implementation import (
     CurrencyOHLCVImplementationVersion,
 )
 from trader.models.currency_ohlcv_position import CurrencyOHLCVPosition
-from trader.models.currency_ohlcv_strategy import CurrencyOHLCVStrategy, CurrencyOHLCVStrategyVersion
-from trader.strategies.currency.base import CurrencyStrategy
+from trader.models.strategy import Strategy, StrategyVersion
+from trader.strategies.base import Strategy as StrategyBase
 from trader.utilities.functions import get_hash_of_source
 from trader.utilities.functions.currency_ohlcv import fetch_currency_ohlcv_as_dataframe
 
@@ -34,15 +34,15 @@ class CurrencyOHLCVImplementation(CurrencyImplementation):
         pass
 
     @staticmethod
-    def fetch_strategy_version_id(strategy: CurrencyStrategy, is_entrance: bool) -> int:
+    def fetch_strategy_version_id(strategy: StrategyBase, is_entrance: bool) -> int:
         with DBSession() as session:
             strategy_version = (
-                session.query(CurrencyOHLCVStrategyVersion)
-                .join(CurrencyOHLCVStrategy)
+                session.query(StrategyVersion)
+                .join(Strategy)
                 .filter(
-                    CurrencyOHLCVStrategy.name == strategy.NAME,
-                    CurrencyOHLCVStrategy.is_entrance.is_(is_entrance),
-                    CurrencyOHLCVStrategyVersion.version == strategy.VERSION,
+                    Strategy.name == strategy.NAME,
+                    Strategy.is_entrance.is_(is_entrance),
+                    StrategyVersion.version == strategy.VERSION,
                 )
                 .one()
             )

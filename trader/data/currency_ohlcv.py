@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from trader.strategies import base
 from typing import Dict, List, Optional, Union
 from urllib.parse import urlencode
 from ccxt.base.exchange import Exchange
@@ -7,7 +8,7 @@ from trader.connections.database import DBSession
 from trader.data.base import COIN_MARKET_CAP, ONE_DAY, STANDARD_CURRENCY
 from trader.models.cryptocurrency import Cryptocurrency
 from trader.models.currency import Currency
-from trader.models.currency_ohlcv import CurrencyOHLCV, CurrencyOHLCVPull
+from trader.models.currency_ohlcv import CurrencyOHLCV, CurrencyOHLCVGroup, CurrencyOHLCVPull
 from trader.models.timeframe import Timeframe
 from trader.utilities.functions import (
     clean_range_cap,
@@ -127,11 +128,27 @@ def update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap(
     data = retrieve_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap(base_currency, from_inclusive, to_exclusive)
     with DBSession() as session:
         us_dollar = session.query(Currency).filter_by(symbol="USD", currency_type_id=standard_currency_id).one()
+        currency_ohlcv_group = (
+            session.query(CurrencyOHLCVGroup)
+            .filter_by(
+                source_id=coin_market_cap_id,
+                base_currency_id=base_currency.currency.id,
+                quote_currency_id=us_dollar.id,
+                timeframe_id=one_day_id,
+            )
+            .one_or_none()
+        )
+        if not currency_ohlcv_group:
+            currency_ohlcv_group = CurrencyOHLCVGroup(
+                source_id=coin_market_cap_id,
+                base_currency_id=base_currency.currency.id,
+                quote_currency_id=us_dollar.id,
+                timeframe_id=one_day_id,
+            )
+            session.add(currency_ohlcv_group)
+            session.flush()
         currency_ohlcv_pull = CurrencyOHLCVPull(
-            source_id=coin_market_cap_id,
-            base_currency_id=base_currency.currency.id,
-            quote_currency_id=us_dollar.id,
-            timeframe_id=one_day_id,
+            currency_ohlcv_group_id=currency_ohlcv_group.id,
             from_inclusive=from_inclusive,
             to_exclusive=to_exclusive,
         )
@@ -141,11 +158,12 @@ def update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap(
             existing_records = (
                 session.query(CurrencyOHLCV)
                 .join(CurrencyOHLCVPull)
+                .join(CurrencyOHLCVGroup)
                 .filter(
-                    CurrencyOHLCVPull.source_id == coin_market_cap_id,
-                    CurrencyOHLCVPull.base_currency_id == base_currency.currency.id,
-                    CurrencyOHLCVPull.quote_currency_id == us_dollar.id,
-                    CurrencyOHLCVPull.timeframe_id == one_day_id,
+                    CurrencyOHLCVGroup.source_id == coin_market_cap_id,
+                    CurrencyOHLCVGroup.base_currency_id == base_currency.currency.id,
+                    CurrencyOHLCVGroup.quote_currency_id == us_dollar.id,
+                    CurrencyOHLCVGroup.timeframe_id == one_day_id,
                     CurrencyOHLCV.date_open >= data[0]["date_open"],
                     CurrencyOHLCV.date_open <= data[-1]["date_open"],
                 )
