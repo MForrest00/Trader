@@ -1,13 +1,13 @@
 from bs4 import BeautifulSoup
 import requests
 from trader.connections.database import DBSession
-from trader.data.base import ISO
+from trader.data.base import SOURCE_ISO
 from trader.models.country import Country
 from trader.utilities.functions import fetch_base_data_id
 
 
 def update_countries_from_iso() -> None:
-    iso_id = fetch_base_data_id(ISO)
+    iso_id = fetch_base_data_id(SOURCE_ISO)
     response = requests.get("https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes")
     soup = BeautifulSoup(response.text, "lxml")
     table_h2 = soup.select("span#Current_ISO_3166_country_codes")[0]

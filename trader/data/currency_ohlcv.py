@@ -1,11 +1,10 @@
 from datetime import datetime, timedelta, timezone
-from trader.strategies import base
 from typing import Dict, List, Optional, Union
 from urllib.parse import urlencode
 from ccxt.base.exchange import Exchange
 import requests
 from trader.connections.database import DBSession
-from trader.data.base import COIN_MARKET_CAP, ONE_DAY, STANDARD_CURRENCY
+from trader.data.base import CURRENCY_TYPE_STANDARD_CURRENCY, SOURCE_COIN_MARKET_CAP, TIMEFRAME_ONE_DAY
 from trader.models.cryptocurrency import Cryptocurrency
 from trader.models.currency import Currency
 from trader.models.currency_ohlcv import CurrencyOHLCV, CurrencyOHLCVGroup, CurrencyOHLCVPull
@@ -16,29 +15,28 @@ from trader.utilities.functions import (
     fetch_base_data_id,
     iso_time_string_to_datetime,
     ms_timestamp_to_datetime,
-    TIMEFRAME_UNIT_TO_INCREMENT_FUNCTION,
+    TIMEFRAME_UNIT_TO_DELTA_FUNCTION,
 )
 
 
 def retrieve_cryptocurrency_ohlcv_from_exchange_using_ccxt(
     exchange: Exchange,
-    base_cryptocurrency: Cryptocurrency,
+    base_currency: Cryptocurrency,
     quote_currency: Currency,
     timeframe: Timeframe,
     from_inclusive: datetime,
     to_exclusive: Optional[datetime] = None,
     limit: Optional[int] = None,
 ) -> List[Dict[str, Union[datetime, float]]]:
-    amount, unit = int(timeframe.base_label[:-1]), timeframe.base_label[-1:]
-    from_inclusive = clean_range_cap(from_inclusive, unit)
+    from_inclusive = clean_range_cap(from_inclusive, timeframe.unit)
     to_exclusive = (
-        clean_range_cap(min(to_exclusive, datetime.now(timezone.utc)), unit)
+        clean_range_cap(min(to_exclusive, datetime.now(timezone.utc)), timeframe.unit)
         if to_exclusive
-        else clean_range_cap(datetime.now(timezone.utc), unit)
+        else clean_range_cap(datetime.now(timezone.utc), timeframe.unit)
     )
     if not from_inclusive < to_exclusive:
         raise ValueError("From argument must be less than the to argument")
-    symbol = f"{base_cryptocurrency.currency.symbol}/{quote_currency.symbol}"
+    symbol = f"{base_currency.currency.symbol}/{quote_currency.symbol}"
     end = datetime_to_ms_timestamp(to_exclusive)
     output: List[Dict[str, Union[datetime, float]]] = []
     since = datetime_to_ms_timestamp(from_inclusive)
@@ -47,8 +45,8 @@ def retrieve_cryptocurrency_ohlcv_from_exchange_using_ccxt(
         if len(data) == 0:
             since = datetime_to_ms_timestamp(
                 max(
-                    TIMEFRAME_UNIT_TO_INCREMENT_FUNCTION[unit](since, amount),
-                    TIMEFRAME_UNIT_TO_INCREMENT_FUNCTION["d"](since, 1),
+                    since + TIMEFRAME_UNIT_TO_DELTA_FUNCTION[timeframe.unit](timeframe.amount),
+                    since + TIMEFRAME_UNIT_TO_DELTA_FUNCTION["d"](1),
                 )
             )
         else:
@@ -67,7 +65,8 @@ def retrieve_cryptocurrency_ohlcv_from_exchange_using_ccxt(
                 )
             else:
                 since = datetime_to_ms_timestamp(
-                    TIMEFRAME_UNIT_TO_INCREMENT_FUNCTION[unit](ms_timestamp_to_datetime(data[-1][0]), amount)
+                    ms_timestamp_to_datetime(data[-1][0])
+                    + TIMEFRAME_UNIT_TO_DELTA_FUNCTION[timeframe.unit](timeframe.amount)
                 )
                 continue
             break
@@ -121,10 +120,10 @@ def retrieve_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap(
 
 def update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap(
     base_currency: Cryptocurrency, from_inclusive: datetime, to_exclusive: Optional[datetime] = None
-) -> None:
-    coin_market_cap_id = fetch_base_data_id(COIN_MARKET_CAP)
-    standard_currency_id = fetch_base_data_id(STANDARD_CURRENCY)
-    one_day_id = fetch_base_data_id(ONE_DAY)
+) -> int:
+    coin_market_cap_id = fetch_base_data_id(SOURCE_COIN_MARKET_CAP)
+    standard_currency_id = fetch_base_data_id(CURRENCY_TYPE_STANDARD_CURRENCY)
+    one_day_id = fetch_base_data_id(TIMEFRAME_ONE_DAY)
     data = retrieve_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap(base_currency, from_inclusive, to_exclusive)
     with DBSession() as session:
         us_dollar = session.query(Currency).filter_by(symbol="USD", currency_type_id=standard_currency_id).one()
@@ -154,6 +153,7 @@ def update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap(
         )
         session.add(currency_ohlcv_pull)
         session.flush()
+        new_records_inserted = 0
         if data:
             existing_records = (
                 session.query(CurrencyOHLCV)
@@ -171,7 +171,9 @@ def update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap(
             )
             existing_date_opens = set(r.date_open for r in existing_records)
             for record in data:
-                if record.date_open not in existing_date_opens:
+                if record["date_open"] not in existing_date_opens:
                     currency_ohlcv = CurrencyOHLCV(currency_ohlcv_pull_id=currency_ohlcv_pull.id, **record)
                     session.add(currency_ohlcv)
+                    new_records_inserted += 1
         session.commit()
+    return new_records_inserted

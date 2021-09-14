@@ -1,13 +1,14 @@
 from finta import TA
 import pandas as pd
+from trader.strategies.currency_ohlcv.base import CurrencyOHLCVStrategy
 from trader.strategies.entry.base import EntryStrategy
 
 
-class BollingerBandsCurrencyOHLCVEntryStrategy(EntryStrategy):
+class BollingerBandsCurrencyOHLCVEntryStrategy(CurrencyOHLCVStrategy, EntryStrategy):
     NAME = "Bollinger Bands"
     VERSION = "1.0.0"
-    IS_ENTRY = True
-    NORMAL_PARAMETER_SPACE = {"bollinger_bands_period": range(5, 45, 5)}
+    SUPPLEMENTAL_DATA_FEEDS = ()
+    PARAMETER_SPACE = {"bollinger_bands_period": range(5, 45, 5)}
 
     def __init__(self, bollinger_bands_period: int = 20):
         self.bollinger_bands_period = bollinger_bands_period

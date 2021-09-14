@@ -2,7 +2,7 @@ from typing import Dict
 from bs4 import BeautifulSoup
 import requests
 from trader.connections.database import DBSession
-from trader.data.base import ISO, STANDARD_CURRENCY, UNKNOWN_CURRENCY
+from trader.data.base import CURRENCY_TYPE_STANDARD_CURRENCY, CURRENCY_TYPE_UNKNOWN_CURRENCY, SOURCE_ISO
 from trader.models.country import Country, CountryXStandardCurrency
 from trader.models.currency import Currency
 from trader.models.standard_currency import StandardCurrency
@@ -10,9 +10,9 @@ from trader.utilities.functions import fetch_base_data_id
 
 
 def update_standard_currencies_from_iso() -> None:
-    iso_id = fetch_base_data_id(ISO)
-    standard_currency_id = fetch_base_data_id(STANDARD_CURRENCY)
-    unknown_currency_id = fetch_base_data_id(UNKNOWN_CURRENCY)
+    iso_id = fetch_base_data_id(SOURCE_ISO)
+    standard_currency_id = fetch_base_data_id(CURRENCY_TYPE_STANDARD_CURRENCY)
+    unknown_currency_id = fetch_base_data_id(CURRENCY_TYPE_UNKNOWN_CURRENCY)
     response = requests.get("https://en.wikipedia.org/wiki/ISO_4217")
     soup = BeautifulSoup(response.text, "lxml")
     table_h2 = soup.select("span#Active_codes")[0]
@@ -29,19 +29,19 @@ def update_standard_currencies_from_iso() -> None:
             currency = (
                 session.query(Currency)
                 .filter(
-                    Currency.symbol == symbol,
                     Currency.currency_type_id.in_([standard_currency_id, unknown_currency_id]),
+                    Currency.symbol == symbol,
                 )
                 .one_or_none()
             )
             if not currency:
-                currency = Currency(source_id=iso_id, name=name, symbol=symbol, currency_type_id=standard_currency_id)
+                currency = Currency(source_id=iso_id, currency_type_id=standard_currency_id, name=name, symbol=symbol)
                 session.add(currency)
                 session.flush()
             elif currency.currency_type_id == unknown_currency_id:
                 currency.source_id = iso_id
-                currency.name = name
                 currency.currency_type_id = standard_currency_id
+                currency.name = name
             else:
                 for item in currency.countries:
                     if item.country.name not in country_names:

@@ -1,5 +1,5 @@
 from trader.connections.database import DBSession
-from trader.data.base import CRYPTOCURRENCY, STANDARD_CURRENCY
+from trader.data.base import CURRENCY_TYPE_CRYPTOCURRENCY, CURRENCY_TYPE_STANDARD_CURRENCY
 from trader.models.currency import Currency
 from trader.models.enabled_quote_currency import EnabledQuoteCurrency
 from trader.utilities.constants import (
@@ -10,8 +10,8 @@ from trader.utilities.functions import fetch_base_data_id
 
 
 def set_initial_enabled_quote_currencies() -> None:
-    cryptocurrency_id = fetch_base_data_id(CRYPTOCURRENCY)
-    standard_currency_id = fetch_base_data_id(STANDARD_CURRENCY)
+    cryptocurrency_id = fetch_base_data_id(CURRENCY_TYPE_CRYPTOCURRENCY)
+    standard_currency_id = fetch_base_data_id(CURRENCY_TYPE_STANDARD_CURRENCY)
     with DBSession() as session:
         for quote_cryptocurrency_symbol, priority in INITIAL_ENABLED_QUOTE_CRYPTOCURRENCY_SYMBOLS_PRIORITY:
             cryptocurrency = (

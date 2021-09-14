@@ -1,11 +1,4 @@
-from sqlalchemy import (
-    Column,
-    DateTime,
-    ForeignKey,
-    Integer,
-    Numeric,
-    UniqueConstraint,
-)
+from sqlalchemy import Column, DateTime, ForeignKey, Integer, Numeric, UniqueConstraint
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.sql import func
 from trader.models.base import Base
@@ -22,6 +15,9 @@ class CurrencyOHLCVGroup(Base):
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # One to many
+    currency_ohlcv_implementations = relationship(
+        "CurrencyOHLCVImplementation", lazy=True, backref=backref(__tablename__, lazy=False)
+    )
     currency_ohlcv_pulls = relationship("CurrencyOHLCVPull", lazy=True, backref=backref(__tablename__, lazy=False))
 
     # Many to one
@@ -61,3 +57,8 @@ class CurrencyOHLCV(Base):
     volume = Column(Numeric(33, 15), nullable=False)
     date_high = Column(DateTime(timezone=True), nullable=True)
     date_low = Column(DateTime(timezone=True), nullable=True)
+
+    # One to many
+    currency_ohlcv_buy_signals = relationship(
+        "CurrencyOHLCVBuySignal", lazy=True, backref=backref(__tablename__, lazy=False)
+    )

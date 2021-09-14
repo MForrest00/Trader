@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Sequence
+from typing import Any, Dict, Sequence, Tuple
 import pandas as pd
+from trader.data.base import DataFeedData
 
 
 class Strategy(ABC):
@@ -21,7 +22,17 @@ class Strategy(ABC):
 
     @property
     @abstractmethod
-    def NORMAL_PARAMETER_SPACE(self) -> Dict[str, Sequence[Any]]:
+    def BASE_DATA_FEED(self) -> DataFeedData:
+        ...
+
+    @property
+    @abstractmethod
+    def SUPPLEMENTAL_DATA_FEEDS(self) -> Tuple[DataFeedData]:
+        ...
+
+    @property
+    @abstractmethod
+    def PARAMETER_SPACE(self) -> Dict[str, Sequence[Any]]:
         ...
 
     @abstractmethod

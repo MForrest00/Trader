@@ -1,11 +1,4 @@
-from sqlalchemy import (
-    Boolean,
-    Column,
-    DateTime,
-    ForeignKey,
-    Integer,
-    Numeric,
-)
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, Numeric
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.sql import func
 from trader.models.base import Base

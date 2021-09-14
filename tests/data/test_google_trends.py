@@ -1,17 +1,21 @@
 from datetime import datetime, timezone
 import pytest
-from trader.data.base import EIGHT_MINUTE, ONE_DAY, ONE_MINUTE, ONE_MONTH
-from trader.data.google_trends import GOOGLE_TRENDS_OTHER_SEARCH_BASE_DATE, GOOGLE_TRENDS_WEB_SEARCH_BASE_DATE, timeframe_base_label_to_date_ranges
+from trader.data.base import TIMEFRAME_EIGHT_MINUTE, TIMEFRAME_ONE_DAY, TIMEFRAME_ONE_MINUTE, TIMEFRAME_ONE_MONTH
+from trader.data.google_trends import (
+    GOOGLE_TRENDS_OTHER_SEARCH_BASE_DATE,
+    GOOGLE_TRENDS_WEB_SEARCH_BASE_DATE,
+    timeframe_base_label_to_date_ranges,
+)
 
 
 @pytest.mark.integration
 def test_timeframe_base_label_to_date_ranges_one_month(google_trends_gprop_news_search, google_trends_gprop_web_search):
     output = timeframe_base_label_to_date_ranges(
-        ONE_MONTH.base_label, google_trends_gprop_web_search, datetime.now(timezone.utc), None
+        TIMEFRAME_ONE_MONTH.base_label, google_trends_gprop_web_search, datetime.now(timezone.utc), None
     )
     assert output == [(GOOGLE_TRENDS_WEB_SEARCH_BASE_DATE, None)]
     output = timeframe_base_label_to_date_ranges(
-        ONE_MONTH.base_label, google_trends_gprop_news_search, datetime.now(timezone.utc), None
+        TIMEFRAME_ONE_MONTH.base_label, google_trends_gprop_news_search, datetime.now(timezone.utc), None
     )
     assert output == [(GOOGLE_TRENDS_OTHER_SEARCH_BASE_DATE, None)]
 
@@ -19,7 +23,7 @@ def test_timeframe_base_label_to_date_ranges_one_month(google_trends_gprop_news_
 @pytest.mark.integration
 def test_timeframe_base_label_to_date_ranges_one_day(google_trends_gprop_web_search):
     output = timeframe_base_label_to_date_ranges(
-        ONE_DAY.base_label,
+        TIMEFRAME_ONE_DAY.base_label,
         google_trends_gprop_web_search,
         datetime(2020, 12, 5, tzinfo=timezone.utc),
         datetime(2021, 2, 1, 1, tzinfo=timezone.utc),
@@ -34,7 +38,7 @@ def test_timeframe_base_label_to_date_ranges_one_day(google_trends_gprop_web_sea
 @pytest.mark.integration
 def test_timeframe_base_label_to_date_ranges_eight_minute(google_trends_gprop_web_search):
     output = timeframe_base_label_to_date_ranges(
-        EIGHT_MINUTE.base_label,
+        TIMEFRAME_EIGHT_MINUTE.base_label,
         google_trends_gprop_web_search,
         datetime(2020, 12, 1, 1, tzinfo=timezone.utc),
         datetime(2020, 12, 3, 7, tzinfo=timezone.utc),
@@ -49,7 +53,7 @@ def test_timeframe_base_label_to_date_ranges_eight_minute(google_trends_gprop_we
 @pytest.mark.integration
 def test_timeframe_base_label_to_date_ranges_one_minute(google_trends_gprop_web_search):
     output = timeframe_base_label_to_date_ranges(
-        ONE_MINUTE.base_label,
+        TIMEFRAME_ONE_MINUTE.base_label,
         google_trends_gprop_web_search,
         datetime(2020, 12, 1, 1, tzinfo=timezone.utc),
         datetime(2020, 12, 1, 23, tzinfo=timezone.utc),

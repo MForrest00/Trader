@@ -3,7 +3,14 @@ from typing import Dict, List, Optional, Sequence, Tuple, Union
 from dateutil.relativedelta import relativedelta
 from trader.connections.database import DBSession
 from trader.connections.trend_request import trend_request
-from trader.data.base import EIGHT_MINUTE, GOOGLE_TRENDS, ONE_DAY, ONE_MINUTE, ONE_MONTH, WEB_SEARCH
+from trader.data.base import (
+    GOOGLE_TRENDS_GPROP_WEB_SEARCH,
+    SOURCE_GOOGLE_TRENDS,
+    TIMEFRAME_EIGHT_MINUTE,
+    TIMEFRAME_ONE_DAY,
+    TIMEFRAME_ONE_MINUTE,
+    TIMEFRAME_ONE_MONTH,
+)
 from trader.models.google_trends import (
     GoogleTrends,
     GoogleTrendsGeo,
@@ -22,10 +29,10 @@ GOOGLE_TRENDS_WEB_SEARCH_MINUTE_GRANULARITY_CUTOFF = datetime(2015, 1, 1, tzinfo
 GOOGLE_TRENDS_OTHER_SEARCH_BASE_DATE = datetime(2008, 1, 1, tzinfo=timezone.utc)
 GOOGLE_TRENDS_OTHER_SEARCH_MINUTE_GRANULARITY_CUTOFF = datetime(2017, 9, 12, tzinfo=timezone.utc)
 GOOGLE_TRENDS_TIMEFRAME_RANKS = (
-    ONE_MINUTE.base_label,
-    EIGHT_MINUTE.base_label,
-    ONE_DAY.base_label,
-    ONE_MONTH.base_label,
+    TIMEFRAME_ONE_MINUTE.base_label,
+    TIMEFRAME_EIGHT_MINUTE.base_label,
+    TIMEFRAME_ONE_DAY.base_label,
+    TIMEFRAME_ONE_MONTH.base_label,
 )
 
 
@@ -35,14 +42,14 @@ def timeframe_base_label_to_date_ranges(
     from_inclusive: Optional[datetime],
     to_exclusive: Optional[datetime],
 ) -> List[Tuple[datetime, Optional[datetime]]]:
-    if timeframe_base_label == ONE_MONTH.base_label:
-        if gprop.name == WEB_SEARCH.name:
+    if timeframe_base_label == TIMEFRAME_ONE_MONTH.base_label:
+        if gprop.name == GOOGLE_TRENDS_GPROP_WEB_SEARCH.name:
             return [(GOOGLE_TRENDS_WEB_SEARCH_BASE_DATE, None)]
         return [(GOOGLE_TRENDS_OTHER_SEARCH_BASE_DATE, None)]
     if not from_inclusive:
         from_inclusive = (
             GOOGLE_TRENDS_WEB_SEARCH_BASE_DATE
-            if gprop.name == WEB_SEARCH.name
+            if gprop.name == GOOGLE_TRENDS_GPROP_WEB_SEARCH.name
             else GOOGLE_TRENDS_OTHER_SEARCH_BASE_DATE
         )
     if not to_exclusive:
@@ -51,23 +58,23 @@ def timeframe_base_label_to_date_ranges(
         raise ValueError("From argument must be less than the to argument")
     minute_granularity_cutoff = (
         GOOGLE_TRENDS_WEB_SEARCH_MINUTE_GRANULARITY_CUTOFF
-        if gprop.name == WEB_SEARCH.name
+        if gprop.name == GOOGLE_TRENDS_GPROP_WEB_SEARCH.name
         else GOOGLE_TRENDS_OTHER_SEARCH_MINUTE_GRANULARITY_CUTOFF
     )
     output: List[Tuple[datetime, Optional[datetime]]] = []
-    if timeframe_base_label == ONE_DAY.base_label:
+    if timeframe_base_label == TIMEFRAME_ONE_DAY.base_label:
         from_val = clean_range_cap(from_inclusive, "M")
         while from_val < to_exclusive:
             to_val = (from_val + relativedelta(months=1)) - timedelta(days=1)
             output.append((from_val, to_val))
             from_val += relativedelta(months=1)
-    if timeframe_base_label == EIGHT_MINUTE.base_label:
+    if timeframe_base_label == TIMEFRAME_EIGHT_MINUTE.base_label:
         from_val = max(clean_range_cap(from_inclusive, "d"), minute_granularity_cutoff)
         while from_val < to_exclusive:
             to_val = from_val + timedelta(days=1)
             output.append((from_val, to_val))
             from_val = to_val
-    if timeframe_base_label == ONE_MINUTE.base_label:
+    if timeframe_base_label == TIMEFRAME_ONE_MINUTE.base_label:
         from_val = max(clean_range_cap(from_inclusive, "h"), minute_granularity_cutoff)
         from_val -= timedelta(seconds=60 * 60 * (from_val.hour % 4))
         while from_val < to_exclusive:
@@ -117,7 +124,7 @@ def update_interest_over_time_from_google_trends(
     from_inclusive: Optional[datetime],
     to_exclusive: Optional[datetime] = None,
 ) -> None:
-    google_trends_id = fetch_base_data_id(GOOGLE_TRENDS)
+    google_trends_id = fetch_base_data_id(SOURCE_GOOGLE_TRENDS)
     try:
         target_timeframe_rank = GOOGLE_TRENDS_TIMEFRAME_RANKS.index(timeframe.base_label)
     except ValueError as error:

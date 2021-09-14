@@ -1,11 +1,4 @@
-from sqlalchemy import (
-    Boolean,
-    Column,
-    DateTime,
-    ForeignKey,
-    Integer,
-    SmallInteger,
-)
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, SmallInteger
 from sqlalchemy.sql import func
 from trader.models.base import Base
 

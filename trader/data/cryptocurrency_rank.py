@@ -6,7 +6,7 @@ from bs4 import BeautifulSoup
 import requests
 from sqlalchemy.orm import Session
 from trader.connections.database import DBSession
-from trader.data.base import COIN_MARKET_CAP, CRYPTOCURRENCY, UNKNOWN_CURRENCY
+from trader.data.base import CURRENCY_TYPE_CRYPTOCURRENCY, CURRENCY_TYPE_UNKNOWN_CURRENCY, SOURCE_COIN_MARKET_CAP
 from trader.models.cryptocurrency import Cryptocurrency, CryptocurrencyPlatform
 from trader.models.currency import Currency, CurrencyXCurrencyTag, CurrencyTag
 from trader.models.cryptocurrency_rank import CryptocurrencyRank, CryptocurrencyRankSnapshot
@@ -49,16 +49,14 @@ def insert_cryptocurrency_ranks(
     cryptocurrency_rank_snapshot_id: int,
     data: List[CryptocurrencyRankRecord],
 ) -> None:
-    cryptocurrency_id = fetch_base_data_id(CRYPTOCURRENCY)
-    unknown_currency_id = fetch_base_data_id(UNKNOWN_CURRENCY)
+    cryptocurrency_id = fetch_base_data_id(CURRENCY_TYPE_CRYPTOCURRENCY)
+    unknown_currency_id = fetch_base_data_id(CURRENCY_TYPE_UNKNOWN_CURRENCY)
     cryptocurrency_platforms_lookup: Dict[Tuple[str, str], CryptocurrencyPlatform] = {}
     currency_tags_lookup: Dict[str, CurrencyTag] = {}
     for record in data:
         if record.cryptocurrency_platform:
-            if (
-                record.cryptocurrency_platform.name,
-                record.cryptocurrency_platform.symbol,
-            ) not in cryptocurrency_platforms_lookup:
+            cryptocurrency_platform_key = (record.cryptocurrency_platform.name, record.cryptocurrency_platform.symbol)
+            if cryptocurrency_platform_key not in cryptocurrency_platforms_lookup:
                 cryptocurrency_platform = (
                     session.query(CryptocurrencyPlatform)
                     .filter_by(name=record.cryptocurrency_platform.name, symbol=record.cryptocurrency_platform.symbol)
@@ -74,37 +72,33 @@ def insert_cryptocurrency_ranks(
                     )
                     session.add(cryptocurrency_platform)
                     session.flush()
-                cryptocurrency_platforms_lookup[
-                    (record.cryptocurrency_platform.name, record.cryptocurrency_platform.symbol)
-                ] = cryptocurrency_platform
+                cryptocurrency_platforms_lookup[cryptocurrency_platform_key] = cryptocurrency_platform
             else:
-                cryptocurrency_platform = cryptocurrency_platforms_lookup[
-                    (record.cryptocurrency_platform.name, record.cryptocurrency_platform.symbol)
-                ]
+                cryptocurrency_platform = cryptocurrency_platforms_lookup[cryptocurrency_platform_key]
             cryptocurrency_platform_id = cryptocurrency_platform.id
         else:
             cryptocurrency_platform_id = None
         currency = (
             session.query(Currency)
             .filter(
-                Currency.symbol == record.currency_symbol,
                 Currency.currency_type_id.in_([cryptocurrency_id, unknown_currency_id]),
+                Currency.symbol == record.currency_symbol,
             )
             .one_or_none()
         )
         if not currency:
             currency = Currency(
                 source_id=source_id,
+                currency_type_id=cryptocurrency_id,
                 name=record.currency_name,
                 symbol=record.currency_symbol,
-                currency_type_id=cryptocurrency_id,
             )
             session.add(currency)
             session.flush()
         elif currency.currency_type_id == unknown_currency_id:
             currency.source_id = source_id
-            currency.name = record.currency_name
             currency.currency_type_id = cryptocurrency_id
+            currency.name = record.currency_name
         cryptocurrency = currency.cryptocurrency
         if not cryptocurrency:
             cryptocurrency = Cryptocurrency(
@@ -287,7 +281,7 @@ def retrieve_current_cryptocurrency_ranks_from_coin_market_cap(limit: int) -> Li
 
 
 def update_historical_cryptocurrency_ranks_from_coin_market_cap(limit: int = CRYPTOCURRENCY_RANK_LIMIT) -> None:
-    coin_market_cap_id = fetch_base_data_id(COIN_MARKET_CAP)
+    coin_market_cap_id = fetch_base_data_id(SOURCE_COIN_MARKET_CAP)
     historical_snapshots = retrieve_historical_snapshot_list_from_coin_market_cap()
     with DBSession() as session:
         for historical_snapshot in historical_snapshots:
@@ -309,7 +303,7 @@ def update_historical_cryptocurrency_ranks_from_coin_market_cap(limit: int = CRY
 
 
 def update_current_cryptocurrency_ranks_from_coin_market_cap(limit: int = CRYPTOCURRENCY_RANK_LIMIT) -> None:
-    coin_market_cap_id = fetch_base_data_id(COIN_MARKET_CAP)
+    coin_market_cap_id = fetch_base_data_id(SOURCE_COIN_MARKET_CAP)
     data = retrieve_current_cryptocurrency_ranks_from_coin_market_cap(limit)
     with DBSession() as session:
         cryptocurrency_rank_snapshot = CryptocurrencyRankSnapshot(

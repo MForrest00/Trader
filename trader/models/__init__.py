@@ -9,8 +9,10 @@ from trader.models.cryptocurrency_exchange_rank import *
 from trader.models.cryptocurrency_rank import *
 from trader.models.currency import *
 from trader.models.currency_ohlcv import *
+from trader.models.currency_ohlcv_buy_signal import *
 from trader.models.currency_ohlcv_implementation import *
 from trader.models.currency_ohlcv_position import *
+from trader.models.data_feed import *
 from trader.models.enabled_cryptocurrency_exchange import *
 from trader.models.enabled_quote_currency import *
 from trader.models.google_trends import *
@@ -18,6 +20,7 @@ from trader.models.source import *
 from trader.models.standard_currency import *
 from trader.models.strategy import *
 from trader.models.timeframe import *
+from trader.models.user import *
 
 
 def initialize_models() -> None:

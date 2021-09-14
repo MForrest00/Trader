@@ -4,9 +4,11 @@ from sqlalchemy.orm import Session
 from trader.connections.cache import cache
 from trader.connections.database import DBSession
 from trader.models.currency import CurrencyType
+from trader.models.data_feed import DataFeed
 from trader.models.google_trends import GoogleTrendsGeo, GoogleTrendsGprop
 from trader.models.source import Source, SourceType
 from trader.models.timeframe import Timeframe
+from trader.models.user import User
 
 
 @dataclass
@@ -15,10 +17,10 @@ class CurrencyTypeData:
     description: str
 
 
-UNKNOWN_CURRENCY = CurrencyTypeData("currency_type_unknown_currency_id", "Unknown currency")
-STANDARD_CURRENCY = CurrencyTypeData("currency_type_standard_currency_id", "Standard currency")
-CRYPTOCURRENCY = CurrencyTypeData("currency_type_cryptocurrency_id", "Cryptocurrency")
-CURRENCY_TYPES = (UNKNOWN_CURRENCY, STANDARD_CURRENCY, CRYPTOCURRENCY)
+CURRENCY_TYPE_UNKNOWN_CURRENCY = CurrencyTypeData("currency_type_unknown_currency_id", "Unknown currency")
+CURRENCY_TYPE_STANDARD_CURRENCY = CurrencyTypeData("currency_type_standard_currency_id", "Standard currency")
+CURRENCY_TYPE_CRYPTOCURRENCY = CurrencyTypeData("currency_type_cryptocurrency_id", "Cryptocurrency")
+CURRENCY_TYPES = (CURRENCY_TYPE_UNKNOWN_CURRENCY, CURRENCY_TYPE_STANDARD_CURRENCY, CURRENCY_TYPE_CRYPTOCURRENCY)
 
 
 def initialize_currency_types(session: Session) -> None:
@@ -38,9 +40,9 @@ class GoogleTrendsGeoData:
     name: str
 
 
-WORLDWIDE = GoogleTrendsGeoData("google_trends_geo_worldwide_id", "", "Worldwide")
-UNITED_STATES = GoogleTrendsGeoData("google_trends_geo_united_states_id", "US", "United States")
-GOOGLE_TRENDS_GEOS = (WORLDWIDE, UNITED_STATES)
+GOOGLE_TRENDS_GEO_WORLDWIDE = GoogleTrendsGeoData("google_trends_geo_worldwide_id", "", "Worldwide")
+GOOGLE_TRENDS_GEO_UNITED_STATES = GoogleTrendsGeoData("google_trends_geo_united_states_id", "US", "United States")
+GOOGLE_TRENDS_GEOS = (GOOGLE_TRENDS_GEO_WORLDWIDE, GOOGLE_TRENDS_GEO_UNITED_STATES)
 
 
 def initialize_google_trends_geos(session: Session) -> None:
@@ -60,12 +62,22 @@ class GoogleTrendsGpropData:
     name: str
 
 
-WEB_SEARCH = GoogleTrendsGpropData("google_trends_gprop_web_search_id", "", "Web search")
-IMAGE_SEARCH = GoogleTrendsGpropData("google_trends_gprop_image_search_id", "image", "Image search")
-NEWS_SEARCH = GoogleTrendsGpropData("google_trends_gprop_news_search_id", "news", "News search")
-GOOGLE_SHOPPING = GoogleTrendsGpropData("google_trends_gprop_google_shopping_id", "froogle", "Google shopping")
-YOUTUBE_SEARCH = GoogleTrendsGpropData("google_trends_gprop_youtube_search_id", "youtube", "YouTube search")
-GOOGLE_TRENDS_GPROPS = (WEB_SEARCH, IMAGE_SEARCH, NEWS_SEARCH, GOOGLE_SHOPPING, YOUTUBE_SEARCH)
+GOOGLE_TRENDS_GPROP_WEB_SEARCH = GoogleTrendsGpropData("google_trends_gprop_web_search_id", "", "Web search")
+GOOGLE_TRENDS_GPROP_IMAGE_SEARCH = GoogleTrendsGpropData("google_trends_gprop_image_search_id", "image", "Image search")
+GOOGLE_TRENDS_GPROP_NEWS_SEARCH = GoogleTrendsGpropData("google_trends_gprop_news_search_id", "news", "News search")
+GOOGLE_TRENDS_GPROP_GOOGLE_SHOPPING = GoogleTrendsGpropData(
+    "google_trends_gprop_google_shopping_id", "froogle", "Google shopping"
+)
+GOOGLE_TRENDS_GPROP_YOUTUBE_SEARCH = GoogleTrendsGpropData(
+    "google_trends_gprop_youtube_search_id", "youtube", "YouTube search"
+)
+GOOGLE_TRENDS_GPROPS = (
+    GOOGLE_TRENDS_GPROP_WEB_SEARCH,
+    GOOGLE_TRENDS_GPROP_IMAGE_SEARCH,
+    GOOGLE_TRENDS_GPROP_NEWS_SEARCH,
+    GOOGLE_TRENDS_GPROP_GOOGLE_SHOPPING,
+    GOOGLE_TRENDS_GPROP_YOUTUBE_SEARCH,
+)
 
 
 def initialize_google_trends_gprops(session: Session) -> None:
@@ -84,11 +96,20 @@ class SourceTypeData:
     description: str
 
 
-MISCELLANEOUS_DATA = SourceTypeData("source_type_miscellaneous_data_id", "Miscellaneous data")
-CRYPTOCURRENCY_MARKET_DATA = SourceTypeData("source_type_cryptocurrency_market_data_id", "Cryptocurrency market data")
-CRYPTOCURRENCY_EXCHANGE = SourceTypeData("source_type_cryptocurrency_exchange_id", "Cryptocurrency exchange")
-SEARCH_DATA = SourceTypeData("source_type_search_data_id", "Search data")
-SOURCE_TYPES = (MISCELLANEOUS_DATA, CRYPTOCURRENCY_MARKET_DATA, CRYPTOCURRENCY_EXCHANGE, SEARCH_DATA)
+SOURCE_TYPE_MISCELLANEOUS_DATA = SourceTypeData("source_type_miscellaneous_data_id", "Miscellaneous data")
+SOURCE_TYPE_CRYPTOCURRENCY_MARKET_DATA = SourceTypeData(
+    "source_type_cryptocurrency_market_data_id", "Cryptocurrency market data"
+)
+SOURCE_TYPE_CRYPTOCURRENCY_EXCHANGE = SourceTypeData(
+    "source_type_cryptocurrency_exchange_id", "Cryptocurrency exchange"
+)
+SOURCE_TYPE_SEARCH_DATA = SourceTypeData("source_type_search_data_id", "Search data")
+SOURCE_TYPES = (
+    SOURCE_TYPE_MISCELLANEOUS_DATA,
+    SOURCE_TYPE_CRYPTOCURRENCY_MARKET_DATA,
+    SOURCE_TYPE_CRYPTOCURRENCY_EXCHANGE,
+    SOURCE_TYPE_SEARCH_DATA,
+)
 
 
 def initialize_source_types(session: Session) -> None:
@@ -110,17 +131,21 @@ class SourceData:
     url: Optional[str] = None
 
 
-ISO = SourceData("source_iso_id", None, "ISO", MISCELLANEOUS_DATA, url="https://www.iso.org/")
-COIN_MARKET_CAP = SourceData(
-    "source_coin_market_cap_id", None, "CoinMarketCap", CRYPTOCURRENCY_MARKET_DATA, url="https://coinmarketcap.com/"
+SOURCE_ISO = SourceData("source_iso_id", None, "ISO", SOURCE_TYPE_MISCELLANEOUS_DATA, url="https://www.iso.org/")
+SOURCE_COIN_MARKET_CAP = SourceData(
+    "source_coin_market_cap_id",
+    None,
+    "CoinMarketCap",
+    SOURCE_TYPE_CRYPTOCURRENCY_MARKET_DATA,
+    url="https://coinmarketcap.com/",
 )
-COIN_GECKO = SourceData(
-    "source_coin_gecko_id", None, "CoinGecko", CRYPTOCURRENCY_MARKET_DATA, url="https://www.coingecko.com/"
+SOURCE_COIN_GECKO = SourceData(
+    "source_coin_gecko_id", None, "CoinGecko", SOURCE_TYPE_CRYPTOCURRENCY_MARKET_DATA, url="https://www.coingecko.com/"
 )
-GOOGLE_TRENDS = SourceData(
-    "source_google_trends_id", None, "Google Trends", SEARCH_DATA, url="https://trends.google.com/"
+SOURCE_GOOGLE_TRENDS = SourceData(
+    "source_google_trends_id", None, "Google Trends", SOURCE_TYPE_SEARCH_DATA, url="https://trends.google.com/"
 )
-SOURCES = (ISO, COIN_MARKET_CAP, COIN_GECKO, GOOGLE_TRENDS)
+SOURCES = (SOURCE_ISO, SOURCE_COIN_MARKET_CAP, SOURCE_COIN_GECKO, SOURCE_GOOGLE_TRENDS)
 
 
 def initialize_sources(session: Session) -> None:
@@ -143,18 +168,29 @@ class TimeframeData:
     cache_key: str
     base_label: str
     seconds_length: Optional[int]
+    unit: str
+    amount: int
     ccxt_label: str
 
 
-ONE_MINUTE = TimeframeData("timeframe_1m_id", "1m", 60, "1m")
-FIVE_MINUTE = TimeframeData("timeframe_5m_id", "5m", 60 * 5, "5m")
-EIGHT_MINUTE = TimeframeData("timeframe_8m_id", "8m", 60 * 8, "8m")
-FIFTEEN_MINUTE = TimeframeData("timeframe_15m_id", "15m", 60 * 15, "15m")
-THIRTY_MINUTE = TimeframeData("timeframe_30m_id", "30m", 60 * 30, "30m")
-ONE_HOUR = TimeframeData("timeframe_1h_id", "1h", 60 * 60, "1h")
-ONE_DAY = TimeframeData("timeframe_1d_id", "1d", 60 * 60 * 24, "1d")
-ONE_MONTH = TimeframeData("timeframe_1M_id", "1M", None, "1M")
-TIMEFRAMES = (ONE_MINUTE, FIVE_MINUTE, EIGHT_MINUTE, FIFTEEN_MINUTE, THIRTY_MINUTE, ONE_HOUR, ONE_DAY, ONE_MONTH)
+TIMEFRAME_ONE_MINUTE = TimeframeData("timeframe_one_minute_id", "1m", 60, "m", 1, "1m")
+TIMEFRAME_FIVE_MINUTE = TimeframeData("timeframe_five_minute_id", "5m", 60 * 5, "m", 5, "5m")
+TIMEFRAME_EIGHT_MINUTE = TimeframeData("timeframe_eight_minute_id", "8m", 60 * 8, "m", 8, "8m")
+TIMEFRAME_FIFTEEN_MINUTE = TimeframeData("timeframe_fifteen_minute_id", "15m", 60 * 15, "m", 15, "15m")
+TIMEFRAME_THIRTY_MINUTE = TimeframeData("timeframe_thirty_minute_id", "30m", 60 * 30, "m", 30, "30m")
+TIMEFRAME_ONE_HOUR = TimeframeData("timeframe_one_hour_id", "1h", 60 * 60, "h", 1, "1h")
+TIMEFRAME_ONE_DAY = TimeframeData("timeframe_one_day_id", "1d", 60 * 60 * 24, "d", 1, "1d")
+TIMEFRAME_ONE_MONTH = TimeframeData("timeframe_one_month_id", "1M", None, "M", 1, "1M")
+TIMEFRAMES = (
+    TIMEFRAME_ONE_MINUTE,
+    TIMEFRAME_FIVE_MINUTE,
+    TIMEFRAME_EIGHT_MINUTE,
+    TIMEFRAME_FIFTEEN_MINUTE,
+    TIMEFRAME_THIRTY_MINUTE,
+    TIMEFRAME_ONE_HOUR,
+    TIMEFRAME_ONE_DAY,
+    TIMEFRAME_ONE_MONTH,
+)
 
 
 def initialize_timeframes(session: Session) -> None:
@@ -164,11 +200,56 @@ def initialize_timeframes(session: Session) -> None:
             instance = Timeframe(
                 base_label=timeframe.base_label,
                 seconds_length=timeframe.seconds_length,
+                unit=timeframe.unit,
+                amount=timeframe.amount,
                 ccxt_label=timeframe.ccxt_label,
             )
             session.add(instance)
             session.flush()
         cache.set(timeframe.cache_key, instance.id)
+
+
+@dataclass
+class DataFeedData:
+    cache_key: str
+    name: str
+
+
+DATA_FEED_CURRENCY_OHLCV = DataFeedData("data_feed_currency_ohlcv_id", "Currency OHLCV")
+DATA_FEED_GOOGLE_TRENDS = DataFeedData("data_feed_google_trends_id", "Google Trends")
+DATA_FEEDS = (DATA_FEED_CURRENCY_OHLCV, DATA_FEED_GOOGLE_TRENDS)
+
+
+def initialize_data_feeds(session: Session) -> None:
+    for data_feed in DATA_FEEDS:
+        instance = session.query(DataFeed).filter_by(name=data_feed.name).one_or_none()
+        if not instance:
+            instance = DataFeed(name=data_feed.name)
+            session.add(instance)
+            session.flush()
+        cache.set(data_feed.cache_key, instance.id)
+
+
+@dataclass
+class UserData:
+    cache_key: str
+    first_name: str
+    last_name: str
+    email: str
+
+
+USER_ADMIN = UserData("user_admin_id", "admin", "user", "admin@email.com")
+USERS = (USER_ADMIN,)
+
+
+def initialize_users(session: Session) -> None:
+    for user in USERS:
+        instance = session.query(User).filter_by(email=user.email).one_or_none()
+        if not instance:
+            instance = User(first_name=user.first_name, last_name=user.last_name, email=user.email)
+            session.add(instance)
+            session.flush()
+        cache.set(user.cache_key, instance.id)
 
 
 def initialize_base_data() -> None:
@@ -179,4 +260,6 @@ def initialize_base_data() -> None:
         initialize_source_types(session)
         initialize_sources(session)
         initialize_timeframes(session)
+        initialize_data_feeds(session)
+        initialize_users(session)
         session.commit()

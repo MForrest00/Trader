@@ -42,15 +42,15 @@ CURRENCY_OHLCV_SQL = dedent(
         INNER JOIN public.{source_table} s ON
             cg.source_id = s.id
         INNER JOIN public.{currency_table} bc ON
-            cp.base_currency_id = bc.id
+            cg.base_currency_id = bc.id
         INNER JOIN public.{currency_type_table} bct ON
             bc.currency_type_id = bct.id
         INNER JOIN public.{currency_table} qc ON
-            cp.quote_currency_id = qc.id
+            cg.quote_currency_id = qc.id
         INNER JOIN public.{currency_type_table} qct ON
             qc.currency_type_id = qct.id
         INNER JOIN public.{timeframe_table} t ON
-            cp.timeframe_id = t.id
+            cg.timeframe_id = t.id
     """.format(
         currency_ohlcv_table=CurrencyOHLCV.__tablename__,
         currency_ohlcv_pull_table=CurrencyOHLCVPull.__tablename__,

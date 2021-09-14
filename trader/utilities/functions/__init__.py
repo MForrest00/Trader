@@ -6,8 +6,8 @@ from dateutil.relativedelta import relativedelta
 from trader.connections.cache import cache
 from trader.data.base import (
     CurrencyTypeData,
-    GoogleTrendsPullGeoData,
-    GoogleTrendsPullGpropData,
+    GoogleTrendsGeoData,
+    GoogleTrendsGpropData,
     initialize_base_data,
     SourceData,
     SourceTypeData,
@@ -26,14 +26,14 @@ TIMEFRAME_UNIT_TO_TRANSFORM_FUNCTION: Dict[str, Callable[[datetime], datetime]] 
 }
 
 
-TIMEFRAME_UNIT_TO_INCREMENT_FUNCTION: Dict[str, Callable[[datetime, int], datetime]] = {
-    "s": lambda x, y: x + timedelta(seconds=y),
-    "m": lambda x, y: x + timedelta(minutes=y),
-    "h": lambda x, y: x + timedelta(hours=y),
-    "d": lambda x, y: x + timedelta(days=y),
-    "w": lambda x, y: x + relativedelta(weeks=y),
-    "M": lambda x, y: x + relativedelta(months=y),
-    "y": lambda x, y: x + relativedelta(years=y),
+TIMEFRAME_UNIT_TO_DELTA_FUNCTION: Dict[str, Callable[[int], Union[timedelta, relativedelta]]] = {
+    "s": lambda x: timedelta(seconds=x),
+    "m": lambda x: timedelta(minutes=x),
+    "h": lambda x: timedelta(hours=x),
+    "d": lambda x: timedelta(days=x),
+    "w": lambda x: relativedelta(weeks=x),
+    "M": lambda x: relativedelta(months=x),
+    "y": lambda x: relativedelta(years=x),
 }
 
 
@@ -55,7 +55,7 @@ def iso_time_string_to_datetime(time_string: str) -> datetime:
 
 def fetch_base_data_id(
     base_data: Union[
-        CurrencyTypeData, GoogleTrendsPullGeoData, GoogleTrendsPullGpropData, SourceData, SourceTypeData, TimeframeData
+        CurrencyTypeData, GoogleTrendsGeoData, GoogleTrendsGpropData, SourceData, SourceTypeData, TimeframeData
     ]
 ) -> int:
     cache_value = cache.get(base_data.cache_key)

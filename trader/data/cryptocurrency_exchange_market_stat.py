@@ -2,7 +2,12 @@ from urllib.parse import urlencode
 from typing import Dict, List, Tuple, Union
 import requests
 from trader.connections.database import DBSession
-from trader.data.base import COIN_MARKET_CAP, CRYPTOCURRENCY, STANDARD_CURRENCY, UNKNOWN_CURRENCY
+from trader.data.base import (
+    CURRENCY_TYPE_CRYPTOCURRENCY,
+    CURRENCY_TYPE_STANDARD_CURRENCY,
+    CURRENCY_TYPE_UNKNOWN_CURRENCY,
+    SOURCE_COIN_MARKET_CAP,
+)
 from trader.models.cryptocurrency_exchange import CryptocurrencyExchange
 from trader.models.cryptocurrency_exchange_market import (
     CryptocurrencyExchangeMarket,
@@ -22,10 +27,10 @@ def update_cryptocurrency_exchange_market_stats_from_coin_market_cap(
 ) -> None:
     if cryptocurrency_exchange.source_slug is None:
         raise ValueError("Unable to pull data for cryptocurrency exchange {cryptocurrency_exchange.source.name}")
-    coin_market_cap_id = fetch_base_data_id(COIN_MARKET_CAP)
-    cryptocurrency_id = fetch_base_data_id(CRYPTOCURRENCY)
-    standard_currency_id = fetch_base_data_id(STANDARD_CURRENCY)
-    unknown_currency_id = fetch_base_data_id(UNKNOWN_CURRENCY)
+    coin_market_cap_id = fetch_base_data_id(SOURCE_COIN_MARKET_CAP)
+    cryptocurrency_id = fetch_base_data_id(CURRENCY_TYPE_CRYPTOCURRENCY)
+    standard_currency_id = fetch_base_data_id(CURRENCY_TYPE_STANDARD_CURRENCY)
+    unknown_currency_id = fetch_base_data_id(CURRENCY_TYPE_UNKNOWN_CURRENCY)
     currency_type_ids = (cryptocurrency_id, standard_currency_id, unknown_currency_id)
     start = 1
     limit = 100
@@ -103,15 +108,16 @@ def update_cryptocurrency_exchange_market_stats_from_coin_market_cap(
                 market_category = market_categories_lookup[market_category_description]
             base_currency_symbol = market_pair["baseSymbol"]
             for currency_type_id in currency_type_ids:
-                if (base_currency_symbol, currency_type_id) not in currencies_lookup:
+                currency_key = (base_currency_symbol, currency_type_id)
+                if currency_key not in currencies_lookup:
                     base_currency = (
                         session.query(Currency)
                         .filter_by(symbol=base_currency_symbol, currency_type_id=currency_type_id)
                         .one_or_none()
                     )
-                    currencies_lookup[(base_currency_symbol, currency_type_id)] = base_currency
+                    currencies_lookup[currency_key] = base_currency
                 else:
-                    base_currency = currencies_lookup[(base_currency_symbol, currency_type_id)]
+                    base_currency = currencies_lookup[currency_key]
                 if base_currency:
                     break
             else:
