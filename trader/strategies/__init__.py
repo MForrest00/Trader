@@ -1,8 +1,11 @@
+from itertools import product
+from typing import Any, Dict, List, Sequence
 from sqlalchemy.orm import Session
 from trader.connections.database import DBSession
 from trader.models.strategy import (
     Strategy,
     StrategyVersion,
+    StrategyVersionInstance,
     StrategyVersionParameter,
     StrategyVersionXStrategyVersionParameter,
     StrategyVersionXSupplementalDataFeed,
@@ -11,6 +14,16 @@ from trader.strategies.base import Strategy as StrategyBase
 from trader.strategies.entry.currency_ohlcv.bollinger_bands import BollingerBandsCurrencyOHLCVEntryStrategy
 from trader.strategies.exit.currency_ohlcv.trailing_stop_loss import TrailingStopLossCurrencyOHLCVExitStrategy
 from trader.utilities.functions import fetch_base_data_id, get_hash_of_source, get_init_parameters
+
+
+def parameter_space_to_arguments_dict(strategy: StrategyBase) -> List[Dict[str, Any]]:
+    parameter_names: List[str] = []
+    parameter_values: List[Sequence[Any]] = []
+    for k, v in strategy.PARAMETER_SPACE.items():
+        parameter_names.append(k)
+        parameter_values.append(v)
+    product_parameter_values = product(*parameter_values)
+    return [dict(zip(parameter_names, p)) for p in product_parameter_values]
 
 
 def initialize_ohlcv_strategy(session: Session, strategy: StrategyBase) -> None:
@@ -60,6 +73,10 @@ def initialize_ohlcv_strategy(session: Session, strategy: StrategyBase) -> None:
                 strategy_version_id=version.id, strategy_version_parameter_id=version_parameter.id
             )
             session.add(link)
+        arguments_dict = parameter_space_to_arguments_dict(strategy)
+        for item in arguments_dict:
+            instance = StrategyVersionInstance(strategy_version_id=version.id, arguments=item)
+            session.add(instance)
     elif version.source_code_md5_hash != get_hash_of_source(strategy):
         raise Exception("MD5 hash of source does not match persisted value for strategy {strategy.NAME}")
 

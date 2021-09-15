@@ -17,6 +17,7 @@ from trader.data.cryptocurrency_rank import update_current_cryptocurrency_ranks_
 from trader.data.currency_ohlcv import update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap
 from trader.data.enabled_cryptocurrency_exchange import set_initial_enabled_cryptocurrency_exchanges
 from trader.data.enabled_quote_currency import set_initial_enabled_quote_currencies
+from trader.data.enabled_strategy_version_instance import set_initial_enabled_strategy_version_instances
 from trader.data.standard_currency import update_standard_currencies_from_iso
 from trader.models import initialize_models
 from trader.models.currency import Currency
@@ -44,6 +45,8 @@ def main():
     logger.debug("Loading current CoinMarketCap cryptocurrency ranks")
     update_current_cryptocurrency_ranks_from_coin_market_cap(5000)
     set_initial_enabled_quote_currencies()
+    initialize_strategies()
+    set_initial_enabled_strategy_version_instances()
     with DBSession() as session:
         enabled_cryptocurrency_exchanges = (
             session.query(EnabledCryptocurrencyExchange).filter_by(is_disabled=False).all()
@@ -70,7 +73,6 @@ def main():
                     update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap(
                         cryptocurrency, cryptocurrency.source_date_added
                     )
-    initialize_strategies()
 
 
 if __name__ == "__main__":

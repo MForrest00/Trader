@@ -2,10 +2,7 @@ from trader.connections.database import DBSession
 from trader.data.base import CURRENCY_TYPE_CRYPTOCURRENCY, CURRENCY_TYPE_STANDARD_CURRENCY
 from trader.models.currency import Currency
 from trader.models.enabled_quote_currency import EnabledQuoteCurrency
-from trader.utilities.constants import (
-    INITIAL_ENABLED_QUOTE_CRYPTOCURRENCY_SYMBOLS_PRIORITY,
-    INITIAL_ENABLED_QUOTE_STANDARD_CURRENCY_SYMBOLS_PRIORITY,
-)
+from trader.utilities.constants import INITIAL_ENABLED_QUOTE_CRYPTOCURRENCIES, INITIAL_ENABLED_QUOTE_STANDARD_CURRENCIES
 from trader.utilities.functions import fetch_base_data_id
 
 
@@ -13,7 +10,7 @@ def set_initial_enabled_quote_currencies() -> None:
     cryptocurrency_id = fetch_base_data_id(CURRENCY_TYPE_CRYPTOCURRENCY)
     standard_currency_id = fetch_base_data_id(CURRENCY_TYPE_STANDARD_CURRENCY)
     with DBSession() as session:
-        for quote_cryptocurrency_symbol, priority in INITIAL_ENABLED_QUOTE_CRYPTOCURRENCY_SYMBOLS_PRIORITY:
+        for quote_cryptocurrency_symbol, priority in INITIAL_ENABLED_QUOTE_CRYPTOCURRENCIES:
             cryptocurrency = (
                 session.query(Currency)
                 .filter_by(symbol=quote_cryptocurrency_symbol, currency_type_id=cryptocurrency_id)
@@ -25,7 +22,7 @@ def set_initial_enabled_quote_currencies() -> None:
                         currency_id=cryptocurrency.id, priority=priority
                     )
                     session.add(enabled_quote_cryptocurrency)
-        for quote_standard_currency_symbol, priority in INITIAL_ENABLED_QUOTE_STANDARD_CURRENCY_SYMBOLS_PRIORITY:
+        for quote_standard_currency_symbol, priority in INITIAL_ENABLED_QUOTE_STANDARD_CURRENCIES:
             standard_currency = (
                 session.query(Currency)
                 .filter_by(symbol=quote_standard_currency_symbol, currency_type_id=standard_currency_id)

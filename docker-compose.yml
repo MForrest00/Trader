@@ -34,7 +34,7 @@ services:
       - .env
     environment:
       - CELERY_REDIS_HOST=redis
-    command: celery -A trader.tasks beat
+    command: celery -A trader.tasks beat --loglevel=INFO
     volumes:
       - .:/app
     networks:
@@ -50,7 +50,7 @@ services:
       - CELERY_REDIS_HOST=redis
       - CACHE_REDIS_HOST=redis
       - POSTGRES_HOST=postgres
-    command: celery -A trader.tasks worker
+    command: celery -A trader.tasks worker --loglevel=INFO --concurrency=2
     volumes:
       - .:/app
     networks:

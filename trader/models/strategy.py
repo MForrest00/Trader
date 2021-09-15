@@ -95,12 +95,17 @@ class StrategyVersionInstance(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     strategy_version_id = Column(Integer, ForeignKey("strategy_version.id"), nullable=False)
-    parameters = Column(JSONB, nullable=False)
+    arguments = Column(JSONB, nullable=False)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
+
+    # One to one
+    enabled_strategy_version_instance = relationship(
+        "EnabledStrategyVersionInstance", lazy=False, backref=backref(__tablename__, lazy=False), uselist=False
+    )
 
     # One to many
     currency_ohlcv_implementations = relationship(
         "CurrencyOHLCVImplementation", lazy=True, backref=backref(__tablename__, lazy=False)
     )
 
-    __table_args__ = (UniqueConstraint("strategy_version_id", "parameters"),)
+    __table_args__ = (UniqueConstraint("strategy_version_id", "arguments"),)
