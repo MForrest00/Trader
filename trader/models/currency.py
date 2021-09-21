@@ -39,7 +39,7 @@ class Currency(Base):
     # Many to many
     currency_tags = relationship("CurrencyXCurrencyTag", lazy=True, back_populates=__tablename__)
 
-    __table_args__ = (UniqueConstraint("symbol", "currency_type_id"),)
+    __table_args__ = (UniqueConstraint("currency_type_id", "symbol"),)
 
 
 class CurrencyTag(Base):

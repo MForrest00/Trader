@@ -2,12 +2,14 @@ from typing import Optional
 from sqlalchemy.sql import func
 from trader.connections.database import DBSession
 from trader.data.base import CURRENCY_TYPE_STANDARD_CURRENCY, SOURCE_COIN_MARKET_CAP, TIMEFRAME_ONE_DAY
-from trader.data.currency_ohlcv import update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap
+from trader.data.currency_ohlcv.coin_market_cap import CoinMarketCapCurrencyOHLCVDataFeedRetriever
 from trader.models.cryptocurrency import Cryptocurrency
 from trader.models.currency import Currency
 from trader.models.currency_ohlcv import CurrencyOHLCV, CurrencyOHLCVGroup, CurrencyOHLCVPull
 from trader.models.enabled_cryptocurrency_exchange import EnabledCryptocurrencyExchange
+from trader.models.timeframe import Timeframe
 from trader.tasks import app
+from trader.utilities.constants import US_DOLLAR_SYMBOL
 from trader.utilities.functions import (
     datetime_to_ms_timestamp,
     fetch_base_data_id,
@@ -25,11 +27,18 @@ def update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap_task(
 ) -> None:
     with DBSession() as session:
         base_currency = session.query(Cryptocurrency).get(base_currency_id)
+        us_dollar = (
+            session.query(Currency)
+            .filter_by(currency_type_id=fetch_base_data_id(CURRENCY_TYPE_STANDARD_CURRENCY), symbol=US_DOLLAR_SYMBOL)
+            .one()
+        )
+        one_day = session.query(Timeframe).get(fetch_base_data_id(TIMEFRAME_ONE_DAY))
     from_inclusive = ms_timestamp_to_datetime(from_inclusive_ms_timestamp)
     to_exclusive = ms_timestamp_to_datetime(to_exclusive_ms_timestamp) if to_exclusive_ms_timestamp else None
-    new_records_inserted = update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap(
-        base_currency, from_inclusive, to_exclusive=to_exclusive
+    data_retriever = CoinMarketCapCurrencyOHLCVDataFeedRetriever(
+        base_currency, us_dollar, one_day, from_inclusive, to_exclusive=to_exclusive
     )
+    data_retriever.update_currency_ohlcv()
 
 
 @app.task
@@ -41,10 +50,11 @@ def queue_update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap_task() -> N
         base_currency_ids = fetch_enabled_base_currency_ids_for_cryptocurrency_exchanges(
             session, (e.cryptocurrency_exchange for e in enabled_cryptocurrency_exchanges)
         )
-        coin_market_cap_id = fetch_base_data_id(SOURCE_COIN_MARKET_CAP)
-        standard_currency_id = fetch_base_data_id(CURRENCY_TYPE_STANDARD_CURRENCY)
-        one_day_id = fetch_base_data_id(TIMEFRAME_ONE_DAY)
-        us_dollar = session.query(Currency).filter_by(symbol="USD", currency_type_id=standard_currency_id).one()
+        us_dollar = (
+            session.query(Currency)
+            .filter_by(currency_type_id=fetch_base_data_id(CURRENCY_TYPE_STANDARD_CURRENCY), symbol=US_DOLLAR_SYMBOL)
+            .one()
+        )
         for base_currency_id in base_currency_ids:
             base_currency = session.query(Currency).get(base_currency_id)
             if base_currency:
@@ -56,10 +66,10 @@ def queue_update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap_task() -> N
                         .join(CurrencyOHLCVPull)
                         .join(CurrencyOHLCVGroup)
                         .filter(
-                            CurrencyOHLCVGroup.source_id == coin_market_cap_id,
+                            CurrencyOHLCVGroup.source_id == fetch_base_data_id(SOURCE_COIN_MARKET_CAP),
                             CurrencyOHLCVGroup.base_currency_id == base_currency.id,
                             CurrencyOHLCVGroup.quote_currency_id == us_dollar.id,
-                            CurrencyOHLCVGroup.timeframe_id == one_day_id,
+                            CurrencyOHLCVGroup.timeframe_id == fetch_base_data_id(TIMEFRAME_ONE_DAY),
                         )
                         .one_or_none()
                     )
@@ -68,5 +78,5 @@ def queue_update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap_task() -> N
                     else:
                         target_date = cryptocurrency.source_date_added
                     update_cryptocurrency_daily_usd_ohlcv_from_coin_market_cap_task.delay(
-                        cryptocurrency.id, datetime_to_ms_timestamp(target_date)
+                        base_currency.id, datetime_to_ms_timestamp(target_date)
                     )

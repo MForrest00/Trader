@@ -7,17 +7,18 @@ from trader.utilities.constants import INITIAL_ENABLED_CRYPTOCURRENCY_EXCHANGES
 
 def set_initial_enabled_cryptocurrency_exchanges() -> None:
     with DBSession() as session:
-        for cryptocurrency_exchange_source_name, priority in INITIAL_ENABLED_CRYPTOCURRENCY_EXCHANGES:
+        for enabled_cryptocurrency_exchange in INITIAL_ENABLED_CRYPTOCURRENCY_EXCHANGES:
             cryptocurrency_exchange = (
                 session.query(CryptocurrencyExchange)
                 .join(Source)
-                .filter(Source.name == cryptocurrency_exchange_source_name)
+                .filter(Source.name == enabled_cryptocurrency_exchange.source_name)
                 .one_or_none()
             )
             if cryptocurrency_exchange:
                 if not cryptocurrency_exchange.enabled_cryptocurrency_exchange:
                     enabled_cryptocurrency_exchange = EnabledCryptocurrencyExchange(
-                        cryptocurrency_exchange_id=cryptocurrency_exchange.id, priority=priority
+                        cryptocurrency_exchange_id=cryptocurrency_exchange.id,
+                        priority=enabled_cryptocurrency_exchange.priority,
                     )
                     session.add(enabled_cryptocurrency_exchange)
         session.commit()

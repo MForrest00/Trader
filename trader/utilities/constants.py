@@ -10,22 +10,39 @@ from trader.strategies.exit.currency_ohlcv.trailing_stop_loss import TrailingSto
 
 PROJECT_BASE_PATH = os.path.split(os.path.split(pathlib.Path(__file__).parent.absolute())[0])[0]
 
+
+US_DOLLAR_SYMBOL = "USD"
+
+
+@dataclass
+class EnabledCryptocurrencyExchange:
+    source_name: str
+    priority: int
+
+
 INITIAL_ENABLED_CRYPTOCURRENCY_EXCHANGES = (
-    ("Binance.US", 6),
-    ("Bittrex", 7),
-    ("CEX.IO", 8),
-    ("Coinbase Exchange", 1),
-    ("Crypto.com Exchange", 9),
-    ("FTX US", 5),
-    ("Gate.io", 10),
-    ("Gemini", 4),
-    ("Kraken", 2),
-    ("Poloniex", 3),
+    EnabledCryptocurrencyExchange("Binance.US", 6),
+    EnabledCryptocurrencyExchange("Bittrex", 7),
+    EnabledCryptocurrencyExchange("CEX.IO", 8),
+    EnabledCryptocurrencyExchange("Coinbase Exchange", 1),
+    EnabledCryptocurrencyExchange("Crypto.com Exchange", 9),
+    EnabledCryptocurrencyExchange("FTX US", 5),
+    EnabledCryptocurrencyExchange("Gate.io", 10),
+    EnabledCryptocurrencyExchange("Gemini", 4),
+    EnabledCryptocurrencyExchange("Kraken", 2),
+    EnabledCryptocurrencyExchange("Poloniex", 3),
 )
 
-INITIAL_ENABLED_QUOTE_STANDARD_CURRENCIES = (("USD", 1),)
 
-INITIAL_ENABLED_QUOTE_CRYPTOCURRENCIES = (("USDC", 1), ("USDT", 2))
+@dataclass
+class EnabledQuoteCurrency:
+    symbol: str
+    priority: int
+
+
+INITIAL_ENABLED_QUOTE_STANDARD_CURRENCIES = (EnabledQuoteCurrency("USD", 1),)
+
+INITIAL_ENABLED_QUOTE_CRYPTOCURRENCIES = (EnabledQuoteCurrency("USDC", 1), EnabledQuoteCurrency("USDT", 2))
 
 
 @dataclass

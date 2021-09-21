@@ -151,13 +151,9 @@ SOURCES = (SOURCE_ISO, SOURCE_COIN_MARKET_CAP, SOURCE_COIN_GECKO, SOURCE_GOOGLE_
 def initialize_sources(session: Session) -> None:
     for source in SOURCES:
         source_type_id = int(cache.get(source.source_type.cache_key).decode())
-        instance = session.query(Source).filter_by(name=source.name, source_type_id=source_type_id).one_or_none()
+        instance = session.query(Source).filter_by(source_type_id=source_type_id, name=source.name).one_or_none()
         if not instance:
-            instance = Source(
-                name=source.name,
-                source_type_id=source_type_id,
-                url=source.url,
-            )
+            instance = Source(source_type_id=source_type_id, name=source.name, url=source.url)
             session.add(instance)
             session.flush()
         cache.set(source.cache_key, instance.id)

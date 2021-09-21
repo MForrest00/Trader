@@ -76,4 +76,4 @@ class Source(Base):
     )
     google_trends_groups = relationship("GoogleTrendsGroup", lazy=True, backref=backref(__tablename__, lazy=True))
 
-    __table_args__ = (UniqueConstraint("name", "source_type_id"),)
+    __table_args__ = (UniqueConstraint("source_type_id", "name"),)

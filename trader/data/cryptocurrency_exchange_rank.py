@@ -62,9 +62,9 @@ def update_cryptocurrency_exchange_ranks_from_coin_market_cap() -> None:
                 exchange_type_id = exchange_type.id
             else:
                 exchange_type_id = None
-            source = session.query(Source).filter_by(name=name, source_type_id=cryptocurrency_exchange_id).one_or_none()
+            source = session.query(Source).filter_by(source_type_id=cryptocurrency_exchange_id, name=name).one_or_none()
             if not source:
-                source = Source(source_id=coin_market_cap_id, name=name, source_type_id=cryptocurrency_exchange_id)
+                source = Source(source_id=coin_market_cap_id, source_type_id=cryptocurrency_exchange_id, name=name)
                 session.add(source)
                 session.flush()
             exchange = source.cryptocurrency_exchange

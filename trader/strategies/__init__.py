@@ -49,10 +49,9 @@ def initialize_ohlcv_strategy(session: Session, strategy: StrategyBase) -> None:
         session.query(StrategyVersion).filter_by(strategy_id=strategy_object.id, version=strategy.VERSION).one_or_none()
     )
     if not version:
-        base_data_feed_id = fetch_base_data_id(strategy.BASE_DATA_FEED)
         version = StrategyVersion(
             strategy_id=strategy_object.id,
-            base_data_feed_id=base_data_feed_id,
+            base_data_feed_id=fetch_base_data_id(strategy.BASE_DATA_FEED),
             version=strategy.VERSION,
             source_code_md5_hash=get_hash_of_source(strategy),
         )

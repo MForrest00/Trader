@@ -6,12 +6,14 @@ from dateutil.relativedelta import relativedelta
 from trader.connections.cache import cache
 from trader.data.base import (
     CurrencyTypeData,
+    DataFeedData,
     GoogleTrendsGeoData,
     GoogleTrendsGpropData,
     initialize_base_data,
     SourceData,
     SourceTypeData,
     TimeframeData,
+    UserData,
 )
 
 
@@ -55,7 +57,14 @@ def iso_time_string_to_datetime(time_string: str) -> datetime:
 
 def fetch_base_data_id(
     base_data: Union[
-        CurrencyTypeData, GoogleTrendsGeoData, GoogleTrendsGpropData, SourceData, SourceTypeData, TimeframeData
+        CurrencyTypeData,
+        DataFeedData,
+        GoogleTrendsGeoData,
+        GoogleTrendsGpropData,
+        SourceData,
+        SourceTypeData,
+        TimeframeData,
+        UserData,
     ]
 ) -> int:
     cache_value = cache.get(base_data.cache_key)

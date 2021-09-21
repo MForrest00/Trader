@@ -11,20 +11,17 @@ from trader.utilities.functions import fetch_base_data_id
 
 @pytest.fixture
 def google_trends_geo_worldwide() -> GoogleTrendsGeo:
-    worldwide_id = fetch_base_data_id(GOOGLE_TRENDS_GEO_WORLDWIDE)
     with DBSession() as session:
-        return session.query(GoogleTrendsGeo).get(worldwide_id)
+        return session.query(GoogleTrendsGeo).get(fetch_base_data_id(GOOGLE_TRENDS_GEO_WORLDWIDE))
 
 
 @pytest.fixture
 def google_trends_gprop_web_search() -> GoogleTrendsGprop:
-    web_search_id = fetch_base_data_id(GOOGLE_TRENDS_GPROP_WEB_SEARCH)
     with DBSession() as session:
-        return session.query(GoogleTrendsGprop).get(web_search_id)
+        return session.query(GoogleTrendsGprop).get(fetch_base_data_id(GOOGLE_TRENDS_GPROP_WEB_SEARCH))
 
 
 @pytest.fixture
 def google_trends_gprop_news_search() -> GoogleTrendsGprop:
-    news_search_id = fetch_base_data_id(GOOGLE_TRENDS_GPROP_NEWS_SEARCH)
     with DBSession() as session:
-        return session.query(GoogleTrendsGprop).get(news_search_id)
+        return session.query(GoogleTrendsGprop).get(fetch_base_data_id(GOOGLE_TRENDS_GPROP_NEWS_SEARCH))
