@@ -16,7 +16,7 @@ class Timeframe(Base):
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # One to many
-    currency_ohlcv_groups = relationship("CurrencyOHLCVGroup", lazy=True, backref=backref(__tablename__, lazy=False))
+    asset_ohlcv_groups = relationship("AssetOHLCVGroup", lazy=True, backref=backref(__tablename__, lazy=False))
     enabled_strategy_version_instances = relationship(
         "EnabledStrategyVersionInstance", lazy=True, backref=backref(__tablename__, lazy=False)
     )

@@ -1,10 +1,10 @@
 from finta import TA
 import pandas as pd
-from trader.strategies.currency_ohlcv.base import CurrencyOHLCVStrategy
+from trader.strategies.asset_ohlcv.base import AssetOHLCVStrategy
 from trader.strategies.entry.base import EntryStrategy
 
 
-class BollingerBandsCurrencyOHLCVEntryStrategy(CurrencyOHLCVStrategy, EntryStrategy):
+class BollingerBandsAssetOHLCVEntryStrategy(AssetOHLCVStrategy, EntryStrategy):
     NAME = "Bollinger Bands"
     VERSION = "1.0.0"
     SUPPLEMENTAL_DATA_FEEDS = ()

@@ -1,11 +1,11 @@
 import pandas as pd
 from sqlalchemy.orm.attributes import flag_modified
-from trader.models.currency_ohlcv_position import CurrencyOHLCVPosition
-from trader.strategies.currency_ohlcv.base import CurrencyOHLCVStrategy
+from trader.models.asset_ohlcv_position import AssetOHLCVPosition
+from trader.strategies.asset_ohlcv.base import AssetOHLCVStrategy
 from trader.strategies.exit.base import ExitStrategy
 
 
-class TrailingStopLossCurrencyOHLCVExitStrategy(CurrencyOHLCVStrategy, ExitStrategy):
+class TrailingStopLossAssetOHLCVExitStrategy(AssetOHLCVStrategy, ExitStrategy):
     NAME = "Trailing Stop Loss"
     VERSION = "1.0.0"
     SUPPLEMENTAL_DATA_FEEDS = ()
@@ -17,7 +17,7 @@ class TrailingStopLossCurrencyOHLCVExitStrategy(CurrencyOHLCVStrategy, ExitStrat
     def refine_dataframe(self, dataframe: pd.DataFrame) -> pd.DataFrame:
         return dataframe
 
-    def should_close_position(self, position: CurrencyOHLCVPosition, dataframe: pd.DataFrame, row_index: int) -> bool:
+    def should_close_position(self, position: AssetOHLCVPosition, dataframe: pd.DataFrame, row_index: int) -> bool:
         row = dataframe.iloc[row_index]
         if "trailing_stop_loss_encountered_max" not in position.data:
             position.data["trailing_stop_loss_encountered_max"] = max(position.bought_price, row["high"])

@@ -4,6 +4,7 @@ from bs4 import BeautifulSoup
 import requests
 from trader.connections.database import DBSession
 from trader.data.base import SOURCE_COIN_MARKET_CAP, SOURCE_TYPE_CRYPTOCURRENCY_EXCHANGE
+from trader.models.asset import Asset
 from trader.models.country import Country, CountryXCryptocurrencyExchange
 from trader.models.cryptocurrency_exchange import (
     CryptocurrencyExchange,
@@ -11,7 +12,6 @@ from trader.models.cryptocurrency_exchange import (
     CryptocurrencyExchangeType,
 )
 from trader.models.cryptocurrency_exchange_rank import CryptocurrencyExchangeRank, CryptocurrencyExchangeRankPull
-from trader.models.currency import Currency
 from trader.models.standard_currency import StandardCurrency
 from trader.models.source import Source
 from trader.utilities.functions import fetch_base_data_id, iso_time_string_to_datetime
@@ -96,15 +96,15 @@ def update_cryptocurrency_exchange_ranks_from_coin_market_cap() -> None:
                 if standard_currency_symbol not in standard_currencies_lookup:
                     standard_currency = (
                         session.query(StandardCurrency)
-                        .join(Currency)
-                        .filter(Currency.symbol == standard_currency_symbol)
+                        .join(Asset)
+                        .filter(Asset.symbol == standard_currency_symbol)
                         .one_or_none()
                     )
                     standard_currencies_lookup[standard_currency_symbol] = standard_currency
                 else:
                     standard_currency = standard_currencies_lookup[standard_currency_symbol]
                 if standard_currency:
-                    cryptocurrency_exchange_standard_currency = (
+                    cryptocurrency_exchange_x_standard_currency = (
                         session.query(CryptocurrencyExchangeXStandardCurrency)
                         .filter_by(
                             cryptocurrency_exchange_id=exchange.id,
@@ -112,15 +112,15 @@ def update_cryptocurrency_exchange_ranks_from_coin_market_cap() -> None:
                         )
                         .one_or_none()
                     )
-                    if not cryptocurrency_exchange_standard_currency:
-                        cryptocurrency_exchange_standard_currency = CryptocurrencyExchangeXStandardCurrency(
+                    if not cryptocurrency_exchange_x_standard_currency:
+                        cryptocurrency_exchange_x_standard_currency = CryptocurrencyExchangeXStandardCurrency(
                             source_id=coin_market_cap_id,
                             cryptocurrency_exchange_id=exchange.id,
                             standard_currency_id=standard_currency.id,
                         )
-                        session.add(cryptocurrency_exchange_standard_currency)
-                    elif not cryptocurrency_exchange_standard_currency.is_active:
-                        cryptocurrency_exchange_standard_currency.is_active = True
+                        session.add(cryptocurrency_exchange_x_standard_currency)
+                    elif not cryptocurrency_exchange_x_standard_currency.is_active:
+                        cryptocurrency_exchange_x_standard_currency.is_active = True
             for country_iso_alpha_2_code in country_iso_alpha_2_codes:
                 if country_iso_alpha_2_code not in countries_lookup:
                     country = session.query(Country).filter_by(iso_alpha_2_code=country_iso_alpha_2_code).one_or_none()
@@ -128,20 +128,20 @@ def update_cryptocurrency_exchange_ranks_from_coin_market_cap() -> None:
                 else:
                     country = countries_lookup[country_iso_alpha_2_code]
                 if country:
-                    cryptocurrency_exchange_country = (
+                    country_x_cryptocurrency_exchange = (
                         session.query(CountryXCryptocurrencyExchange)
                         .filter_by(country_id=country.id, cryptocurrency_exchange_id=exchange.id)
                         .one_or_none()
                     )
-                    if not cryptocurrency_exchange_country:
-                        cryptocurrency_exchange_country = CountryXCryptocurrencyExchange(
+                    if not country_x_cryptocurrency_exchange:
+                        country_x_cryptocurrency_exchange = CountryXCryptocurrencyExchange(
                             source_id=coin_market_cap_id,
                             country_id=country.id,
                             cryptocurrency_exchange_id=exchange.id,
                         )
-                        session.add(cryptocurrency_exchange_country)
-                    elif not cryptocurrency_exchange_country.is_active:
-                        cryptocurrency_exchange_country.is_active = True
+                        session.add(country_x_cryptocurrency_exchange)
+                    elif not country_x_cryptocurrency_exchange.is_active:
+                        country_x_cryptocurrency_exchange.is_active = True
             exchange_rank = CryptocurrencyExchangeRank(
                 cryptocurrency_exchange_rank_pull_id=exchange_rank_pull.id,
                 cryptocurrency_exchange_id=exchange.id,

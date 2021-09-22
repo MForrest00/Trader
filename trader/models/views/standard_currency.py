@@ -1,5 +1,6 @@
 from textwrap import dedent
-from trader.models.currency import Currency, CurrencyType
+from trader.data.base import ASSET_TYPE_STANDARD_CURRENCY
+from trader.models.asset import Asset, AssetType
 from trader.models.standard_currency import StandardCurrency
 
 
@@ -7,22 +8,23 @@ STANDARD_CURRENCY_SQL = dedent(
     """
     CREATE OR REPLACE VIEW public.standard_currency_view AS
     SELECT
-        c.id AS currency_id
-        ,c.name
-        ,c.symbol
+        a.id AS asset_id
+        ,a.name
+        ,a.symbol
         ,sc.id AS standard_currency_id
         ,sc.iso_numeric_code
         ,sc.minor_unit
-    FROM public.{currency_table} c
-        INNER JOIN public.{currency_type_table} ct ON
-            c.currency_type_id = ct.id
+    FROM public.{asset_table} a
+        INNER JOIN public.{asset_type_table} at ON
+            a.asset_type_id = at.id
         INNER JOIN public.{standard_currency_table} sc ON
             c.id = sc.currency_id
     WHERE
-        ct.description = 'Standard currency'
+        at.description = '{standard_currency_description}'
     """.format(
-        currency_table=Currency.__tablename__,
-        currency_type_table=CurrencyType.__tablename__,
+        asset_table=Asset.__tablename__,
+        asset_type_table=AssetType.__tablename__,
         standard_currency_table=StandardCurrency.__tablename__,
+        standard_currency_description=ASSET_TYPE_STANDARD_CURRENCY.description,
     )
 ).strip()

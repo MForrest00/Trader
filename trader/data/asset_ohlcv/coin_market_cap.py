@@ -3,17 +3,17 @@ from typing import Dict, List, Optional, Union
 from urllib.parse import urlencode
 import requests
 from trader.data.base import (
-    CURRENCY_TYPE_STANDARD_CURRENCY,
-    CURRENCY_TYPE_CRYPTOCURRENCY,
+    ASSET_TYPE_STANDARD_CURRENCY,
+    ASSET_TYPE_CRYPTOCURRENCY,
     SOURCE_COIN_MARKET_CAP,
     TIMEFRAME_ONE_DAY,
 )
-from trader.data.currency_ohlcv import CurrencyOHLCVDataFeedRetriever
+from trader.data.asset_ohlcv import AssetOHLCVDataFeedRetriever
 from trader.utilities.constants import US_DOLLAR_SYMBOL
 from trader.utilities.functions import fetch_base_data_id, iso_time_string_to_datetime
 
 
-class CoinMarketCapCurrencyOHLCVDataFeedRetriever(CurrencyOHLCVDataFeedRetriever):
+class CoinMarketCapAssetOHLCVDataFeedRetriever(AssetOHLCVDataFeedRetriever):
     SOURCE = SOURCE_COIN_MARKET_CAP
 
     def get_to_exclusive(self, to_exclusive: Optional[datetime]) -> datetime:
@@ -23,29 +23,28 @@ class CoinMarketCapCurrencyOHLCVDataFeedRetriever(CurrencyOHLCVDataFeedRetriever
         return temporary_to_exclusive - timedelta(days=1)
 
     def validate_attributes(self) -> bool:
-        if self.base_currency.source_id != self.source_id:
-            raise ValueError("Base currency must be from source CoinMarketCap")
-        if self.base_currency.currency_type_id != fetch_base_data_id(CURRENCY_TYPE_CRYPTOCURRENCY):
-            raise ValueError("Base currency must be a cryptocurrency")
-        if self.base_currency.cryptocurrency.source_entity_id is None:
-            raise ValueError("Base currency must have a source_entity_id attribute")
-        if (
-            self.quote_currency.symbol != US_DOLLAR_SYMBOL
-            or self.quote_currency.currency_type_id != fetch_base_data_id(CURRENCY_TYPE_STANDARD_CURRENCY)
+        if self.base_asset.source_id != self.source_id:
+            raise ValueError("Base asset must be from source CoinMarketCap")
+        if self.base_asset.asset_type_id != fetch_base_data_id(ASSET_TYPE_CRYPTOCURRENCY):
+            raise ValueError("Base asset must be a cryptocurrency")
+        if self.base_asset.cryptocurrency.source_entity_id is None:
+            raise ValueError("Base asset must have a source_entity_id attribute")
+        if self.quote_asset.symbol != US_DOLLAR_SYMBOL or self.quote_asset.asset_type_id != fetch_base_data_id(
+            ASSET_TYPE_STANDARD_CURRENCY
         ):
-            raise ValueError("Quote currency must be standard currency USD")
+            raise ValueError("Quote asset must be standard currency USD")
         if self.timeframe.id != fetch_base_data_id(TIMEFRAME_ONE_DAY):
             raise ValueError("Timeframe must be one day")
         if not self.from_inclusive < self.to_exclusive:
             raise ValueError("From inclusive value must be less than the to exclusive value")
         return True
 
-    def retrieve_currency_ohlcv(self) -> List[Dict[str, Optional[Union[datetime, int, float]]]]:
+    def retrieve_asset_ohlcv(self) -> List[Dict[str, Optional[Union[datetime, int, float]]]]:
         from_timestamp = int(self.from_inclusive.timestamp())
         to_timestamp = int(self.to_exclusive.timestamp())
         query_string = urlencode(
             {
-                "id": self.base_currency.cryptocurrency.source_entity_id,
+                "id": self.base_asset.cryptocurrency.source_entity_id,
                 "convertId": 2781,
                 "timeStart": from_timestamp,
                 "timeEnd": to_timestamp,

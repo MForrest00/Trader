@@ -3,24 +3,24 @@ from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Union
 from trader.connections.database import DBSession
 from trader.data.base import SourceData, SourceTypeData
-from trader.models.currency import Currency
-from trader.models.currency_ohlcv import CurrencyOHLCV, CurrencyOHLCVGroup, CurrencyOHLCVPull
+from trader.models.asset import Asset
+from trader.models.asset_ohlcv import AssetOHLCV, AssetOHLCVGroup, AssetOHLCVPull
 from trader.models.source import Source
 from trader.models.timeframe import Timeframe
 from trader.utilities.functions import clean_range_cap, fetch_base_data_id
 
 
-class CurrencyOHLCVDataFeedRetriever(ABC):
+class AssetOHLCVDataFeedRetriever(ABC):
     def __init__(
         self,
-        base_currency: Currency,
-        quote_currency: Currency,
+        base_asset: Asset,
+        quote_asset: Asset,
         timeframe: Timeframe,
         from_inclusive: datetime,
         to_exclusive: Optional[datetime] = None,
     ):
-        self.base_currency = base_currency
-        self.quote_currency = quote_currency
+        self.base_asset = base_asset
+        self.quote_asset = quote_asset
         self.timeframe = timeframe
         self.from_inclusive = clean_range_cap(from_inclusive, timeframe.unit)
         self.to_exclusive = clean_range_cap(self.get_to_exclusive(to_exclusive), timeframe.unit)
@@ -57,59 +57,59 @@ class CurrencyOHLCVDataFeedRetriever(ABC):
         ...
 
     @abstractmethod
-    def retrieve_currency_ohlcv(self, *args, **kwargs) -> List[Dict[str, Optional[Union[datetime, int, float]]]]:
+    def retrieve_asset_ohlcv(self) -> List[Dict[str, Optional[Union[datetime, int, float]]]]:
         ...
 
-    def update_currency_ohlcv(self) -> int:
-        data = self.retrieve_currency_ohlcv()
+    def update_asset_ohlcv(self) -> int:
+        data = self.retrieve_asset_ohlcv()
         with DBSession() as session:
-            currency_ohlcv_group = (
-                session.query(CurrencyOHLCVGroup)
+            asset_ohlcv_group = (
+                session.query(AssetOHLCVGroup)
                 .filter_by(
                     source_id=self.source_id,
-                    base_currency_id=self.base_currency.id,
-                    quote_currency_id=self.quote_currency.id,
+                    base_asset_id=self.base_asset.id,
+                    quote_asset_id=self.quote_asset.id,
                     timeframe_id=self.timeframe.id,
                 )
                 .one_or_none()
             )
-            if not currency_ohlcv_group:
-                currency_ohlcv_group = CurrencyOHLCVGroup(
+            if not asset_ohlcv_group:
+                asset_ohlcv_group = AssetOHLCVGroup(
                     source_id=self.source_id,
-                    base_currency_id=self.base_currency.id,
-                    quote_currency_id=self.quote_currency.id,
+                    base_asset_id=self.base_asset.id,
+                    quote_asset_id=self.quote_asset.id,
                     timeframe_id=self.timeframe.id,
                 )
-                session.add(currency_ohlcv_group)
+                session.add(asset_ohlcv_group)
                 session.flush()
-            currency_ohlcv_pull = CurrencyOHLCVPull(
-                currency_ohlcv_group_id=currency_ohlcv_group.id,
+            asset_ohlcv_pull = AssetOHLCVPull(
+                asset_ohlcv_group_id=asset_ohlcv_group.id,
                 from_inclusive=self.from_inclusive,
                 to_exclusive=self.to_exclusive,
             )
-            session.add(currency_ohlcv_pull)
+            session.add(asset_ohlcv_pull)
             session.flush()
             new_records_inserted = 0
             if data:
                 existing_records = (
-                    session.query(CurrencyOHLCV)
-                    .join(CurrencyOHLCVPull)
-                    .join(CurrencyOHLCVGroup)
+                    session.query(AssetOHLCV)
+                    .join(AssetOHLCVPull)
+                    .join(AssetOHLCVGroup)
                     .filter(
-                        CurrencyOHLCVGroup.source_id == self.source_id,
-                        CurrencyOHLCVGroup.base_currency_id == self.base_currency.id,
-                        CurrencyOHLCVGroup.quote_currency_id == self.quote_currency.id,
-                        CurrencyOHLCVGroup.timeframe_id == self.timeframe.id,
-                        CurrencyOHLCV.date_open >= data[0]["date_open"],
-                        CurrencyOHLCV.date_open <= data[-1]["date_open"],
+                        AssetOHLCVGroup.source_id == self.source_id,
+                        AssetOHLCVGroup.base_asset_id == self.base_asset.id,
+                        AssetOHLCVGroup.quote_asset_id == self.quote_asset.id,
+                        AssetOHLCVGroup.timeframe_id == self.timeframe.id,
+                        AssetOHLCV.date_open >= data[0]["date_open"],
+                        AssetOHLCV.date_open <= data[-1]["date_open"],
                     )
                     .all()
                 )
                 existing_date_opens = set(r.date_open for r in existing_records)
                 for record in data:
                     if record["date_open"] not in existing_date_opens:
-                        currency_ohlcv = CurrencyOHLCV(currency_ohlcv_pull_id=currency_ohlcv_pull.id, **record)
-                        session.add(currency_ohlcv)
+                        asset_ohlcv = AssetOHLCV(asset_ohlcv_pull_id=asset_ohlcv_pull.id, **record)
+                        session.add(asset_ohlcv)
                         new_records_inserted += 1
             session.commit()
         return new_records_inserted

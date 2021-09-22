@@ -4,8 +4,8 @@ import pathlib
 from typing import Any, Dict, Tuple
 from trader.data.base import TIMEFRAME_ONE_DAY, TimeframeData
 from trader.strategies.base import Strategy
-from trader.strategies.entry.currency_ohlcv.bollinger_bands import BollingerBandsCurrencyOHLCVEntryStrategy
-from trader.strategies.exit.currency_ohlcv.trailing_stop_loss import TrailingStopLossCurrencyOHLCVExitStrategy
+from trader.strategies.entry.asset_ohlcv.bollinger_bands import BollingerBandsAssetOHLCVEntryStrategy
+from trader.strategies.exit.asset_ohlcv.trailing_stop_loss import TrailingStopLossAssetOHLCVExitStrategy
 
 
 PROJECT_BASE_PATH = os.path.split(os.path.split(pathlib.Path(__file__).parent.absolute())[0])[0]
@@ -35,14 +35,14 @@ INITIAL_ENABLED_CRYPTOCURRENCY_EXCHANGES = (
 
 
 @dataclass
-class EnabledQuoteCurrency:
+class EnabledQuoteAsset:
     symbol: str
     priority: int
 
 
-INITIAL_ENABLED_QUOTE_STANDARD_CURRENCIES = (EnabledQuoteCurrency("USD", 1),)
+INITIAL_ENABLED_QUOTE_STANDARD_CURRENCIES = (EnabledQuoteAsset("USD", 1),)
 
-INITIAL_ENABLED_QUOTE_CRYPTOCURRENCIES = (EnabledQuoteCurrency("USDC", 1), EnabledQuoteCurrency("USDT", 2))
+INITIAL_ENABLED_QUOTE_CRYPTOCURRENCIES = (EnabledQuoteAsset("USDC", 1), EnabledQuoteAsset("USDT", 2))
 
 
 @dataclass
@@ -54,14 +54,14 @@ class EnabledStrategyVersionInstance:
 
 INITIAL_ENTRY_ENABLED_STRATEGY_VERSION_INSTANCES: Dict[TimeframeData, Tuple[EnabledStrategyVersionInstance, ...]] = {
     TIMEFRAME_ONE_DAY: (
-        EnabledStrategyVersionInstance(BollingerBandsCurrencyOHLCVEntryStrategy, {"bollinger_bands_period": 20}, 1),
+        EnabledStrategyVersionInstance(BollingerBandsAssetOHLCVEntryStrategy, {"bollinger_bands_period": 20}, 1),
     ),
 }
 
 INITIAL_EXIT_ENABLED_STRATEGY_VERSION_INSTANCES: Dict[TimeframeData, Tuple[EnabledStrategyVersionInstance, ...]] = {
     TIMEFRAME_ONE_DAY: (
         EnabledStrategyVersionInstance(
-            TrailingStopLossCurrencyOHLCVExitStrategy, {"trailing_stop_loss_percentage": 0.1}, 1
+            TrailingStopLossAssetOHLCVExitStrategy, {"trailing_stop_loss_percentage": 0.1}, 1
         ),
     ),
 }

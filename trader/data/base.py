@@ -12,25 +12,25 @@ from trader.models.user import User
 
 
 @dataclass
-class CurrencyTypeData:
+class AssetTypeData:
     cache_key: str
     description: str
 
 
-CURRENCY_TYPE_UNKNOWN_CURRENCY = CurrencyTypeData("currency_type_unknown_currency_id", "Unknown currency")
-CURRENCY_TYPE_STANDARD_CURRENCY = CurrencyTypeData("currency_type_standard_currency_id", "Standard currency")
-CURRENCY_TYPE_CRYPTOCURRENCY = CurrencyTypeData("currency_type_cryptocurrency_id", "Cryptocurrency")
-CURRENCY_TYPES = (CURRENCY_TYPE_UNKNOWN_CURRENCY, CURRENCY_TYPE_STANDARD_CURRENCY, CURRENCY_TYPE_CRYPTOCURRENCY)
+ASSET_TYPE_UNKNOWN_CURRENCY = AssetTypeData("asset_type_unknown_currency_id", "Unknown currency")
+ASSET_TYPE_STANDARD_CURRENCY = AssetTypeData("asset_type_standard_currency_id", "Standard currency")
+ASSET_TYPE_CRYPTOCURRENCY = AssetTypeData("asset_type_cryptocurrency_id", "Cryptocurrency")
+ASSET_TYPES = (ASSET_TYPE_UNKNOWN_CURRENCY, ASSET_TYPE_STANDARD_CURRENCY, ASSET_TYPE_CRYPTOCURRENCY)
 
 
-def initialize_currency_types(session: Session) -> None:
-    for currency_type in CURRENCY_TYPES:
-        instance = session.query(CurrencyType).filter_by(description=currency_type.description).one_or_none()
+def initialize_asset_types(session: Session) -> None:
+    for asset_type in ASSET_TYPES:
+        instance = session.query(CurrencyType).filter_by(description=asset_type.description).one_or_none()
         if not instance:
-            instance = CurrencyType(description=currency_type.description)
+            instance = CurrencyType(description=asset_type.description)
             session.add(instance)
             session.flush()
-        cache.set(currency_type.cache_key, instance.id)
+        cache.set(asset_type.cache_key, instance.id)
 
 
 @dataclass
@@ -211,9 +211,9 @@ class DataFeedData:
     name: str
 
 
-DATA_FEED_CURRENCY_OHLCV = DataFeedData("data_feed_currency_ohlcv_id", "Currency OHLCV")
+DATA_FEED_ASSET_OHLCV = DataFeedData("data_feed_asset_ohlcv_id", "Asset OHLCV")
 DATA_FEED_GOOGLE_TRENDS = DataFeedData("data_feed_google_trends_id", "Google Trends")
-DATA_FEEDS = (DATA_FEED_CURRENCY_OHLCV, DATA_FEED_GOOGLE_TRENDS)
+DATA_FEEDS = (DATA_FEED_ASSET_OHLCV, DATA_FEED_GOOGLE_TRENDS)
 
 
 def initialize_data_feeds(session: Session) -> None:
@@ -250,7 +250,7 @@ def initialize_users(session: Session) -> None:
 
 def initialize_base_data() -> None:
     with DBSession() as session:
-        initialize_currency_types(session)
+        initialize_asset_types(session)
         initialize_google_trends_geos(session)
         initialize_google_trends_gprops(session)
         initialize_source_types(session)

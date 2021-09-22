@@ -2,17 +2,17 @@ from typing import Dict
 from bs4 import BeautifulSoup
 import requests
 from trader.connections.database import DBSession
-from trader.data.base import CURRENCY_TYPE_STANDARD_CURRENCY, CURRENCY_TYPE_UNKNOWN_CURRENCY, SOURCE_ISO
+from trader.data.base import ASSET_TYPE_STANDARD_CURRENCY, ASSET_TYPE_UNKNOWN_CURRENCY, SOURCE_ISO
+from trader.models.asset import Asset
 from trader.models.country import Country, CountryXStandardCurrency
-from trader.models.currency import Currency
 from trader.models.standard_currency import StandardCurrency
 from trader.utilities.functions import fetch_base_data_id
 
 
 def update_standard_currencies_from_iso() -> None:
     iso_id = fetch_base_data_id(SOURCE_ISO)
-    standard_currency_id = fetch_base_data_id(CURRENCY_TYPE_STANDARD_CURRENCY)
-    unknown_currency_id = fetch_base_data_id(CURRENCY_TYPE_UNKNOWN_CURRENCY)
+    standard_currency_id = fetch_base_data_id(ASSET_TYPE_STANDARD_CURRENCY)
+    unknown_currency_id = fetch_base_data_id(ASSET_TYPE_UNKNOWN_CURRENCY)
     response = requests.get("https://en.wikipedia.org/wiki/ISO_4217")
     soup = BeautifulSoup(response.text, "lxml")
     table_h2 = soup.select("span#Active_codes")[0]
@@ -26,30 +26,30 @@ def update_standard_currencies_from_iso() -> None:
             iso_numeric_code = table_data[1].text
             minor_unit = table_data[2].text if table_data[2].text.isnumeric() else None
             country_names = {country_anchor.text for country_anchor in table_data[4].find_all("a")}
-            currency = (
-                session.query(Currency)
+            asset = (
+                session.query(Asset)
                 .filter(
-                    Currency.currency_type_id.in_([standard_currency_id, unknown_currency_id]),
-                    Currency.symbol == symbol,
+                    Asset.asset_type_id.in_([standard_currency_id, unknown_currency_id]),
+                    Asset.symbol == symbol,
                 )
                 .one_or_none()
             )
-            if not currency:
-                currency = Currency(source_id=iso_id, currency_type_id=standard_currency_id, name=name, symbol=symbol)
-                session.add(currency)
+            if not asset:
+                asset = Asset(source_id=iso_id, asset_type_id=standard_currency_id, name=name, symbol=symbol)
+                session.add(asset)
                 session.flush()
-            elif currency.currency_type_id == unknown_currency_id:
-                currency.source_id = iso_id
-                currency.currency_type_id = standard_currency_id
-                currency.name = name
+            elif asset.asset_type_id == unknown_currency_id:
+                asset.source_id = iso_id
+                asset.asset_type_id = standard_currency_id
+                asset.name = name
             else:
-                for item in currency.countries:
+                for item in asset.countries:
                     if item.country.name not in country_names:
                         item.is_active = False
-            standard_currency = currency.standard_currency
+            standard_currency = asset.standard_currency
             if not standard_currency:
                 standard_currency = StandardCurrency(
-                    currency_id=currency.id, iso_numeric_code=iso_numeric_code, minor_unit=minor_unit
+                    currency_id=asset.id, iso_numeric_code=iso_numeric_code, minor_unit=minor_unit
                 )
                 session.add(standard_currency)
             else:
@@ -63,18 +63,18 @@ def update_standard_currencies_from_iso() -> None:
                     country = countries[country_name]
                 if len(country) != 1:
                     continue
-                country_currency = (
+                country_x_standard_currency = (
                     session.query(CountryXStandardCurrency)
                     .filter_by(country_id=country[0].id, standard_currency_id=standard_currency.id)
                     .one_or_none()
                 )
-                if not country_currency:
-                    country_currency = CountryXStandardCurrency(
+                if not country_x_standard_currency:
+                    country_x_standard_currency = CountryXStandardCurrency(
                         source_id=iso_id,
                         country_id=country[0].id,
                         standard_currency_id=standard_currency.id,
                     )
-                    session.add(country_currency)
-                elif not country_currency.is_active:
-                    country_currency.is_active = True
+                    session.add(country_x_standard_currency)
+                elif not country_x_standard_currency.is_active:
+                    country_x_standard_currency.is_active = True
         session.commit()

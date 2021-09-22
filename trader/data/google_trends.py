@@ -169,7 +169,7 @@ def update_interest_over_time_from_google_trends(
         for timeframe_base_label in reversed(GOOGLE_TRENDS_TIMEFRAME_RANKS[target_timeframe_rank:]):
             date_ranges = timeframe_base_label_to_date_ranges(timeframe_base_label, gprop, from_inclusive, to_exclusive)
             if date_ranges:
-                timeframe = session.query(Timeframe).filter_by(base_label=timeframe_base_label).one_or_none()
+                timeframe = session.query(Timeframe).filter_by(base_label=timeframe_base_label).one()
                 for from_val, to_val in date_ranges:
                     competing_google_trends_pull_steps = (
                         session.query(GoogleTrendsPullStep)

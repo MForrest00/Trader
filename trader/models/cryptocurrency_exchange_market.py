@@ -41,8 +41,8 @@ class CryptocurrencyExchangeMarket(Base):
     cryptocurrency_exchange_market_category_id = Column(
         Integer, ForeignKey("cryptocurrency_exchange_market_category.id"), nullable=False
     )
-    base_currency_id = Column(Integer, ForeignKey("currency.id"), nullable=False)
-    quote_currency_id = Column(Integer, ForeignKey("currency.id"), nullable=False)
+    base_asset_id = Column(Integer, ForeignKey("asset.id"), nullable=False)
+    quote_asset_id = Column(Integer, ForeignKey("asset.id"), nullable=False)
     cryptocurrency_exchange_market_fee_type_id = Column(
         Integer, ForeignKey("cryptocurrency_exchange_market_fee_type.id"), nullable=False
     )
@@ -58,18 +58,18 @@ class CryptocurrencyExchangeMarket(Base):
     )
 
     # Many to one
-    base_currency = relationship(
-        "Currency", lazy=False, backref=backref(f"base_{__tablename__}s", lazy=True), foreign_keys=[base_currency_id]
+    base_asset = relationship(
+        "Asset", lazy=False, backref=backref(f"base_{__tablename__}s", lazy=True), foreign_keys=[base_asset_id]
     )
-    quote_currency = relationship(
-        "Currency", lazy=False, backref=backref(f"quote_{__tablename__}s", lazy=True), foreign_keys=[quote_currency_id]
+    quote_asset = relationship(
+        "Asset", lazy=False, backref=backref(f"quote_{__tablename__}s", lazy=True), foreign_keys=[quote_asset_id]
     )
 
     __table_args__ = (
         UniqueConstraint(
             "cryptocurrency_exchange_id",
             "cryptocurrency_exchange_market_category_id",
-            "base_currency_id",
-            "quote_currency_id",
+            "base_asset_id",
+            "quote_asset_id",
         ),
     )

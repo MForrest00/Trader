@@ -34,6 +34,10 @@ class Source(Base):
     )
 
     # One to many
+    assets = relationship("Asset", lazy=True, backref=backref(__tablename__, lazy=True))
+    asset_ohlcv_groups = relationship("AssetOHLCVGroup", lazy=True, backref=backref(__tablename__, lazy=True))
+    asset_tags = relationship("AssetTag", lazy=True, backref=backref(__tablename__, lazy=True))
+    assets_x_asset_tags = relationship("AssetXAssetTag", lazy=True, backref=backref(__tablename__, lazy=True))
     countries = relationship("Country", lazy=True, backref=backref(__tablename__, lazy=True))
     countries_x_cryptocurrency_exchanges = relationship(
         "CountryXCryptocurrencyExchange", lazy=True, backref=backref(__tablename__, lazy=True)
@@ -67,12 +71,6 @@ class Source(Base):
     )
     cryptocurrency_rank_snapshots = relationship(
         "CryptocurrencyRankSnapshot", lazy=True, backref=backref(__tablename__, lazy=True)
-    )
-    currencies = relationship("Currency", lazy=True, backref=backref(__tablename__, lazy=True))
-    currency_ohlcv_groups = relationship("CurrencyOHLCVGroup", lazy=True, backref=backref(__tablename__, lazy=True))
-    currency_tags = relationship("CurrencyTag", lazy=True, backref=backref(__tablename__, lazy=True))
-    currencies_x_currency_tags = relationship(
-        "CurrencyXCurrencyTag", lazy=True, backref=backref(__tablename__, lazy=True)
     )
     google_trends_groups = relationship("GoogleTrendsGroup", lazy=True, backref=backref(__tablename__, lazy=True))
 
