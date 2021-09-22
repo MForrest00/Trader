@@ -59,6 +59,4 @@ class AssetOHLCV(Base):
     date_low = Column(DateTime(timezone=True), nullable=True)
 
     # One to many
-    asset_ohlcv_buy_signals = relationship(
-        "AssetOHLCVBuySignal", lazy=True, backref=backref(__tablename__, lazy=False)
-    )
+    asset_ohlcv_buy_signals = relationship("AssetOHLCVBuySignal", lazy=True, backref=backref(__tablename__, lazy=False))

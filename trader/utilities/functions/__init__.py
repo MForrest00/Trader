@@ -5,7 +5,7 @@ from typing import Callable, Dict, List, Type, Union
 from dateutil.relativedelta import relativedelta
 from trader.connections.cache import cache
 from trader.data.base import (
-    CurrencyTypeData,
+    AssetTypeData,
     DataFeedData,
     GoogleTrendsGeoData,
     GoogleTrendsGpropData,
@@ -57,7 +57,7 @@ def iso_time_string_to_datetime(time_string: str) -> datetime:
 
 def fetch_base_data_id(
     base_data: Union[
-        CurrencyTypeData,
+        AssetTypeData,
         DataFeedData,
         GoogleTrendsGeoData,
         GoogleTrendsGpropData,

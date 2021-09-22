@@ -3,7 +3,7 @@ from typing import Optional
 from sqlalchemy.orm import Session
 from trader.connections.cache import cache
 from trader.connections.database import DBSession
-from trader.models.currency import CurrencyType
+from trader.models.asset import AssetType
 from trader.models.data_feed import DataFeed
 from trader.models.google_trends import GoogleTrendsGeo, GoogleTrendsGprop
 from trader.models.source import Source, SourceType
@@ -25,9 +25,9 @@ ASSET_TYPES = (ASSET_TYPE_UNKNOWN_CURRENCY, ASSET_TYPE_STANDARD_CURRENCY, ASSET_
 
 def initialize_asset_types(session: Session) -> None:
     for asset_type in ASSET_TYPES:
-        instance = session.query(CurrencyType).filter_by(description=asset_type.description).one_or_none()
+        instance = session.query(AssetType).filter_by(description=asset_type.description).one_or_none()
         if not instance:
-            instance = CurrencyType(description=asset_type.description)
+            instance = AssetType(description=asset_type.description)
             session.add(instance)
             session.flush()
         cache.set(asset_type.cache_key, instance.id)

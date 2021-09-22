@@ -8,7 +8,12 @@ sys.path.append(os.path.split(pathlib.Path(__file__).parent.absolute())[0])
 
 from trader.connections.database import DBSession
 from trader.data.asset_ohlcv.coin_market_cap import CoinMarketCapAssetOHLCVDataFeedRetriever
-from trader.data.base import ASSET_TYPE_STANDARD_CURRENCY, initialize_base_data, SOURCE_COIN_MARKET_CAP, TIMEFRAME_ONE_DAY
+from trader.data.base import (
+    ASSET_TYPE_STANDARD_CURRENCY,
+    initialize_base_data,
+    SOURCE_COIN_MARKET_CAP,
+    TIMEFRAME_ONE_DAY,
+)
 from trader.data.country import update_countries_from_iso
 from trader.data.cryptocurrency_exchange_market_stat import (
     update_cryptocurrency_exchange_market_stats_from_coin_market_cap,

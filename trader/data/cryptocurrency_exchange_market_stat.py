@@ -1,6 +1,5 @@
 from urllib.parse import urlencode
 from typing import Dict, List, Tuple, Union
-from celery.app import base
 import requests
 from trader.connections.database import DBSession
 from trader.data.base import (
@@ -67,8 +66,8 @@ def update_cryptocurrency_exchange_market_stats_from_coin_market_cap(
         market_pair_combinations = set((r["baseSymbol"], r["quoteSymbol"], r["feeType"].lower()) for r in market_pairs)
         for market in cryptocurrency_exchange.cryptocurrency_exchange_markets:
             market_pair_combination = (
-                market.base_currency.symbol,
-                market.quote_currency.symbol,
+                market.base_asset.symbol,
+                market.quote_asset.symbol,
                 market.cryptocurrency_exchange_market_fee_type.description,
             )
             if market_pair_combination not in market_pair_combinations:
@@ -163,8 +162,8 @@ def update_cryptocurrency_exchange_market_stats_from_coin_market_cap(
                 .filter_by(
                     cryptocurrency_exchange_id=cryptocurrency_exchange.id,
                     cryptocurrency_exchange_market_category_id=market_category.id,
-                    base_currency_id=base_asset.id,
-                    quote_currency_id=quote_asset.id,
+                    base_asset_id=base_asset.id,
+                    quote_asset_id=quote_asset.id,
                 )
                 .one_or_none()
             )
@@ -176,8 +175,8 @@ def update_cryptocurrency_exchange_market_stats_from_coin_market_cap(
                     source_id=coin_market_cap_id,
                     cryptocurrency_exchange_id=cryptocurrency_exchange.id,
                     cryptocurrency_exchange_market_category_id=market_category.id,
-                    base_currency_id=base_asset.id,
-                    quote_currency_id=quote_asset.id,
+                    base_asset_id=base_asset.id,
+                    quote_asset_id=quote_asset.id,
                     cryptocurrency_exchange_market_fee_type_id=market_fee_type.id,
                     market_url=cryptocurrency_exchange_market_url,
                     source_entity_id=cryptocurrency_exchange_market_source_entity_id,
@@ -204,8 +203,8 @@ def update_cryptocurrency_exchange_market_stats_from_coin_market_cap(
                 cryptocurrency_exchange_market_id=cryptocurrency_exchange_market.id,
                 price=market_pair["price"],
                 usd_volume_24h=market_pair["volumeUsd"],
-                base_currency_volume_24h=market_pair["volumeBase"],
-                quote_currency_volume_24h=market_pair["volumeQuote"],
+                base_asset_volume_24h=market_pair["volumeBase"],
+                quote_asset_volume_24h=market_pair["volumeQuote"],
                 usd_depth_negative_two=market_pair.get("depthUsdNegativeTwo"),
                 usd_depth_positive_two=market_pair.get("depthUsdPositiveTwo"),
                 source_score=market_pair["marketScore"],
