@@ -4,12 +4,11 @@ from typing import Dict, List, Optional, Union
 import ccxt
 from ccxt.base.exchange import Exchange
 from trader.data.asset_ohlcv import AssetOHLCVDataFeedRetriever
-from trader.data.base import ASSET_TYPE_CRYPTOCURRENCY
+from trader.data.initial.asset_type import ASSET_TYPE_CRYPTOCURRENCY
 from trader.models.asset import Asset
 from trader.models.timeframe import Timeframe
 from trader.utilities.functions import (
     datetime_to_ms_timestamp,
-    fetch_base_data_id,
     ms_timestamp_to_datetime,
     TIMEFRAME_UNIT_TO_DELTA_FUNCTION,
 )
@@ -43,7 +42,7 @@ class CCXTAssetOHLCVDataFeedRetriever(AssetOHLCVDataFeedRetriever):
         return min(to_exclusive, datetime.now(timezone.utc)) if to_exclusive else datetime.now(timezone.utc)
 
     def validate_attributes(self) -> bool:
-        if self.base_asset.asset_type_id != fetch_base_data_id(ASSET_TYPE_CRYPTOCURRENCY):
+        if self.base_asset.asset_type_id != ASSET_TYPE_CRYPTOCURRENCY.fetch_id():
             raise ValueError("Base asset must be a cryptocurrency")
         if not self.from_inclusive < self.to_exclusive:
             raise ValueError("From inclusive value must be less than the to exclusive value")

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 import os
 import pathlib
 from typing import Any, Dict, Tuple
-from trader.data.base import TIMEFRAME_ONE_DAY, TimeframeData
+from trader.data.initial.timeframe import TIMEFRAME_ONE_DAY, TimeframeData
 from trader.strategies.base import Strategy
 from trader.strategies.entry.asset_ohlcv.bollinger_bands import BollingerBandsAssetOHLCVEntryStrategy
 from trader.strategies.exit.asset_ohlcv.trailing_stop_loss import TrailingStopLossAssetOHLCVExitStrategy

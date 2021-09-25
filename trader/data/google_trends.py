@@ -3,9 +3,9 @@ from typing import Dict, List, Optional, Sequence, Tuple, Union
 from dateutil.relativedelta import relativedelta
 from trader.connections.database import DBSession
 from trader.connections.trend_request import trend_request
-from trader.data.base import (
-    GOOGLE_TRENDS_GPROP_WEB_SEARCH,
-    SOURCE_GOOGLE_TRENDS,
+from trader.data.initial.google_trends_gprop import GOOGLE_TRENDS_GPROP_WEB_SEARCH
+from trader.data.initial.source import SOURCE_GOOGLE_TRENDS
+from trader.data.initial.timeframe import (
     TIMEFRAME_EIGHT_MINUTE,
     TIMEFRAME_ONE_DAY,
     TIMEFRAME_ONE_MINUTE,
@@ -21,7 +21,7 @@ from trader.models.google_trends import (
     GoogleTrendsPullStep,
 )
 from trader.models.timeframe import Timeframe
-from trader.utilities.functions import clean_range_cap, fetch_base_data_id
+from trader.utilities.functions import clean_range_cap
 
 
 GOOGLE_TRENDS_WEB_SEARCH_BASE_DATE = datetime(2004, 1, 1, tzinfo=timezone.utc)
@@ -124,7 +124,7 @@ def update_interest_over_time_from_google_trends(
     from_inclusive: Optional[datetime],
     to_exclusive: Optional[datetime] = None,
 ) -> None:
-    google_trends_id = fetch_base_data_id(SOURCE_GOOGLE_TRENDS)
+    google_trends_id = SOURCE_GOOGLE_TRENDS.fetch_id()
     try:
         target_timeframe_rank = GOOGLE_TRENDS_TIMEFRAME_RANKS.index(timeframe.base_label)
     except ValueError as error:

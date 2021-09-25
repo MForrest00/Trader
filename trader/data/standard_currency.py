@@ -2,17 +2,17 @@ from typing import Dict
 from bs4 import BeautifulSoup
 import requests
 from trader.connections.database import DBSession
-from trader.data.base import ASSET_TYPE_STANDARD_CURRENCY, ASSET_TYPE_UNKNOWN_CURRENCY, SOURCE_ISO
+from trader.data.initial.asset_type import ASSET_TYPE_STANDARD_CURRENCY, ASSET_TYPE_UNKNOWN_CURRENCY
+from trader.data.initial.source import SOURCE_ISO
 from trader.models.asset import Asset
 from trader.models.country import Country, CountryXStandardCurrency
 from trader.models.standard_currency import StandardCurrency
-from trader.utilities.functions import fetch_base_data_id
 
 
 def update_standard_currencies_from_iso() -> None:
-    iso_id = fetch_base_data_id(SOURCE_ISO)
-    standard_currency_id = fetch_base_data_id(ASSET_TYPE_STANDARD_CURRENCY)
-    unknown_currency_id = fetch_base_data_id(ASSET_TYPE_UNKNOWN_CURRENCY)
+    iso_id = SOURCE_ISO.fetch_id()
+    standard_currency_id = ASSET_TYPE_STANDARD_CURRENCY.fetch_id()
+    unknown_currency_id = ASSET_TYPE_UNKNOWN_CURRENCY.fetch_id()
     response = requests.get("https://en.wikipedia.org/wiki/ISO_4217")
     soup = BeautifulSoup(response.text, "lxml")
     table_h2 = soup.select("span#Active_codes")[0]
@@ -49,7 +49,7 @@ def update_standard_currencies_from_iso() -> None:
             standard_currency = asset.standard_currency
             if not standard_currency:
                 standard_currency = StandardCurrency(
-                    currency_id=asset.id, iso_numeric_code=iso_numeric_code, minor_unit=minor_unit
+                    asset_id=asset.id, iso_numeric_code=iso_numeric_code, minor_unit=minor_unit
                 )
                 session.add(standard_currency)
             else:

@@ -51,7 +51,7 @@ class AssetTag(Base):
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # Many to many
-    currencies = relationship("AssetXAssetTag", lazy=True, back_populates=__tablename__)
+    assets = relationship("AssetXAssetTag", lazy=True, back_populates=__tablename__)
 
 
 class AssetXAssetTag(Base):

@@ -2,12 +2,13 @@ from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Union
 from trader.connections.database import DBSession
-from trader.data.base import SourceData, SourceTypeData
+from trader.data.initial.source import SourceData
+from trader.data.initial.source_type import SourceTypeData
 from trader.models.asset import Asset
 from trader.models.asset_ohlcv import AssetOHLCV, AssetOHLCVGroup, AssetOHLCVPull
 from trader.models.source import Source
 from trader.models.timeframe import Timeframe
-from trader.utilities.functions import clean_range_cap, fetch_base_data_id
+from trader.utilities.functions import clean_range_cap
 
 
 class AssetOHLCVDataFeedRetriever(ABC):
@@ -39,13 +40,11 @@ class AssetOHLCVDataFeedRetriever(ABC):
                 name, source_type_data = self.SOURCE
                 with DBSession() as session:
                     source = (
-                        session.query(Source)
-                        .filter_by(source_type_id=fetch_base_data_id(source_type_data), name=name)
-                        .one()
+                        session.query(Source).filter_by(source_type_id=source_type_data.fetch_id(), name=name).one()
                     )
                 self._source_id = source.id
             else:
-                self._source_id = fetch_base_data_id(self.SOURCE)
+                self._source_id = self.SOURCE.fetch_id()
         return self._source_id
 
     @abstractmethod

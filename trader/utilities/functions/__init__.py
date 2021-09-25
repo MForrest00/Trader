@@ -3,18 +3,6 @@ from hashlib import md5
 from inspect import getsource, signature
 from typing import Callable, Dict, List, Type, Union
 from dateutil.relativedelta import relativedelta
-from trader.connections.cache import cache
-from trader.data.base import (
-    AssetTypeData,
-    DataFeedData,
-    GoogleTrendsGeoData,
-    GoogleTrendsGpropData,
-    initialize_base_data,
-    SourceData,
-    SourceTypeData,
-    TimeframeData,
-    UserData,
-)
 
 
 TIMEFRAME_UNIT_TO_TRANSFORM_FUNCTION: Dict[str, Callable[[datetime], datetime]] = {
@@ -53,25 +41,6 @@ def ms_timestamp_to_datetime(timestamp_val: int) -> datetime:
 
 def iso_time_string_to_datetime(time_string: str) -> datetime:
     return datetime.strptime(time_string, "%Y-%m-%dT%H:%M:%S.%f%z")
-
-
-def fetch_base_data_id(
-    base_data: Union[
-        AssetTypeData,
-        DataFeedData,
-        GoogleTrendsGeoData,
-        GoogleTrendsGpropData,
-        SourceData,
-        SourceTypeData,
-        TimeframeData,
-        UserData,
-    ]
-) -> int:
-    cache_value = cache.get(base_data.cache_key)
-    if not cache_value:
-        initialize_base_data()
-        cache_value = cache.get(base_data.cache_key)
-    return int(cache_value.decode())
 
 
 def get_init_parameters(source_object: Type) -> List[str]:

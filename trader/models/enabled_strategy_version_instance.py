@@ -7,7 +7,7 @@ class EnabledStrategyVersionInstance(Base):
     __tablename__ = "enabled_strategy_version_instance"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    strategy_version_instance_id = Column(Integer, ForeignKey("currency.id"), nullable=False)
+    strategy_version_instance_id = Column(Integer, ForeignKey("strategy_version_instance.id"), nullable=False)
     timeframe_id = Column(Integer, ForeignKey("timeframe.id"), nullable=False)
     priority = Column(SmallInteger, nullable=False)
     is_disabled = Column(Boolean, nullable=False, default=False)

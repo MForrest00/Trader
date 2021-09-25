@@ -3,7 +3,8 @@ from typing import Dict
 from bs4 import BeautifulSoup
 import requests
 from trader.connections.database import DBSession
-from trader.data.base import SOURCE_COIN_MARKET_CAP, SOURCE_TYPE_CRYPTOCURRENCY_EXCHANGE
+from trader.data.initial.source import SOURCE_COIN_MARKET_CAP
+from trader.data.initial.source_type import SOURCE_TYPE_CRYPTOCURRENCY_EXCHANGE
 from trader.models.asset import Asset
 from trader.models.country import Country, CountryXCryptocurrencyExchange
 from trader.models.cryptocurrency_exchange import (
@@ -14,12 +15,12 @@ from trader.models.cryptocurrency_exchange import (
 from trader.models.cryptocurrency_exchange_rank import CryptocurrencyExchangeRank, CryptocurrencyExchangeRankPull
 from trader.models.standard_currency import StandardCurrency
 from trader.models.source import Source
-from trader.utilities.functions import fetch_base_data_id, iso_time_string_to_datetime
+from trader.utilities.functions import iso_time_string_to_datetime
 
 
 def update_cryptocurrency_exchange_ranks_from_coin_market_cap() -> None:
-    coin_market_cap_id = fetch_base_data_id(SOURCE_COIN_MARKET_CAP)
-    cryptocurrency_exchange_id = fetch_base_data_id(SOURCE_TYPE_CRYPTOCURRENCY_EXCHANGE)
+    coin_market_cap_id = SOURCE_COIN_MARKET_CAP.fetch_id()
+    cryptocurrency_exchange_id = SOURCE_TYPE_CRYPTOCURRENCY_EXCHANGE.fetch_id()
     response = requests.get("https://coinmarketcap.com/rankings/exchanges/")
     soup = BeautifulSoup(response.text, "lxml")
     data = json.loads(soup.select("script#__NEXT_DATA__")[0].string)

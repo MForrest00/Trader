@@ -5,7 +5,6 @@ from trader.utilities.constants import (
     INITIAL_ENTRY_ENABLED_STRATEGY_VERSION_INSTANCES,
     INITIAL_EXIT_ENABLED_STRATEGY_VERSION_INSTANCES,
 )
-from trader.utilities.functions import fetch_base_data_id
 
 
 def set_initial_enabled_strategy_version_instances() -> None:
@@ -35,7 +34,7 @@ def set_initial_enabled_strategy_version_instances() -> None:
                 if strategy_version_instance:
                     enabled_strategy_version_instance = EnabledStrategyVersionInstance(
                         strategy_version_instance_id=strategy_version_instance.id,
-                        timeframe_id=fetch_base_data_id(timeframe),
+                        timeframe_id=timeframe.fetch_id(),
                         priority=enabled_strategy_version_instance.priority,
                     )
                     session.add(enabled_strategy_version_instance)

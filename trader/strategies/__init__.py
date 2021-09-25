@@ -13,7 +13,7 @@ from trader.models.strategy import (
 from trader.strategies.base import Strategy as StrategyBase
 from trader.strategies.entry.asset_ohlcv.bollinger_bands import BollingerBandsAssetOHLCVEntryStrategy
 from trader.strategies.exit.asset_ohlcv.trailing_stop_loss import TrailingStopLossAssetOHLCVExitStrategy
-from trader.utilities.functions import fetch_base_data_id, get_hash_of_source, get_init_parameters
+from trader.utilities.functions import get_hash_of_source, get_init_parameters
 
 
 def parameter_space_to_arguments_dict(strategy: StrategyBase) -> List[Dict[str, Any]]:
@@ -51,16 +51,15 @@ def initialize_strategy(session: Session, strategy: StrategyBase) -> None:
     if not strategy_version:
         strategy_version = StrategyVersion(
             strategy_id=strategy_object.id,
-            base_data_feed_id=fetch_base_data_id(strategy.BASE_DATA_FEED),
+            base_data_feed_id=strategy.BASE_DATA_FEED.fetch_id(),
             version=strategy.VERSION,
             source_code_md5_hash=get_hash_of_source(strategy),
         )
         session.add(strategy_version)
         session.flush()
         for data_feed in strategy.SUPPLEMENTAL_DATA_FEEDS:
-            data_feed_id = fetch_base_data_id(data_feed)
             strategy_version_x_supplemental_data_feed = StrategyVersionXSupplementalDataFeed(
-                strategy_version_id=strategy_version.id, data_feed_id=data_feed_id
+                strategy_version_id=strategy_version.id, data_feed_id=data_feed.fetch_id()
             )
             session.add(strategy_version_x_supplemental_data_feed)
         for parameter in parameters:

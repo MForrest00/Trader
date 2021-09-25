@@ -6,11 +6,12 @@ from bs4 import BeautifulSoup
 import requests
 from sqlalchemy.orm import Session
 from trader.connections.database import DBSession
-from trader.data.base import ASSET_TYPE_CRYPTOCURRENCY, ASSET_TYPE_UNKNOWN_CURRENCY, SOURCE_COIN_MARKET_CAP
+from trader.data.initial.asset_type import ASSET_TYPE_CRYPTOCURRENCY, ASSET_TYPE_UNKNOWN_CURRENCY
+from trader.data.initial.source import SOURCE_COIN_MARKET_CAP
 from trader.models.asset import AssetTag, AssetXAssetTag, Asset
 from trader.models.cryptocurrency import Cryptocurrency, CryptocurrencyPlatform
 from trader.models.cryptocurrency_rank import CryptocurrencyRank, CryptocurrencyRankSnapshot
-from trader.utilities.functions import fetch_base_data_id, iso_time_string_to_datetime
+from trader.utilities.functions import iso_time_string_to_datetime
 
 
 CRYPTOCURRENCY_RANK_LIMIT = 500
@@ -49,8 +50,8 @@ def insert_cryptocurrency_ranks(
     cryptocurrency_rank_snapshot_id: int,
     data: List[CryptocurrencyRankRecord],
 ) -> None:
-    cryptocurrency_id = fetch_base_data_id(ASSET_TYPE_CRYPTOCURRENCY)
-    unknown_currency_id = fetch_base_data_id(ASSET_TYPE_UNKNOWN_CURRENCY)
+    cryptocurrency_id = ASSET_TYPE_CRYPTOCURRENCY.fetch_id()
+    unknown_currency_id = ASSET_TYPE_UNKNOWN_CURRENCY.fetch_id()
     cryptocurrency_platforms_lookup: Dict[Tuple[str, str], CryptocurrencyPlatform] = {}
     asset_tags_lookup: Dict[str, AssetTag] = {}
     for record in data:
@@ -102,7 +103,7 @@ def insert_cryptocurrency_ranks(
         cryptocurrency = asset.cryptocurrency
         if not cryptocurrency:
             cryptocurrency = Cryptocurrency(
-                currency_id=asset.id,
+                asset_id=asset.id,
                 max_supply=record.cryptocurrency_max_supply,
                 source_entity_id=record.cryptocurrency_source_entity_id,
                 source_slug=record.cryptocurrency_source_slug,
@@ -112,7 +113,7 @@ def insert_cryptocurrency_ranks(
             )
             session.add(cryptocurrency)
             session.flush()
-        elif cryptocurrency.source_date_last_updated < record.currency_source_date_last_updated:
+        elif cryptocurrency.source_date_last_updated < record.cryptocurrency_source_date_last_updated:
             cryptocurrency.max_supply = record.cryptocurrency_max_supply
             cryptocurrency.source_entity_id = record.cryptocurrency_source_entity_id
             cryptocurrency.source_slug = record.cryptocurrency_source_slug
@@ -279,7 +280,7 @@ def retrieve_current_cryptocurrency_ranks_from_coin_market_cap(limit: int) -> Li
 
 
 def update_historical_cryptocurrency_ranks_from_coin_market_cap(limit: int = CRYPTOCURRENCY_RANK_LIMIT) -> None:
-    coin_market_cap_id = fetch_base_data_id(SOURCE_COIN_MARKET_CAP)
+    coin_market_cap_id = SOURCE_COIN_MARKET_CAP.fetch_id()
     historical_snapshots = retrieve_historical_snapshot_list_from_coin_market_cap()
     with DBSession() as session:
         for historical_snapshot in historical_snapshots:
@@ -301,7 +302,7 @@ def update_historical_cryptocurrency_ranks_from_coin_market_cap(limit: int = CRY
 
 
 def update_current_cryptocurrency_ranks_from_coin_market_cap(limit: int = CRYPTOCURRENCY_RANK_LIMIT) -> None:
-    coin_market_cap_id = fetch_base_data_id(SOURCE_COIN_MARKET_CAP)
+    coin_market_cap_id = SOURCE_COIN_MARKET_CAP.fetch_id()
     data = retrieve_current_cryptocurrency_ranks_from_coin_market_cap(limit)
     with DBSession() as session:
         cryptocurrency_rank_snapshot = CryptocurrencyRankSnapshot(

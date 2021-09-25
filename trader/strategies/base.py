@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Sequence, Tuple
 import pandas as pd
-from trader.data.base import DataFeedData
+from trader.data.initial.data_feed import DataFeedData
 
 
 class Strategy(ABC):

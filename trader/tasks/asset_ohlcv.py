@@ -2,7 +2,9 @@ from typing import Optional
 from sqlalchemy.sql import func
 from trader.connections.database import DBSession
 from trader.data.asset_ohlcv.coin_market_cap import CoinMarketCapAssetOHLCVDataFeedRetriever
-from trader.data.base import ASSET_TYPE_STANDARD_CURRENCY, SOURCE_COIN_MARKET_CAP, TIMEFRAME_ONE_DAY
+from trader.data.initial.asset_type import ASSET_TYPE_STANDARD_CURRENCY
+from trader.data.initial.source import SOURCE_COIN_MARKET_CAP
+from trader.data.initial.timeframe import TIMEFRAME_ONE_DAY
 from trader.models.asset import Asset
 from trader.models.asset_ohlcv import AssetOHLCV, AssetOHLCVGroup, AssetOHLCVPull
 from trader.models.enabled_cryptocurrency_exchange import EnabledCryptocurrencyExchange
@@ -11,7 +13,6 @@ from trader.tasks import app
 from trader.utilities.constants import US_DOLLAR_SYMBOL
 from trader.utilities.functions import (
     datetime_to_ms_timestamp,
-    fetch_base_data_id,
     ms_timestamp_to_datetime,
     TIMEFRAME_UNIT_TO_DELTA_FUNCTION,
 )
@@ -28,10 +29,10 @@ def update_cryptocurrency_one_day_asset_ohlcv_from_coin_market_cap_task(
         base_asset = session.query(Asset).get(base_asset_id)
         us_dollar = (
             session.query(Asset)
-            .filter_by(asset_type_id=fetch_base_data_id(ASSET_TYPE_STANDARD_CURRENCY), symbol=US_DOLLAR_SYMBOL)
+            .filter_by(asset_type_id=ASSET_TYPE_STANDARD_CURRENCY.fetch_id(), symbol=US_DOLLAR_SYMBOL)
             .one()
         )
-        one_day = session.query(Timeframe).get(fetch_base_data_id(TIMEFRAME_ONE_DAY))
+        one_day = session.query(Timeframe).get(TIMEFRAME_ONE_DAY.fetch_id())
     from_inclusive = ms_timestamp_to_datetime(from_inclusive_ms_timestamp)
     to_exclusive = ms_timestamp_to_datetime(to_exclusive_ms_timestamp) if to_exclusive_ms_timestamp else None
     data_retriever = CoinMarketCapAssetOHLCVDataFeedRetriever(
@@ -51,12 +52,14 @@ def queue_update_cryptocurrency_one_day_asset_ohlcv_from_coin_market_cap_task() 
         )
         us_dollar = (
             session.query(Asset)
-            .filter_by(asset_type_id=fetch_base_data_id(ASSET_TYPE_STANDARD_CURRENCY), symbol=US_DOLLAR_SYMBOL)
+            .filter_by(asset_type_id=ASSET_TYPE_STANDARD_CURRENCY.fetch_id(), symbol=US_DOLLAR_SYMBOL)
             .one()
         )
+        coin_market_cap_id = SOURCE_COIN_MARKET_CAP.fetch_id()
+        one_day_id = TIMEFRAME_ONE_DAY.fetch_id()
         for base_asset_id in base_asset_ids:
             base_asset = session.query(Asset).get(base_asset_id)
-            if base_asset and base_asset.source_id == fetch_base_data_id(SOURCE_COIN_MARKET_CAP):
+            if base_asset and base_asset.source_id == coin_market_cap_id:
                 cryptocurrency = base_asset.cryptocurrency
                 if cryptocurrency:
                     last_date = (
@@ -65,10 +68,10 @@ def queue_update_cryptocurrency_one_day_asset_ohlcv_from_coin_market_cap_task() 
                         .join(AssetOHLCVPull)
                         .join(AssetOHLCVGroup)
                         .filter(
-                            AssetOHLCVGroup.source_id == fetch_base_data_id(SOURCE_COIN_MARKET_CAP),
+                            AssetOHLCVGroup.source_id == coin_market_cap_id,
                             AssetOHLCVGroup.base_asset_id == base_asset.id,
                             AssetOHLCVGroup.quote_asset_id == us_dollar.id,
-                            AssetOHLCVGroup.timeframe_id == fetch_base_data_id(TIMEFRAME_ONE_DAY),
+                            AssetOHLCVGroup.timeframe_id == one_day_id,
                         )
                         .one_or_none()
                     )

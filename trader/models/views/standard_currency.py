@@ -1,5 +1,5 @@
 from textwrap import dedent
-from trader.data.base import ASSET_TYPE_STANDARD_CURRENCY
+from trader.data.initial.asset_type import ASSET_TYPE_STANDARD_CURRENCY
 from trader.models.asset import Asset, AssetType
 from trader.models.standard_currency import StandardCurrency
 
@@ -18,7 +18,7 @@ STANDARD_CURRENCY_SQL = dedent(
         INNER JOIN public.{asset_type_table} at ON
             a.asset_type_id = at.id
         INNER JOIN public.{standard_currency_table} sc ON
-            c.id = sc.currency_id
+            a.id = sc.asset_id
     WHERE
         at.description = '{standard_currency_description}'
     """.format(

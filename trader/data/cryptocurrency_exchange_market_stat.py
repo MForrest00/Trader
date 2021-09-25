@@ -2,12 +2,12 @@ from urllib.parse import urlencode
 from typing import Dict, List, Tuple, Union
 import requests
 from trader.connections.database import DBSession
-from trader.data.base import (
+from trader.data.initial.asset_type import (
     ASSET_TYPE_CRYPTOCURRENCY,
     ASSET_TYPE_STANDARD_CURRENCY,
     ASSET_TYPE_UNKNOWN_CURRENCY,
-    SOURCE_COIN_MARKET_CAP,
 )
+from trader.data.initial.source import SOURCE_COIN_MARKET_CAP
 from trader.models.asset import Asset
 from trader.models.cryptocurrency_exchange import CryptocurrencyExchange
 from trader.models.cryptocurrency_exchange_market import (
@@ -19,21 +19,21 @@ from trader.models.cryptocurrency_exchange_market_stat import (
     CryptocurrencyExchangeMarketStat,
     CryptocurrencyExchangeMarketStatPull,
 )
-from trader.utilities.functions import fetch_base_data_id, iso_time_string_to_datetime
+from trader.utilities.functions import iso_time_string_to_datetime
 
 
 def update_cryptocurrency_exchange_market_stats_from_coin_market_cap(
     cryptocurrency_exchange: CryptocurrencyExchange,
 ) -> None:
-    if cryptocurrency_exchange.source.source_id != fetch_base_data_id(SOURCE_COIN_MARKET_CAP):
+    if cryptocurrency_exchange.source.source_id != SOURCE_COIN_MARKET_CAP.fetch_id():
         raise ValueError("Cryptocurrency exchange must be from source CoinMarketCap")
     if cryptocurrency_exchange.source_slug is None:
         raise ValueError("Cryptocurrency exchange must have a source_slug attribute")
-    coin_market_cap_id = fetch_base_data_id(SOURCE_COIN_MARKET_CAP)
-    unknown_currency_id = fetch_base_data_id(ASSET_TYPE_UNKNOWN_CURRENCY)
+    coin_market_cap_id = SOURCE_COIN_MARKET_CAP.fetch_id()
+    unknown_currency_id = ASSET_TYPE_UNKNOWN_CURRENCY.fetch_id()
     asset_type_ids = (
-        fetch_base_data_id(ASSET_TYPE_CRYPTOCURRENCY),
-        fetch_base_data_id(ASSET_TYPE_STANDARD_CURRENCY),
+        ASSET_TYPE_CRYPTOCURRENCY.fetch_id(),
+        ASSET_TYPE_STANDARD_CURRENCY.fetch_id(),
         unknown_currency_id,
     )
     start = 1

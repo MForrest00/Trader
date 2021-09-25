@@ -2,15 +2,12 @@ from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Union
 from urllib.parse import urlencode
 import requests
-from trader.data.base import (
-    ASSET_TYPE_STANDARD_CURRENCY,
-    ASSET_TYPE_CRYPTOCURRENCY,
-    SOURCE_COIN_MARKET_CAP,
-    TIMEFRAME_ONE_DAY,
-)
+from trader.data.initial.asset_type import ASSET_TYPE_CRYPTOCURRENCY, ASSET_TYPE_STANDARD_CURRENCY
+from trader.data.initial.source import SOURCE_COIN_MARKET_CAP
+from trader.data.initial.timeframe import TIMEFRAME_ONE_DAY
 from trader.data.asset_ohlcv import AssetOHLCVDataFeedRetriever
 from trader.utilities.constants import US_DOLLAR_SYMBOL
-from trader.utilities.functions import fetch_base_data_id, iso_time_string_to_datetime
+from trader.utilities.functions import iso_time_string_to_datetime
 
 
 class CoinMarketCapAssetOHLCVDataFeedRetriever(AssetOHLCVDataFeedRetriever):
@@ -25,15 +22,16 @@ class CoinMarketCapAssetOHLCVDataFeedRetriever(AssetOHLCVDataFeedRetriever):
     def validate_attributes(self) -> bool:
         if self.base_asset.source_id != self.source_id:
             raise ValueError("Base asset must be from source CoinMarketCap")
-        if self.base_asset.asset_type_id != fetch_base_data_id(ASSET_TYPE_CRYPTOCURRENCY):
+        if self.base_asset.asset_type_id != ASSET_TYPE_CRYPTOCURRENCY.fetch_id():
             raise ValueError("Base asset must be a cryptocurrency")
         if self.base_asset.cryptocurrency.source_entity_id is None:
             raise ValueError("Base asset must have a source_entity_id attribute")
-        if self.quote_asset.symbol != US_DOLLAR_SYMBOL or self.quote_asset.asset_type_id != fetch_base_data_id(
-            ASSET_TYPE_STANDARD_CURRENCY
+        if (
+            self.quote_asset.symbol != US_DOLLAR_SYMBOL
+            or self.quote_asset.asset_type_id != ASSET_TYPE_STANDARD_CURRENCY.fetch_id()
         ):
             raise ValueError("Quote asset must be standard currency USD")
-        if self.timeframe.id != fetch_base_data_id(TIMEFRAME_ONE_DAY):
+        if self.timeframe.id != TIMEFRAME_ONE_DAY.fetch_id():
             raise ValueError("Timeframe must be one day")
         if not self.from_inclusive < self.to_exclusive:
             raise ValueError("From inclusive value must be less than the to exclusive value")

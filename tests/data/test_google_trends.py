@@ -1,6 +1,11 @@
 from datetime import datetime, timezone
 import pytest
-from trader.data.base import TIMEFRAME_EIGHT_MINUTE, TIMEFRAME_ONE_DAY, TIMEFRAME_ONE_MINUTE, TIMEFRAME_ONE_MONTH
+from trader.data.initial.timeframe import (
+    TIMEFRAME_EIGHT_MINUTE,
+    TIMEFRAME_ONE_DAY,
+    TIMEFRAME_ONE_MINUTE,
+    TIMEFRAME_ONE_MONTH,
+)
 from trader.data.google_trends import (
     GOOGLE_TRENDS_OTHER_SEARCH_BASE_DATE,
     GOOGLE_TRENDS_WEB_SEARCH_BASE_DATE,

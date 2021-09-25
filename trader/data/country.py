@@ -1,9 +1,8 @@
 from bs4 import BeautifulSoup
 import requests
 from trader.connections.database import DBSession
-from trader.data.base import SOURCE_ISO
+from trader.data.initial.source import SOURCE_ISO
 from trader.models.country import Country
-from trader.utilities.functions import fetch_base_data_id
 
 
 def update_countries_from_iso() -> None:
@@ -24,7 +23,7 @@ def update_countries_from_iso() -> None:
             country = session.query(Country).filter_by(iso_alpha_3_code=iso_alpha_3_code).one_or_none()
             if not country:
                 country = Country(
-                    source_id=fetch_base_data_id(SOURCE_ISO),
+                    source_id=SOURCE_ISO.fetch_id(),
                     name=name,
                     official_name=official_name,
                     iso_alpha_2_code=iso_alpha_2_code,
