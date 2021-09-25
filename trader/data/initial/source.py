@@ -27,18 +27,18 @@ class SourceData(BaseData):
         )
 
 
-SOURCE_ISO = SourceData("source_iso_id", None, "ISO", SOURCE_TYPE_MISCELLANEOUS_DATA, url="https://www.iso.org/")
+SOURCE_ISO = SourceData("source_iso_id", None, SOURCE_TYPE_MISCELLANEOUS_DATA, "ISO", url="https://www.iso.org/")
 SOURCE_COIN_MARKET_CAP = SourceData(
     "source_coin_market_cap_id",
     None,
-    "CoinMarketCap",
     SOURCE_TYPE_CRYPTOCURRENCY_MARKET_DATA,
+    "CoinMarketCap",
     url="https://coinmarketcap.com/",
 )
 SOURCE_COIN_GECKO = SourceData(
-    "source_coin_gecko_id", None, "CoinGecko", SOURCE_TYPE_CRYPTOCURRENCY_MARKET_DATA, url="https://www.coingecko.com/"
+    "source_coin_gecko_id", None, SOURCE_TYPE_CRYPTOCURRENCY_MARKET_DATA, "CoinGecko", url="https://www.coingecko.com/"
 )
 SOURCE_GOOGLE_TRENDS = SourceData(
-    "source_google_trends_id", None, "Google Trends", SOURCE_TYPE_SEARCH_DATA, url="https://trends.google.com/"
+    "source_google_trends_id", None, SOURCE_TYPE_SEARCH_DATA, "Google Trends", url="https://trends.google.com/"
 )
 SOURCES = (SOURCE_ISO, SOURCE_COIN_MARKET_CAP, SOURCE_COIN_GECKO, SOURCE_GOOGLE_TRENDS)

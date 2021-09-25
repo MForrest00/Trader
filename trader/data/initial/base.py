@@ -5,7 +5,7 @@ from trader.connections.cache import cache
 from trader.connections.database import DBSession
 
 
-@dataclass
+@dataclass(frozen=True)
 class BaseData:
     cache_key: str
 

@@ -14,6 +14,7 @@ def set_initial_enabled_strategy_version_instances() -> None:
             | INITIAL_EXIT_ENABLED_STRATEGY_VERSION_INSTANCES.keys()
         )
         for timeframe in timeframes:
+            timeframe_id = timeframe.fetch_id()
             enabled_strategy_version_instances = (
                 *INITIAL_ENTRY_ENABLED_STRATEGY_VERSION_INSTANCES.get(timeframe, ()),
                 *INITIAL_EXIT_ENABLED_STRATEGY_VERSION_INSTANCES.get(timeframe, ()),
@@ -34,7 +35,7 @@ def set_initial_enabled_strategy_version_instances() -> None:
                 if strategy_version_instance:
                     enabled_strategy_version_instance = EnabledStrategyVersionInstance(
                         strategy_version_instance_id=strategy_version_instance.id,
-                        timeframe_id=timeframe.fetch_id(),
+                        timeframe_id=timeframe_id,
                         priority=enabled_strategy_version_instance.priority,
                     )
                     session.add(enabled_strategy_version_instance)

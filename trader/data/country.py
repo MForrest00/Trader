@@ -6,6 +6,7 @@ from trader.models.country import Country
 
 
 def update_countries_from_iso() -> None:
+    iso_id = SOURCE_ISO.fetch_id()
     response = requests.get("https://en.wikipedia.org/wiki/List_of_ISO_3166_country_codes")
     soup = BeautifulSoup(response.text, "lxml")
     table_h2 = soup.select("span#Current_ISO_3166_country_codes")[0]
@@ -23,7 +24,7 @@ def update_countries_from_iso() -> None:
             country = session.query(Country).filter_by(iso_alpha_3_code=iso_alpha_3_code).one_or_none()
             if not country:
                 country = Country(
-                    source_id=SOURCE_ISO.fetch_id(),
+                    source_id=iso_id,
                     name=name,
                     official_name=official_name,
                     iso_alpha_2_code=iso_alpha_2_code,

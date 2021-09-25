@@ -72,10 +72,11 @@ def main():
             .filter_by(asset_type_id=ASSET_TYPE_STANDARD_CURRENCY.fetch_id(), symbol=US_DOLLAR_SYMBOL)
             .one()
         )
+        coin_market_cap_id = SOURCE_COIN_MARKET_CAP.fetch_id()
         one_day = session.query(Timeframe).get(TIMEFRAME_ONE_DAY.fetch_id())
         for base_asset_id in base_asset_ids:
             base_asset = session.query(Asset).get(base_asset_id)
-            if base_asset and base_asset.source_id == SOURCE_COIN_MARKET_CAP.fetch_id():
+            if base_asset and base_asset.source_id == coin_market_cap_id:
                 cryptocurrency = base_asset.cryptocurrency
                 if cryptocurrency:
                     logger.debug(

@@ -16,8 +16,10 @@ def set_enabled_quote_asset(session: Session, asset_type_id: int, enabled_quote_
 
 def set_initial_enabled_quote_assets() -> None:
     with DBSession() as session:
+        cryptocurrency_id = ASSET_TYPE_CRYPTOCURRENCY.fetch_id()
         for enabled_quote_cryptocurrency in INITIAL_ENABLED_QUOTE_CRYPTOCURRENCIES:
-            set_enabled_quote_asset(session, ASSET_TYPE_CRYPTOCURRENCY.fetch_id(), enabled_quote_cryptocurrency)
+            set_enabled_quote_asset(session, cryptocurrency_id, enabled_quote_cryptocurrency)
+        standard_currency_id = ASSET_TYPE_STANDARD_CURRENCY.fetch_id()
         for enabled_quote_standard_currency in INITIAL_ENABLED_QUOTE_STANDARD_CURRENCIES:
-            set_enabled_quote_asset(session, ASSET_TYPE_STANDARD_CURRENCY.fetch_id(), enabled_quote_standard_currency)
+            set_enabled_quote_asset(session, standard_currency_id, enabled_quote_standard_currency)
         session.commit()
