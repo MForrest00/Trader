@@ -38,7 +38,9 @@ def update_cryptocurrency_one_day_asset_ohlcv_from_coin_market_cap_task(
     data_retriever = CoinMarketCapAssetOHLCVDataFeedRetriever(
         base_asset, us_dollar, one_day, from_inclusive, to_exclusive=to_exclusive
     )
-    data_retriever.update_asset_ohlcv()
+    new_records_inserted = data_retriever.update_asset_ohlcv()
+    if new_records_inserted:
+        pass
 
 
 @app.task
@@ -79,6 +81,6 @@ def queue_update_cryptocurrency_one_day_asset_ohlcv_from_coin_market_cap_task() 
                         target_date = last_date[0] + TIMEFRAME_UNIT_TO_DELTA_FUNCTION["d"](1)
                     else:
                         target_date = cryptocurrency.source_date_added
-                    update_cryptocurrency_one_day_asset_ohlcv_from_coin_market_cap_task.delay(
-                        base_asset.id, datetime_to_ms_timestamp(target_date)
+                    update_cryptocurrency_one_day_asset_ohlcv_from_coin_market_cap_task.apply_async(
+                        (base_asset.id, datetime_to_ms_timestamp(target_date)), priority=3
                     )

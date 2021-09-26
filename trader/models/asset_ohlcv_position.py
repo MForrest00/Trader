@@ -10,7 +10,7 @@ class AssetOHLCVPosition(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     asset_ohlcv_buy_signal_id = Column(Integer, ForeignKey("asset_ohlcv_buy_signal.id"), nullable=False)
-    bought_size = Column(Numeric(33, 15), nullable=False)
+    bought_size = Column(Numeric, nullable=False)
     data = Column(JSONB, nullable=True)
     close_asset_ohlcv_implementation_run_id = Column(
         Integer, ForeignKey("asset_ohlcv_implementation_run.id"), nullable=True

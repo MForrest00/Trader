@@ -13,7 +13,7 @@ class BollingerBandsAssetOHLCVEntryStrategy(AssetOHLCVStrategy, EntryStrategy):
     def __init__(self, bollinger_bands_period: int = 20):
         self.bollinger_bands_period = bollinger_bands_period
 
-    def refine_dataframe(self, dataframe: pd.DataFrame) -> pd.DataFrame:
+    def enhance_data(self, dataframe: pd.DataFrame) -> pd.DataFrame:
         return dataframe.join(TA.BBANDS(dataframe, self.bollinger_bands_period))
 
     def should_open_position(self, dataframe: pd.DataFrame, row_index: int) -> bool:

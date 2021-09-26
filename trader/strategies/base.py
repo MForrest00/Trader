@@ -36,5 +36,5 @@ class Strategy(ABC):
         ...
 
     @abstractmethod
-    def refine_dataframe(self, dataframe: pd.DataFrame) -> pd.DataFrame:
+    def enhance_data(self, dataframe: pd.DataFrame) -> pd.DataFrame:
         ...

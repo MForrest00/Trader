@@ -1,1 +1,1 @@
-docker-compose -f docker-compose.yml -f docker-compose.development.yml up -d redis postgres metabase pgadmin celery_beat celery_worker
+docker-compose -f docker-compose.yml -f docker-compose.development.yml up -d redis postgres metabase celery_beat celery_worker

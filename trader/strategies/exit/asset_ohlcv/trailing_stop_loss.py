@@ -14,7 +14,7 @@ class TrailingStopLossAssetOHLCVExitStrategy(AssetOHLCVStrategy, ExitStrategy):
     def __init__(self, trailing_stop_loss_percentage: float = 0.15):
         self.trailing_stop_loss_percentage = trailing_stop_loss_percentage
 
-    def refine_dataframe(self, dataframe: pd.DataFrame) -> pd.DataFrame:
+    def enhance_data(self, dataframe: pd.DataFrame) -> pd.DataFrame:
         return dataframe
 
     def should_close_position(self, position: AssetOHLCVPosition, dataframe: pd.DataFrame, row_index: int) -> bool:

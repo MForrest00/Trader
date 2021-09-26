@@ -26,7 +26,7 @@ class Cryptocurrency(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     asset_id = Column(Integer, ForeignKey("asset.id"), nullable=False, unique=True)
-    max_supply = Column(Numeric(36, 15), nullable=True)
+    max_supply = Column(Numeric, nullable=True)
     source_entity_id = Column(Integer, nullable=True)
     source_slug = Column(String, nullable=True)
     source_date_added = Column(DateTime(timezone=True), nullable=True)

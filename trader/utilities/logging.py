@@ -17,6 +17,6 @@ logger.addHandler(stream_handler)
 
 log_file_path = os.path.join(PROJECT_BASE_PATH, "process.log")
 file_format = logging.Formatter("%(asctime)s | %(levelname)s | %(filename)s | %(funcName)s | %(message)s")
-file_handler = RotatingFileHandler(log_file_path, maxBytes=1024 * 1024 * 5, backupCount=5)
+file_handler = RotatingFileHandler(log_file_path, maxBytes=1000 * 1000 * 5, backupCount=5)
 file_handler.setLevel(logging.INFO)
 file_handler.setFormatter(file_format)
