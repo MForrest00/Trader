@@ -1,3 +1,4 @@
+from typing import Dict
 import pandas as pd
 from sqlalchemy.orm.attributes import flag_modified
 from trader.models.asset_ohlcv_position import AssetOHLCVPosition
@@ -11,8 +12,9 @@ class TrailingStopLossAssetOHLCVExitStrategy(AssetOHLCVStrategy, ExitStrategy):
     SUPPLEMENTAL_DATA_FEEDS = ()
     PARAMETER_SPACE = {"trailing_stop_loss_percentage": [i * 0.01 for i in range(2, 42, 2)]}
 
-    def __init__(self, trailing_stop_loss_percentage: float = 0.15):
-        self.trailing_stop_loss_percentage = trailing_stop_loss_percentage
+    def __init__(self, arguments: Dict[str, float]):
+        super().__init__(arguments)
+        self.trailing_stop_loss_percentage = self.arguments.get("trailing_stop_loss_percentage", 0.15)
 
     def enhance_data(self, dataframe: pd.DataFrame) -> pd.DataFrame:
         return dataframe

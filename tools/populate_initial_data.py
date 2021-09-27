@@ -9,7 +9,6 @@ sys.path.append(os.path.split(pathlib.Path(__file__).parent.absolute())[0])
 from trader.connections.database import DBSession
 from trader.data.asset_ohlcv.coin_market_cap import CoinMarketCapAssetOHLCVDataFeedRetriever
 from trader.data.initial import initialize_data
-from trader.data.initial.asset_type import ASSET_TYPE_STANDARD_CURRENCY
 from trader.data.initial.source import SOURCE_COIN_MARKET_CAP
 from trader.data.initial.timeframe import TIMEFRAME_ONE_DAY
 from trader.data.country import update_countries_from_iso
@@ -28,7 +27,7 @@ from trader.models.enabled_cryptocurrency_exchange import EnabledCryptocurrencyE
 from trader.models.timeframe import Timeframe
 from trader.models.views import initialize_views
 from trader.strategies import initialize_strategies
-from trader.utilities.constants import US_DOLLAR_SYMBOL
+from trader.utilities.functions.asset_ohlcv import get_us_dollar
 from trader.utilities.functions.cryptocurrency_exchange import (
     fetch_enabled_base_asset_ids_for_cryptocurrency_exchanges,
 )
@@ -67,11 +66,7 @@ def main():
         base_asset_ids = fetch_enabled_base_asset_ids_for_cryptocurrency_exchanges(
             session, (e.cryptocurrency_exchange for e in enabled_cryptocurrency_exchanges)
         )
-        us_dollar = (
-            session.query(Asset)
-            .filter_by(asset_type_id=ASSET_TYPE_STANDARD_CURRENCY.fetch_id(), symbol=US_DOLLAR_SYMBOL)
-            .one()
-        )
+        us_dollar = get_us_dollar(session)
         coin_market_cap_id = SOURCE_COIN_MARKET_CAP.fetch_id()
         one_day = session.query(Timeframe).get(TIMEFRAME_ONE_DAY.fetch_id())
         for base_asset_id in base_asset_ids:

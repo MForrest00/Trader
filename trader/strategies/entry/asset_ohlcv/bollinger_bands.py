@@ -1,3 +1,4 @@
+from typing import Dict
 from finta import TA
 import pandas as pd
 from trader.strategies.asset_ohlcv.base import AssetOHLCVStrategy
@@ -10,8 +11,9 @@ class BollingerBandsAssetOHLCVEntryStrategy(AssetOHLCVStrategy, EntryStrategy):
     SUPPLEMENTAL_DATA_FEEDS = ()
     PARAMETER_SPACE = {"bollinger_bands_period": range(5, 45, 5)}
 
-    def __init__(self, bollinger_bands_period: int = 20):
-        self.bollinger_bands_period = bollinger_bands_period
+    def __init__(self, arguments: Dict[str, int]):
+        super().__init__(arguments)
+        self.bollinger_bands_period = self.arguments.get("bollinger_bands_period", 20)
 
     def enhance_data(self, dataframe: pd.DataFrame) -> pd.DataFrame:
         return dataframe.join(TA.BBANDS(dataframe, self.bollinger_bands_period))

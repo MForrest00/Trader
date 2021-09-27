@@ -2,7 +2,6 @@ from typing import Optional
 from sqlalchemy.sql import func
 from trader.connections.database import DBSession
 from trader.data.asset_ohlcv.coin_market_cap import CoinMarketCapAssetOHLCVDataFeedRetriever
-from trader.data.initial.asset_type import ASSET_TYPE_STANDARD_CURRENCY
 from trader.data.initial.source import SOURCE_COIN_MARKET_CAP
 from trader.data.initial.timeframe import TIMEFRAME_ONE_DAY
 from trader.models.asset import Asset
@@ -10,12 +9,12 @@ from trader.models.asset_ohlcv import AssetOHLCV, AssetOHLCVGroup, AssetOHLCVPul
 from trader.models.enabled_cryptocurrency_exchange import EnabledCryptocurrencyExchange
 from trader.models.timeframe import Timeframe
 from trader.tasks import app
-from trader.utilities.constants import US_DOLLAR_SYMBOL
 from trader.utilities.functions import (
     datetime_to_ms_timestamp,
     ms_timestamp_to_datetime,
     TIMEFRAME_UNIT_TO_DELTA_FUNCTION,
 )
+from trader.utilities.functions.asset_ohlcv import get_us_dollar
 from trader.utilities.functions.cryptocurrency_exchange import (
     fetch_enabled_base_asset_ids_for_cryptocurrency_exchanges,
 )
@@ -27,11 +26,7 @@ def update_cryptocurrency_one_day_asset_ohlcv_from_coin_market_cap_task(
 ) -> None:
     with DBSession() as session:
         base_asset = session.query(Asset).get(base_asset_id)
-        us_dollar = (
-            session.query(Asset)
-            .filter_by(asset_type_id=ASSET_TYPE_STANDARD_CURRENCY.fetch_id(), symbol=US_DOLLAR_SYMBOL)
-            .one()
-        )
+        us_dollar = get_us_dollar(session)
         one_day = session.query(Timeframe).get(TIMEFRAME_ONE_DAY.fetch_id())
     from_inclusive = ms_timestamp_to_datetime(from_inclusive_ms_timestamp)
     to_exclusive = ms_timestamp_to_datetime(to_exclusive_ms_timestamp) if to_exclusive_ms_timestamp else None
@@ -52,11 +47,7 @@ def queue_update_cryptocurrency_one_day_asset_ohlcv_from_coin_market_cap_task() 
         base_asset_ids = fetch_enabled_base_asset_ids_for_cryptocurrency_exchanges(
             session, (e.cryptocurrency_exchange for e in enabled_cryptocurrency_exchanges)
         )
-        us_dollar = (
-            session.query(Asset)
-            .filter_by(asset_type_id=ASSET_TYPE_STANDARD_CURRENCY.fetch_id(), symbol=US_DOLLAR_SYMBOL)
-            .one()
-        )
+        us_dollar = get_us_dollar(session)
         coin_market_cap_id = SOURCE_COIN_MARKET_CAP.fetch_id()
         one_day_id = TIMEFRAME_ONE_DAY.fetch_id()
         for base_asset_id in base_asset_ids:
