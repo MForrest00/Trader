@@ -2,6 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Any, Dict, Sequence, Tuple
 import pandas as pd
 from sqlalchemy.orm import Session
+from trader.connections.database import DBSession
 from trader.data.initial.data_feed import DataFeedData
 from trader.models.strategy import Strategy as StrategyModel, StrategyVersion, StrategyVersionInstance
 
@@ -14,12 +15,12 @@ class Strategy(ABC):
 
     @property
     @abstractmethod
-    def VERSION(self) -> str:
+    def IS_ENTRY(self) -> bool:
         ...
 
     @property
     @abstractmethod
-    def IS_ENTRY(self) -> bool:
+    def VERSION(self) -> str:
         ...
 
     @property
@@ -39,6 +40,12 @@ class Strategy(ABC):
 
     def __init__(self, arguments: Dict[str, Any]):
         self.arguments = arguments
+
+    @property
+    @classmethod
+    def cache_key(cls) -> str:
+        strategy_type = "entry" if cls.IS_ENTRY else "exit"
+        return f"strategy_{strategy_type}_{cls.NAME.lower()}"
 
     def get_strategy_version_instance(self, session: Session) -> StrategyVersionInstance:
         return (

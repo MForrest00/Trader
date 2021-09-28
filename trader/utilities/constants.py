@@ -2,6 +2,7 @@ from dataclasses import dataclass
 import os
 import pathlib
 from typing import Any, Dict, Tuple
+from trader.data.initial.asset_type import ASSET_TYPE_CRYPTOCURRENCY, ASSET_TYPE_STANDARD_CURRENCY, AssetTypeData
 from trader.data.initial.timeframe import TIMEFRAME_ONE_DAY, TimeframeData
 from trader.strategies.base import Strategy
 from trader.strategies.entry.asset_ohlcv.bollinger_bands import BollingerBandsAssetOHLCVEntryStrategy
@@ -12,6 +13,10 @@ PROJECT_BASE_PATH = os.path.split(os.path.split(pathlib.Path(__file__).parent.ab
 
 
 US_DOLLAR_SYMBOL = "USD"
+
+
+DATA_FEED_MONITOR_KEY = "data_feed_monitor"
+DATA_FEED_MESSAGE_DELIMITER = ":"
 
 
 @dataclass
@@ -36,13 +41,16 @@ INITIAL_ENABLED_CRYPTOCURRENCY_EXCHANGES = (
 
 @dataclass
 class EnabledQuoteAsset:
+    asset_type: AssetTypeData
     symbol: str
     priority: int
 
 
-INITIAL_ENABLED_QUOTE_STANDARD_CURRENCIES = (EnabledQuoteAsset("USD", 1),)
-
-INITIAL_ENABLED_QUOTE_CRYPTOCURRENCIES = (EnabledQuoteAsset("USDC", 1), EnabledQuoteAsset("USDT", 2))
+INITIAL_ENABLED_QUOTE_ASSETS = (
+    EnabledQuoteAsset(ASSET_TYPE_STANDARD_CURRENCY, US_DOLLAR_SYMBOL, 1),
+    EnabledQuoteAsset(ASSET_TYPE_CRYPTOCURRENCY, "USDC", 2),
+    EnabledQuoteAsset(ASSET_TYPE_CRYPTOCURRENCY, "USDT", 3),
+)
 
 
 @dataclass

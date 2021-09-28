@@ -24,6 +24,7 @@ coverage = "==5.5"
 flower = "==1.0.0"
 pylint = "==2.8.3"
 pytest = "==6.2.4"
+vulture = "==2.3"
 
 [requires]
 python_version = "3.7"

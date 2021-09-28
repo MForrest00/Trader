@@ -1,25 +1,24 @@
-from sqlalchemy.orm import Session
+from typing import Dict
 from trader.connections.database import DBSession
-from trader.data.initial.asset_type import ASSET_TYPE_CRYPTOCURRENCY, ASSET_TYPE_STANDARD_CURRENCY
+from trader.data.initial.asset_type import AssetTypeData
 from trader.models.asset import Asset
 from trader.models.enabled_quote_asset import EnabledQuoteAsset
-from trader.utilities.constants import INITIAL_ENABLED_QUOTE_CRYPTOCURRENCIES, INITIAL_ENABLED_QUOTE_STANDARD_CURRENCIES
-
-
-def set_enabled_quote_asset(session: Session, asset_type_id: int, enabled_quote_asset: EnabledQuoteAsset) -> None:
-    asset = session.query(Asset).filter_by(asset_type_id=asset_type_id, symbol=enabled_quote_asset.symbol).one_or_none()
-    if asset:
-        if not asset.enabled_quote_asset:
-            enabled_quote_asset = EnabledQuoteAsset(asset_id=asset.id, priority=enabled_quote_asset.priority)
-            session.add(enabled_quote_asset)
+from trader.utilities.constants import INITIAL_ENABLED_QUOTE_ASSETS
 
 
 def set_initial_enabled_quote_assets() -> None:
+    asset_type_lookup: Dict[AssetTypeData, int] = {}
     with DBSession() as session:
-        cryptocurrency_id = ASSET_TYPE_CRYPTOCURRENCY.fetch_id()
-        for enabled_quote_cryptocurrency in INITIAL_ENABLED_QUOTE_CRYPTOCURRENCIES:
-            set_enabled_quote_asset(session, cryptocurrency_id, enabled_quote_cryptocurrency)
-        standard_currency_id = ASSET_TYPE_STANDARD_CURRENCY.fetch_id()
-        for enabled_quote_standard_currency in INITIAL_ENABLED_QUOTE_STANDARD_CURRENCIES:
-            set_enabled_quote_asset(session, standard_currency_id, enabled_quote_standard_currency)
+        for item in INITIAL_ENABLED_QUOTE_ASSETS:
+            if item.asset_type not in asset_type_lookup:
+                asset_type_lookup[item.asset_type] = item.asset_type.fetch_id()
+            asset = (
+                session.query(Asset)
+                .filter_by(asset_type_id=asset_type_lookup[item.asset_type], symbol=item.symbol)
+                .one_or_none()
+            )
+            if asset:
+                if not asset.enabled_quote_asset:
+                    enabled_quote_asset = EnabledQuoteAsset(asset_id=asset.id, priority=item.priority)
+                    session.add(enabled_quote_asset)
         session.commit()

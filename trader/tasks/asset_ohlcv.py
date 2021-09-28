@@ -1,5 +1,6 @@
 from typing import Optional
 from sqlalchemy.sql import func
+from trader.connections.cache import cache
 from trader.connections.database import DBSession
 from trader.data.asset_ohlcv.coin_market_cap import CoinMarketCapAssetOHLCVDataFeedRetriever
 from trader.data.initial.source import SOURCE_COIN_MARKET_CAP
@@ -9,6 +10,7 @@ from trader.models.asset_ohlcv import AssetOHLCV, AssetOHLCVGroup, AssetOHLCVPul
 from trader.models.enabled_cryptocurrency_exchange import EnabledCryptocurrencyExchange
 from trader.models.timeframe import Timeframe
 from trader.tasks import app
+from trader.utilities.constants import DATA_FEED_MESSAGE_DELIMITER, DATA_FEED_MONITOR_KEY
 from trader.utilities.functions import (
     datetime_to_ms_timestamp,
     ms_timestamp_to_datetime,
@@ -35,7 +37,7 @@ def update_cryptocurrency_one_day_asset_ohlcv_from_coin_market_cap_task(
     )
     new_records_inserted = data_retriever.update_asset_ohlcv()
     if new_records_inserted:
-        pass
+        cache.rpush(DATA_FEED_MONITOR_KEY, DATA_FEED_MESSAGE_DELIMITER.join((one_day.id, base_asset_id)))
 
 
 @app.task

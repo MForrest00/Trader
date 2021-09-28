@@ -17,3 +17,8 @@ ignore-imports = true
 
 [tool.pytest.ini_options]
 markers = ["integration"]
+
+[tool.vulture]
+exclude = ["trader/models/"]
+paths = ["trader", "tools", "tests", "run_data_feed_monitor.py"]
+sort_by_size = true
