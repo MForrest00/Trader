@@ -21,8 +21,8 @@ CRYPTOCURRENCY_RANK_LIMIT = 500
 class CryptocurrencyPlatformRecord:
     name: str
     symbol: str
-    source_entity_id: int
-    source_slug: str
+    coin_market_cap_id: int
+    coin_market_cap_slug: str
 
 
 @dataclass
@@ -32,10 +32,10 @@ class CryptocurrencyRankRecord:
     asset_symbol: str
     asset_tags: List[str]
     cryptocurrency_max_supply: Optional[float]
-    cryptocurrency_source_entity_id: int
-    cryptocurrency_source_slug: str
-    cryptocurrency_source_date_added: datetime
-    cryptocurrency_source_date_last_updated: datetime
+    cryptocurrency_coin_market_cap_id: int
+    cryptocurrency_coin_market_cap_slug: str
+    cryptocurrency_coin_market_cap_date_added: datetime
+    cryptocurrency_coin_market_cap_date_last_updated: datetime
     cryptocurrency_platform: Optional[CryptocurrencyPlatformRecord]
     usd_market_cap: float
     usd_price: float
@@ -68,8 +68,8 @@ def insert_cryptocurrency_ranks(
                         source_id=source_id,
                         name=record.cryptocurrency_platform.name,
                         symbol=record.cryptocurrency_platform.symbol,
-                        source_entity_id=record.cryptocurrency_platform.source_entity_id,
-                        source_slug=record.cryptocurrency_platform.source_slug,
+                        coin_market_cap_id=record.cryptocurrency_platform.coin_market_cap_id,
+                        coin_market_cap_slug=record.cryptocurrency_platform.coin_market_cap_slug,
                     )
                     session.add(cryptocurrency_platform)
                     session.flush()
@@ -105,20 +105,20 @@ def insert_cryptocurrency_ranks(
             cryptocurrency = Cryptocurrency(
                 asset_id=asset.id,
                 max_supply=record.cryptocurrency_max_supply,
-                source_entity_id=record.cryptocurrency_source_entity_id,
-                source_slug=record.cryptocurrency_source_slug,
-                source_date_added=record.cryptocurrency_source_date_added,
-                source_date_last_updated=record.cryptocurrency_source_date_last_updated,
+                coin_market_cap_id=record.cryptocurrency_coin_market_cap_id,
+                coin_market_cap_slug=record.cryptocurrency_coin_market_cap_slug,
+                coin_market_cap_date_added=record.cryptocurrency_coin_market_cap_date_added,
+                coin_market_cap_date_last_updated=record.cryptocurrency_coin_market_cap_date_last_updated,
                 cryptocurrency_platform_id=cryptocurrency_platform_id,
             )
             session.add(cryptocurrency)
             session.flush()
-        elif cryptocurrency.source_date_last_updated < record.cryptocurrency_source_date_last_updated:
+        elif cryptocurrency.coin_market_cap_date_last_updated < record.cryptocurrency_coin_market_cap_date_last_updated:
             cryptocurrency.max_supply = record.cryptocurrency_max_supply
-            cryptocurrency.source_entity_id = record.cryptocurrency_source_entity_id
-            cryptocurrency.source_slug = record.cryptocurrency_source_slug
-            cryptocurrency.source_date_added = record.cryptocurrency_source_date_added
-            cryptocurrency.source_date_last_updated = record.cryptocurrency_source_date_last_updated
+            cryptocurrency.coin_market_cap_id = record.cryptocurrency_coin_market_cap_id
+            cryptocurrency.coin_market_cap_slug = record.cryptocurrency_coin_market_cap_slug
+            cryptocurrency.coin_market_cap_date_added = record.cryptocurrency_coin_market_cap_date_added
+            cryptocurrency.coin_market_cap_date_last_updated = record.cryptocurrency_coin_market_cap_date_last_updated
             cryptocurrency.cryptocurrency_platform_id = cryptocurrency_platform_id
             for item in asset.asset_tags:
                 if item.asset_tag.tag not in record.asset_tags:
@@ -200,8 +200,8 @@ def retrieve_historical_cryptocurrency_ranks_from_coin_market_cap(
             cryptocurrency_platform = CryptocurrencyPlatformRecord(
                 name=currency["platform"]["name"],
                 symbol=currency["platform"]["symbol"],
-                source_entity_id=currency["platform"]["id"],
-                source_slug=currency["platform"]["slug"],
+                coin_market_cap_id=currency["platform"]["id"],
+                coin_market_cap_slug=currency["platform"]["slug"],
             )
         else:
             cryptocurrency_platform = None
@@ -212,10 +212,10 @@ def retrieve_historical_cryptocurrency_ranks_from_coin_market_cap(
                 asset_symbol=currency["symbol"],
                 asset_tags=[t.lower() for t in currency["tags"]],
                 cryptocurrency_max_supply=currency["max_supply"] if currency["max_supply"] is not None else None,
-                cryptocurrency_source_entity_id=currency["id"],
-                cryptocurrency_source_slug=currency["slug"],
-                cryptocurrency_source_date_added=iso_time_string_to_datetime(currency["date_added"]),
-                cryptocurrency_source_date_last_updated=iso_time_string_to_datetime(currency["last_updated"]),
+                cryptocurrency_coin_market_cap_id=currency["id"],
+                cryptocurrency_coin_market_cap_slug=currency["slug"],
+                cryptocurrency_coin_market_cap_date_added=iso_time_string_to_datetime(currency["date_added"]),
+                cryptocurrency_coin_market_cap_date_last_updated=iso_time_string_to_datetime(currency["last_updated"]),
                 cryptocurrency_platform=cryptocurrency_platform,
                 usd_market_cap=currency["quote"]["USD"]["market_cap"]
                 if currency["quote"]["USD"]["market_cap"] is not None
@@ -252,8 +252,8 @@ def retrieve_current_cryptocurrency_ranks_from_coin_market_cap(limit: int) -> Li
             cryptocurrency_platform = CryptocurrencyPlatformRecord(
                 name=currency["platform"]["name"],
                 symbol=currency["platform"]["symbol"],
-                source_entity_id=currency["platform"]["id"],
-                source_slug=currency["platform"]["slug"],
+                coin_market_cap_id=currency["platform"]["id"],
+                coin_market_cap_slug=currency["platform"]["slug"],
             )
         else:
             cryptocurrency_platform = None
@@ -264,10 +264,10 @@ def retrieve_current_cryptocurrency_ranks_from_coin_market_cap(limit: int) -> Li
                 asset_symbol=currency["symbol"],
                 asset_tags=[t.lower() for t in currency["tags"]],
                 cryptocurrency_max_supply=currency.get("maxSupply"),
-                cryptocurrency_source_entity_id=currency["id"],
-                cryptocurrency_source_slug=currency["slug"],
-                cryptocurrency_source_date_added=iso_time_string_to_datetime(currency["dateAdded"]),
-                cryptocurrency_source_date_last_updated=iso_time_string_to_datetime(currency["lastUpdated"]),
+                cryptocurrency_coin_market_cap_id=currency["id"],
+                cryptocurrency_coin_market_cap_slug=currency["slug"],
+                cryptocurrency_coin_market_cap_date_added=iso_time_string_to_datetime(currency["dateAdded"]),
+                cryptocurrency_coin_market_cap_date_last_updated=iso_time_string_to_datetime(currency["lastUpdated"]),
                 cryptocurrency_platform=cryptocurrency_platform,
                 usd_market_cap=currency["quotes"][0]["marketCap"],
                 usd_price=currency["quotes"][0]["price"],

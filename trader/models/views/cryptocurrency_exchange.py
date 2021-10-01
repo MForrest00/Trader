@@ -10,10 +10,10 @@ CRYPTOCURRENCY_EXCHANGE_SQL = dedent(
         s.id AS source_id
         ,s.name
         ,ct.description AS cryptocurrency_exchange_type_description
-        ,c.source_entity_id
-        ,c.source_slug
-        ,c.source_date_launched
-        ,c.source_date_last_updated
+        ,c.date_launched
+        ,c.coin_market_cap_id
+        ,c.coin_market_cap_slug
+        ,c.coin_market_cap_date_last_updated
     FROM public.{source_table} s
         INNER JOIN public.{source_type_table} st ON
             s.source_type_id = st.id

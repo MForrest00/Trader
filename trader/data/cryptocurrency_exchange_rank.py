@@ -34,12 +34,10 @@ def update_cryptocurrency_exchange_ranks_from_coin_market_cap() -> None:
         countries_lookup: Dict[str, Country] = {}
         for record in cryptocurrency_exchange_ranks:
             name = record["name"]
-            source_entity_id = record["id"]
-            source_slug = record["slug"]
-            source_date_launched = (
-                iso_time_string_to_datetime(record["dateLaunched"]) if record["dateLaunched"] else None
-            )
-            source_date_last_updated = iso_time_string_to_datetime(record["lastUpdated"])
+            date_launched = iso_time_string_to_datetime(record["dateLaunched"]) if record["dateLaunched"] else None
+            coin_market_cap_entity_id = record["id"]
+            coin_market_cap_slug = record["slug"]
+            coin_market_cap_date_last_updated = iso_time_string_to_datetime(record["lastUpdated"])
             exchange_type_description = record["type"].lower()
             standard_currency_symbols = record["fiats"]
             country_iso_alpha_2_codes = record["countries"]
@@ -73,20 +71,20 @@ def update_cryptocurrency_exchange_ranks_from_coin_market_cap() -> None:
                 exchange = CryptocurrencyExchange(
                     source_id=source.id,
                     cryptocurrency_exchange_type_id=exchange_type_id,
-                    source_entity_id=source_entity_id,
-                    source_slug=source_slug,
-                    source_date_launched=source_date_launched,
-                    source_date_last_updated=source_date_last_updated,
+                    date_launched=date_launched,
+                    coin_market_cap_id=coin_market_cap_entity_id,
+                    coin_market_cap_slug=coin_market_cap_slug,
+                    coin_market_cap_date_last_updated=coin_market_cap_date_last_updated,
                 )
                 session.add(exchange)
                 session.flush()
-            elif exchange.source_date_last_updated < source_date_last_updated:
+            elif exchange.coin_market_cap_date_last_updated < coin_market_cap_date_last_updated:
                 exchange.source_id = source.id
                 exchange.cryptocurrency_exchange_type_id = exchange_type_id
-                exchange.source_entity_id = source_entity_id
-                exchange.source_slug = source_slug
-                exchange.source_date_launched = source_date_launched
-                exchange.source_date_last_updated = source_date_last_updated
+                exchange.date_launched = date_launched
+                exchange.coin_market_cap_id = coin_market_cap_entity_id
+                exchange.coin_market_cap_slug = coin_market_cap_slug
+                exchange.coin_market_cap_date_last_updated = coin_market_cap_date_last_updated
                 for item in exchange.standard_currencies:
                     if item.standard_currency.currency.symbol not in standard_currency_symbols:
                         item.is_active = False

@@ -46,9 +46,9 @@ class CryptocurrencyExchangeMarket(Base):
     cryptocurrency_exchange_market_fee_type_id = Column(
         Integer, ForeignKey("cryptocurrency_exchange_market_fee_type.id"), nullable=False
     )
-    market_url = Column(String, nullable=False)
-    source_entity_id = Column(Integer, nullable=True)
-    source_date_last_updated = Column(DateTime(timezone=True), nullable=True)
+    url = Column(String, nullable=False)
+    coin_market_cap_id = Column(Integer, nullable=True)
+    coin_market_cap_date_last_updated = Column(DateTime(timezone=True), nullable=True)
     is_active = Column(Boolean, nullable=False, default=True)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 

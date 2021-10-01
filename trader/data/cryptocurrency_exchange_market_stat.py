@@ -25,10 +25,8 @@ from trader.utilities.functions import iso_time_string_to_datetime
 def update_cryptocurrency_exchange_market_stats_from_coin_market_cap(
     cryptocurrency_exchange: CryptocurrencyExchange,
 ) -> None:
-    if cryptocurrency_exchange.source.source_id != SOURCE_COIN_MARKET_CAP.fetch_id():
-        raise ValueError("Cryptocurrency exchange must be from source CoinMarketCap")
-    if cryptocurrency_exchange.source_slug is None:
-        raise ValueError("Cryptocurrency exchange must have a source_slug attribute")
+    if cryptocurrency_exchange.coin_market_cap_slug is None:
+        raise ValueError("Cryptocurrency exchange must have a coin_market_cap_slug attribute")
     coin_market_cap_id = SOURCE_COIN_MARKET_CAP.fetch_id()
     unknown_currency_id = ASSET_TYPE_UNKNOWN_CURRENCY.fetch_id()
     asset_type_ids = (
@@ -50,7 +48,7 @@ def update_cryptocurrency_exchange_market_stats_from_coin_market_cap(
                 {
                     "start": start,
                     "limit": limit,
-                    "slug": cryptocurrency_exchange.source_slug,
+                    "slug": cryptocurrency_exchange.coin_market_cap_slug,
                     "category": "all",
                 }
             )
@@ -168,8 +166,8 @@ def update_cryptocurrency_exchange_market_stats_from_coin_market_cap(
                 .one_or_none()
             )
             cryptocurrency_exchange_market_url = market_pair["marketUrl"]
-            cryptocurrency_exchange_market_source_entity_id = market_pair["marketId"]
-            cryptocurrency_exchange_source_date_last_updated = iso_time_string_to_datetime(market_pair["lastUpdated"])
+            cryptocurrency_exchange_market_coin_market_cap_id = market_pair["marketId"]
+            cryptocurrency_exchange_market_coin_market_cap_date_last_updated = iso_time_string_to_datetime(market_pair["lastUpdated"])
             if not cryptocurrency_exchange_market:
                 cryptocurrency_exchange_market = CryptocurrencyExchangeMarket(
                     source_id=coin_market_cap_id,
@@ -178,22 +176,22 @@ def update_cryptocurrency_exchange_market_stats_from_coin_market_cap(
                     base_asset_id=base_asset.id,
                     quote_asset_id=quote_asset.id,
                     cryptocurrency_exchange_market_fee_type_id=market_fee_type.id,
-                    market_url=cryptocurrency_exchange_market_url,
-                    source_entity_id=cryptocurrency_exchange_market_source_entity_id,
-                    source_date_last_updated=cryptocurrency_exchange_source_date_last_updated,
+                    url=cryptocurrency_exchange_market_url,
+                    coin_market_cap_id=cryptocurrency_exchange_market_coin_market_cap_id,
+                    coin_market_cap_date_last_updated=cryptocurrency_exchange_market_coin_market_cap_date_last_updated,
                 )
                 session.add(cryptocurrency_exchange_market)
                 session.flush()
             elif (
-                cryptocurrency_exchange_market.source_date_last_updated
-                < cryptocurrency_exchange_source_date_last_updated
+                cryptocurrency_exchange_market.coin_market_cap_date_last_updated
+                < cryptocurrency_exchange_market_coin_market_cap_date_last_updated
             ):
                 cryptocurrency_exchange_market.source_id = coin_market_cap_id
                 cryptocurrency_exchange_market.cryptocurrency_exchange_market_fee_type_id = market_fee_type.id
                 cryptocurrency_exchange_market.market_url = cryptocurrency_exchange_market_url
-                cryptocurrency_exchange_market.source_entity_id = cryptocurrency_exchange_market_source_entity_id
-                cryptocurrency_exchange_market.source_date_last_updated = (
-                    cryptocurrency_exchange_source_date_last_updated
+                cryptocurrency_exchange_market.coin_market_cap_id = cryptocurrency_exchange_market_coin_market_cap_id
+                cryptocurrency_exchange_market.coin_market_cap_date_last_updated = (
+                    cryptocurrency_exchange_market_coin_market_cap_date_last_updated
                 )
                 cryptocurrency_exchange_market.is_active = True
             elif not cryptocurrency_exchange_market.is_active:

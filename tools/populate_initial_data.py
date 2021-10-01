@@ -78,14 +78,14 @@ def main():
                 timedelta = TIMEFRAME_UNIT_TO_DELTA_FUNCTION[one_day.unit](one_day.amount)
                 if (
                     cryptocurrency
-                    and datetime.now(timezone.utc) - clean_range_cap(cryptocurrency.source_date_added, one_day.unit)
+                    and datetime.now(timezone.utc) - clean_range_cap(cryptocurrency.coin_market_cap_date_added, one_day.unit)
                     >= timedelta
                 ):
                     logger.debug(
                         "Loading CoinMarketCap cryptocurrency daily USD OHLCV for cryptocurrency %s", base_asset.name
                     )
                     data_retriever = CoinMarketCapAssetOHLCVDataFeedRetriever(
-                        base_asset, us_dollar, one_day, cryptocurrency.source_date_added
+                        base_asset, us_dollar, one_day, cryptocurrency.coin_market_cap_date_added
                     )
                     data_retriever.update_asset_ohlcv()
 

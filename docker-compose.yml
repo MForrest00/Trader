@@ -67,7 +67,6 @@ services:
       - postgres
     container_name: data_feed_monitor
 
-
 networks:
   redis_network:
     driver: bridge

@@ -11,8 +11,8 @@ class CryptocurrencyPlatform(Base):
     source_id = Column(Integer, ForeignKey("source.id"), nullable=False)
     name = Column(String, nullable=False)
     symbol = Column(String, nullable=False)
-    source_entity_id = Column(Integer, nullable=True)
-    source_slug = Column(String, nullable=True)
+    coin_market_cap_id = Column(Integer, nullable=True)
+    coin_market_cap_slug = Column(String, nullable=True)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # One to many
@@ -27,11 +27,12 @@ class Cryptocurrency(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     asset_id = Column(Integer, ForeignKey("asset.id"), nullable=False, unique=True)
     max_supply = Column(Numeric, nullable=True)
-    source_entity_id = Column(Integer, nullable=True)
-    source_slug = Column(String, nullable=True)
-    source_date_added = Column(DateTime(timezone=True), nullable=True)
-    source_date_last_updated = Column(DateTime(timezone=True), nullable=True)
     cryptocurrency_platform_id = Column(Integer, ForeignKey("cryptocurrency_platform.id"), nullable=True)
+    coin_market_cap_id = Column(Integer, nullable=True)
+    coin_market_cap_slug = Column(String, nullable=True)
+    coin_market_cap_date_added = Column(DateTime(timezone=True), nullable=True)
+    coin_market_cap_date_last_updated = Column(DateTime(timezone=True), nullable=True)
+    date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # One to many
     cryptocurrency_ranks = relationship("CryptocurrencyRank", lazy=True, backref=backref(__tablename__, lazy=False))

@@ -17,12 +17,10 @@ class CoinMarketCapAssetOHLCVDataFeedRetriever(AssetOHLCVDataFeedRetriever):
         return min(to_exclusive, datetime.now(timezone.utc)) if to_exclusive else datetime.now(timezone.utc)
 
     def validate_attributes(self) -> bool:
-        if self.base_asset.source_id != self.source_id:
-            raise ValueError("Base asset must be from source CoinMarketCap")
         if self.base_asset.asset_type_id != ASSET_TYPE_CRYPTOCURRENCY.fetch_id():
             raise ValueError("Base asset must be a cryptocurrency")
-        if self.base_asset.cryptocurrency.source_entity_id is None:
-            raise ValueError("Base asset must have a source_entity_id attribute")
+        if self.base_asset.cryptocurrency.coin_market_cap_id is None:
+            raise ValueError("Base asset must have a coin_market_cap_id attribute")
         if (
             self.quote_asset.symbol != US_DOLLAR_SYMBOL
             or self.quote_asset.asset_type_id != ASSET_TYPE_STANDARD_CURRENCY.fetch_id()
@@ -39,7 +37,7 @@ class CoinMarketCapAssetOHLCVDataFeedRetriever(AssetOHLCVDataFeedRetriever):
         to_timestamp = int((self.to_exclusive - timedelta(days=1)).timestamp())
         query_string = urlencode(
             {
-                "id": self.base_asset.cryptocurrency.source_entity_id,
+                "id": self.base_asset.cryptocurrency.coin_market_cap_id,
                 "convertId": 2781,
                 "timeStart": from_timestamp,
                 "timeEnd": to_timestamp,

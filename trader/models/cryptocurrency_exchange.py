@@ -24,10 +24,11 @@ class CryptocurrencyExchange(Base):
     id = Column(Integer, primary_key=True, autoincrement=True)
     source_id = Column(Integer, ForeignKey("source.id"), nullable=False, unique=True)
     cryptocurrency_exchange_type_id = Column(Integer, ForeignKey("cryptocurrency_exchange_type.id"), nullable=True)
-    source_entity_id = Column(Integer, nullable=True)
-    source_slug = Column(String, nullable=True)
-    source_date_launched = Column(DateTime(timezone=True), nullable=True)
-    source_date_last_updated = Column(DateTime(timezone=True), nullable=True)
+    date_launched = Column(DateTime(timezone=True), nullable=True)
+    coin_market_cap_id = Column(Integer, nullable=True)
+    coin_market_cap_slug = Column(String, nullable=True)
+    coin_market_cap_date_last_updated = Column(DateTime(timezone=True), nullable=True)
+    date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # One to one
     enabled_cryptocurrency_exchange = relationship(

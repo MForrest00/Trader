@@ -79,7 +79,7 @@ def queue_update_cryptocurrency_one_day_asset_ohlcv_from_coin_market_cap_task() 
                     if last_date:
                         target_date = last_date[0] + timedelta
                     else:
-                        target_date = cryptocurrency.source_date_added
+                        target_date = cryptocurrency.coin_market_cap_date_added
                     if datetime.now(timezone.utc) - clean_range_cap(target_date, TIMEFRAME_ONE_DAY.unit) >= timedelta:
                         update_cryptocurrency_one_day_asset_ohlcv_from_coin_market_cap_task.apply_async(
                             (base_asset.id, datetime_to_ms_timestamp(target_date)), priority=3

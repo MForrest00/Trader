@@ -13,15 +13,15 @@ CRYPTOCURRENCY_SQL = dedent(
         ,a.symbol
         ,c.id AS cryptocurrency_id
         ,c.max_supply
-        ,c.source_entity_id
-        ,c.source_slug
-        ,c.source_date_added
-        ,c.source_date_last_updated
+        ,c.coin_market_cap_id
+        ,c.coin_market_cap_slug
+        ,c.coin_market_cap_date_added
+        ,c.coin_market_cap_date_last_updated
         ,cp.id AS cryptocurrency_platform_id
         ,cp.name AS cryptocurrency_platform_name
         ,cp.symbol AS cryptocurrency_platform_symbol
-        ,cp.source_entity_id AS cryptocurrency_platform_source_entity_id
-        ,cp.source_slug AS cryptocurrency_platform_source_slug
+        ,cp.coin_market_cap_id AS cryptocurrency_platform_coin_market_cap_id
+        ,cp.coin_market_cap_slug AS cryptocurrency_platform_coin_market_cap_slug
     FROM public.{asset_table} a
         INNER JOIN public.{asset_type_table} at ON
             a.asset_type_id = at.id
