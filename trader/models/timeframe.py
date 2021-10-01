@@ -24,3 +24,4 @@ class Timeframe(Base):
     google_trends_pull_steps = relationship(
         "GoogleTrendsPullStep", lazy=True, backref=backref(__tablename__, lazy=False)
     )
+    implementations = relationship("Implementation", lazy=True, backref=backref(__tablename__, lazy=False))

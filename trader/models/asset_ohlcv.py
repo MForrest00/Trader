@@ -15,10 +15,8 @@ class AssetOHLCVGroup(Base):
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # One to many
-    asset_ohlcv_implementations = relationship(
-        "AssetOHLCVImplementation", lazy=True, backref=backref(__tablename__, lazy=False)
-    )
     asset_ohlcv_pulls = relationship("AssetOHLCVPull", lazy=True, backref=backref(__tablename__, lazy=False))
+    implementations = relationship("Implementation", lazy=True, backref=backref(__tablename__, lazy=False))
 
     # Many to one
     base_asset = relationship(

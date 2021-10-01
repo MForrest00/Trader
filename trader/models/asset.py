@@ -36,6 +36,10 @@ class Asset(Base):
         "StandardCurrency", lazy=False, backref=backref(__tablename__, lazy=False), uselist=False
     )
 
+    # One to many
+    implementations = relationship("Implementation", lazy=True, backref=backref(__tablename__, lazy=False))
+    positions = relationship("Position", lazy=True, backref=backref(__tablename__, lazy=False))
+
     # Many to many
     asset_tags = relationship("AssetXAssetTag", lazy=True, back_populates=__tablename__)
 

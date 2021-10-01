@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from datetime import datetime
 import os
 import pathlib
 from typing import Any, Dict, Tuple
@@ -17,6 +18,9 @@ US_DOLLAR_SYMBOL = "USD"
 
 DATA_FEED_MONITOR_QUEUE_KEY = "data_feed_monitor_queue"
 DATA_FEED_MESSAGE_DELIMITER = ":"
+
+
+DATA_DEFAULT_FLOOR = datetime(2017, 1, 1)
 
 
 @dataclass

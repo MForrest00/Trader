@@ -12,7 +12,7 @@ from trader.models.asset_ohlcv import AssetOHLCV, AssetOHLCVGroup, AssetOHLCVPul
 from trader.models.enabled_cryptocurrency_exchange import EnabledCryptocurrencyExchange
 from trader.models.timeframe import Timeframe
 from trader.tasks import app
-from trader.utilities.constants import DATA_FEED_MONITOR_QUEUE_KEY
+from trader.utilities.constants import DATA_DEFAULT_FLOOR, DATA_FEED_MONITOR_QUEUE_KEY
 from trader.utilities.functions import (
     clean_range_cap,
     datetime_to_ms_timestamp,
@@ -59,7 +59,7 @@ def queue_update_cryptocurrency_one_day_asset_ohlcv_from_coin_market_cap_task() 
         one_day_id = TIMEFRAME_ONE_DAY.fetch_id()
         for base_asset_id in base_asset_ids:
             base_asset = session.query(Asset).get(base_asset_id)
-            if base_asset and base_asset.source_id == coin_market_cap_id:
+            if base_asset:
                 cryptocurrency = base_asset.cryptocurrency
                 if cryptocurrency:
                     last_date = (
@@ -79,7 +79,7 @@ def queue_update_cryptocurrency_one_day_asset_ohlcv_from_coin_market_cap_task() 
                     if last_date:
                         target_date = last_date[0] + timedelta
                     else:
-                        target_date = cryptocurrency.coin_market_cap_date_added
+                        target_date = cryptocurrency.coin_market_cap_date_added or DATA_DEFAULT_FLOOR
                     if datetime.now(timezone.utc) - clean_range_cap(target_date, TIMEFRAME_ONE_DAY.unit) >= timedelta:
                         update_cryptocurrency_one_day_asset_ohlcv_from_coin_market_cap_task.apply_async(
                             (base_asset.id, datetime_to_ms_timestamp(target_date)), priority=3

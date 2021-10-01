@@ -104,8 +104,6 @@ class StrategyVersionInstance(Base):
     )
 
     # One to many
-    asset_ohlcv_implementations = relationship(
-        "AssetOHLCVImplementation", lazy=True, backref=backref(__tablename__, lazy=False)
-    )
+    implementations = relationship("Implementation", lazy=True, backref=backref(__tablename__, lazy=False))
 
     __table_args__ = (UniqueConstraint("strategy_version_id", "arguments"),)

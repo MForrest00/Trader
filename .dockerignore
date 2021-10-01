@@ -5,13 +5,12 @@
 /.idea/
 /.vscode/
 
-/.mypy_cache/
-/.pytest_cache/
 /.coverage
 /.dockerignore
 /.env*
 /.gitattributes
 /.gitignore
+/celerybeat-schedule
 /docker-compose.yml
 /docker-compose.*.yml
 /Dockerfile
@@ -21,4 +20,5 @@
 
 **/__pycache__/
 **/*.py[cod]
-**/*$py.class
+**/.mypy_cache/
+**/.pytest_cache/

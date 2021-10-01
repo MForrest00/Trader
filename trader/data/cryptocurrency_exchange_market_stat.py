@@ -167,7 +167,9 @@ def update_cryptocurrency_exchange_market_stats_from_coin_market_cap(
             )
             cryptocurrency_exchange_market_url = market_pair["marketUrl"]
             cryptocurrency_exchange_market_coin_market_cap_id = market_pair["marketId"]
-            cryptocurrency_exchange_market_coin_market_cap_date_last_updated = iso_time_string_to_datetime(market_pair["lastUpdated"])
+            cryptocurrency_exchange_market_coin_market_cap_date_last_updated = iso_time_string_to_datetime(
+                market_pair["lastUpdated"]
+            )
             if not cryptocurrency_exchange_market:
                 cryptocurrency_exchange_market = CryptocurrencyExchangeMarket(
                     source_id=coin_market_cap_id,

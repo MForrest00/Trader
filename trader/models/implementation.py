@@ -4,30 +4,30 @@ from sqlalchemy.sql import func
 from trader.models.base import Base
 
 
-class AssetOHLCVImplementation(Base):
-    __tablename__ = "asset_ohlcv_implementation"
+class Implementation(Base):
+    __tablename__ = "implementation"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    asset_ohlcv_group_id = Column(Integer, ForeignKey("asset_ohlcv_group.id"), nullable=False)
+    timeframe_id = Column(Integer, ForeignKey("timeframe.id"), nullable=False)
+    asset_id = Column(Integer, ForeignKey("asset.id"), nullable=False)
     strategy_version_instance_id = Column(Integer, ForeignKey("strategy_version_instance.id"), nullable=False)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # One to many
-    asset_ohlcv_implementation_runs = relationship(
-        "AssetOHLCVImplementationRun", lazy=True, backref=backref(__tablename__, lazy=False)
-    )
+    implementation_runs = relationship("ImplementationRun", lazy=True, backref=backref(__tablename__, lazy=False))
 
-    __table_args__ = (UniqueConstraint("asset_ohlcv_group_id", "strategy_version_instance_id"),)
+    __table_args__ = (UniqueConstraint("timeframe_id", "asset_id", "strategy_version_instance_id"),)
 
 
-class AssetOHLCVImplementationRun(Base):
-    __tablename__ = "asset_ohlcv_implementation_run"
+class ImplementationRun(Base):
+    __tablename__ = "implementation_run"
 
     id = Column(Integer, primary_key=True, autoincrement=True)
-    asset_ohlcv_implementation_id = Column(Integer, ForeignKey("asset_ohlcv_implementation.id"), nullable=False)
+    implementation_id = Column(Integer, ForeignKey("implementation.id"), nullable=False)
     start_date = Column(DateTime(timezone=True), nullable=False)
     end_date = Column(DateTime(timezone=True), nullable=False)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # One to many
-    asset_ohlcv_buy_signals = relationship("AssetOHLCVBuySignal", lazy=True, backref=backref(__tablename__, lazy=False))
+    buy_signals = relationship("BuySignal", lazy=True, backref=backref(__tablename__, lazy=False))
+    sell_signals = relationship("SellSignal", lazy=True, backref=backref(__tablename__, lazy=False))
