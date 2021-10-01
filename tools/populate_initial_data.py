@@ -6,6 +6,7 @@ import sys
 sys.path.append(os.path.split(pathlib.Path(__file__).parent.absolute())[0])
 
 
+from datetime import datetime, timezone
 from trader.connections.database import DBSession
 from trader.data.asset_ohlcv.coin_market_cap import CoinMarketCapAssetOHLCVDataFeedRetriever
 from trader.data.initial import initialize_data
@@ -27,6 +28,7 @@ from trader.models.enabled_cryptocurrency_exchange import EnabledCryptocurrencyE
 from trader.models.timeframe import Timeframe
 from trader.models.views import initialize_views
 from trader.strategies import initialize_strategies
+from trader.utilities.functions import clean_range_cap, TIMEFRAME_UNIT_TO_DELTA_FUNCTION
 from trader.utilities.functions.asset_ohlcv import get_us_dollar
 from trader.utilities.functions.cryptocurrency_exchange import (
     fetch_enabled_base_asset_ids_for_cryptocurrency_exchanges,
@@ -73,7 +75,12 @@ def main():
             base_asset = session.query(Asset).get(base_asset_id)
             if base_asset and base_asset.source_id == coin_market_cap_id:
                 cryptocurrency = base_asset.cryptocurrency
-                if cryptocurrency:
+                timedelta = TIMEFRAME_UNIT_TO_DELTA_FUNCTION[one_day.unit](one_day.amount)
+                if (
+                    cryptocurrency
+                    and datetime.now(timezone.utc) - clean_range_cap(cryptocurrency.source_date_added, one_day.unit)
+                    >= timedelta
+                ):
                     logger.debug(
                         "Loading CoinMarketCap cryptocurrency daily USD OHLCV for cryptocurrency %s", base_asset.name
                     )

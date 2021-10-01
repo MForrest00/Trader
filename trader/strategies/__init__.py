@@ -78,7 +78,7 @@ def initialize_strategy(session: Session, strategy: StrategyBase) -> None:
             session.add(strategy_version_instance)
     elif strategy_version.source_code_md5_hash != get_hash_of_source(strategy):
         raise Exception("MD5 hash of source does not match persisted value for strategy {strategy.NAME}")
-    cache.set(strategy.cache_key, strategy_version.id)
+    cache.set(strategy.get_cache_key(), strategy_version.id)
 
 
 def initialize_strategies() -> None:

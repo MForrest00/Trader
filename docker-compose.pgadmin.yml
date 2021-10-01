@@ -16,5 +16,8 @@ services:
     depends_on:
       - postgres
 
+networks:
+  postgres_network:
+    driver: bridge
 volumes:
   pgadmin_data:

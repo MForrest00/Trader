@@ -1,8 +1,10 @@
+from datetime import datetime, timezone
 from typing import Optional
 from sqlalchemy.sql import func
 from trader.connections.cache import cache
 from trader.connections.database import DBSession
 from trader.data.asset_ohlcv.coin_market_cap import CoinMarketCapAssetOHLCVDataFeedRetriever
+from trader.data.initial.data_feed import DATA_FEED_ASSET_OHLCV
 from trader.data.initial.source import SOURCE_COIN_MARKET_CAP
 from trader.data.initial.timeframe import TIMEFRAME_ONE_DAY
 from trader.models.asset import Asset
@@ -10,9 +12,11 @@ from trader.models.asset_ohlcv import AssetOHLCV, AssetOHLCVGroup, AssetOHLCVPul
 from trader.models.enabled_cryptocurrency_exchange import EnabledCryptocurrencyExchange
 from trader.models.timeframe import Timeframe
 from trader.tasks import app
-from trader.utilities.constants import DATA_FEED_MESSAGE_DELIMITER, DATA_FEED_MONITOR_KEY
+from trader.utilities.constants import DATA_FEED_MONITOR_QUEUE_KEY
 from trader.utilities.functions import (
+    clean_range_cap,
     datetime_to_ms_timestamp,
+    generate_data_feed_monitor_value,
     ms_timestamp_to_datetime,
     TIMEFRAME_UNIT_TO_DELTA_FUNCTION,
 )
@@ -37,7 +41,8 @@ def update_cryptocurrency_one_day_asset_ohlcv_from_coin_market_cap_task(
     )
     new_records_inserted = data_retriever.update_asset_ohlcv()
     if new_records_inserted:
-        cache.rpush(DATA_FEED_MONITOR_KEY, DATA_FEED_MESSAGE_DELIMITER.join((one_day.id, base_asset_id)))
+        value = generate_data_feed_monitor_value(one_day.id, base_asset_id, DATA_FEED_ASSET_OHLCV.fetch_id())
+        cache.rpush(DATA_FEED_MONITOR_QUEUE_KEY, value)
 
 
 @app.task
@@ -70,10 +75,12 @@ def queue_update_cryptocurrency_one_day_asset_ohlcv_from_coin_market_cap_task() 
                         )
                         .one_or_none()
                     )
+                    timedelta = TIMEFRAME_UNIT_TO_DELTA_FUNCTION[TIMEFRAME_ONE_DAY.unit](TIMEFRAME_ONE_DAY.amount)
                     if last_date:
-                        target_date = last_date[0] + TIMEFRAME_UNIT_TO_DELTA_FUNCTION["d"](1)
+                        target_date = last_date[0] + timedelta
                     else:
                         target_date = cryptocurrency.source_date_added
-                    update_cryptocurrency_one_day_asset_ohlcv_from_coin_market_cap_task.apply_async(
-                        (base_asset.id, datetime_to_ms_timestamp(target_date)), priority=3
-                    )
+                    if datetime.now(timezone.utc) - clean_range_cap(target_date, TIMEFRAME_ONE_DAY.unit) >= timedelta:
+                        update_cryptocurrency_one_day_asset_ohlcv_from_coin_market_cap_task.apply_async(
+                            (base_asset.id, datetime_to_ms_timestamp(target_date)), priority=3
+                        )

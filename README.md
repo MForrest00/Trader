@@ -30,6 +30,8 @@
   + `pipenv run coverage run -m pytest` - Run all tests with coverage
   + `pipenv run coverage run -m pytest -m integration` / `pipenv run coverage run -m pytest -m "not integration"` - Run all tests with coverage, targeting or excluding integration tests
   + `pipenv run coverage report` - Display coverage statistics from last run of tests with coverage
++ Docker
+  + `docker build -t trader/trader:latest .` - build the image
 
 ## Data Feed Refresh Process
 

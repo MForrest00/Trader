@@ -41,11 +41,11 @@ class Strategy(ABC):
     def __init__(self, arguments: Dict[str, Any]):
         self.arguments = arguments
 
-    @property
     @classmethod
-    def cache_key(cls) -> str:
+    def get_cache_key(cls) -> str:
         strategy_type = "entry" if cls.IS_ENTRY else "exit"
-        return f"strategy_{strategy_type}_{cls.NAME.lower()}"
+        strategy_name = "_".join(cls.NAME.lower().split())
+        return f"strategy_version_{strategy_type}_{strategy_name}_id"
 
     def get_strategy_version_instance(self, session: Session) -> StrategyVersionInstance:
         return (

@@ -3,6 +3,7 @@ from hashlib import md5
 from inspect import getsource, signature
 from typing import Callable, Dict, List, Type, Union
 from dateutil.relativedelta import relativedelta
+from trader.utilities.constants import DATA_FEED_MESSAGE_DELIMITER
 
 
 TIMEFRAME_UNIT_TO_TRANSFORM_FUNCTION: Dict[str, Callable[[datetime], datetime]] = {
@@ -50,3 +51,7 @@ def get_init_parameters(source_object: Type) -> List[str]:
 
 def get_hash_of_source(source_object: Union[Callable, Type]) -> str:
     return md5(getsource(source_object).encode()).hexdigest()
+
+
+def generate_data_feed_monitor_value(timeframe_id: int, base_asset_id: int, data_feed_id: int) -> str:
+    return DATA_FEED_MESSAGE_DELIMITER.join(map(str, (timeframe_id, base_asset_id, data_feed_id)))

@@ -14,10 +14,7 @@ class CoinMarketCapAssetOHLCVDataFeedRetriever(AssetOHLCVDataFeedRetriever):
     SOURCE = SOURCE_COIN_MARKET_CAP
 
     def get_to_exclusive(self, to_exclusive: Optional[datetime]) -> datetime:
-        temporary_to_exclusive = (
-            min(to_exclusive, datetime.now(timezone.utc)) if to_exclusive else datetime.now(timezone.utc)
-        )
-        return temporary_to_exclusive - timedelta(days=1)
+        return min(to_exclusive, datetime.now(timezone.utc)) if to_exclusive else datetime.now(timezone.utc)
 
     def validate_attributes(self) -> bool:
         if self.base_asset.source_id != self.source_id:
@@ -39,7 +36,7 @@ class CoinMarketCapAssetOHLCVDataFeedRetriever(AssetOHLCVDataFeedRetriever):
 
     def retrieve_asset_ohlcv(self) -> List[Dict[str, Optional[Union[datetime, int, float]]]]:
         from_timestamp = int(self.from_inclusive.timestamp())
-        to_timestamp = int(self.to_exclusive.timestamp())
+        to_timestamp = int((self.to_exclusive - timedelta(days=1)).timestamp())
         query_string = urlencode(
             {
                 "id": self.base_asset.cryptocurrency.source_entity_id,

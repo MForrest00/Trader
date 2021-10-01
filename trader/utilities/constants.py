@@ -15,7 +15,7 @@ PROJECT_BASE_PATH = os.path.split(os.path.split(pathlib.Path(__file__).parent.ab
 US_DOLLAR_SYMBOL = "USD"
 
 
-DATA_FEED_MONITOR_KEY = "data_feed_monitor"
+DATA_FEED_MONITOR_QUEUE_KEY = "data_feed_monitor_queue"
 DATA_FEED_MESSAGE_DELIMITER = ":"
 
 
