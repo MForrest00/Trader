@@ -26,7 +26,7 @@ def run_implementations(timeframe_id: int, base_asset_id: int, data_feed_ids: Se
     dataframes: List[pd.DataFrame] = []
     for data_feed_id in data_feed_ids:
         dataframe_function = timeframe_data_feed_to_dataframe_function_mapping[(timeframe_id, data_feed_id)]
-        dataframes.append(dataframe_function(session, timeframe_id, base_asset_id))
+        dataframes.append(dataframe_function(timeframe_id, base_asset_id))
     dataframe = dataframes[0]
     for join_dataframe in dataframes[1:]:
         dataframe = dataframe.join(join_dataframe, how="inner")
