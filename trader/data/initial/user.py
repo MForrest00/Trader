@@ -10,6 +10,8 @@ class UserData(BaseData):
     first_name: str
     last_name: str
     email: str
+    is_demo: bool = True
+    is_live: bool = True
 
     def query_instance(self, session: Session) -> Optional[User]:
         return session.query(User).filter_by(email=self.email).one_or_none()

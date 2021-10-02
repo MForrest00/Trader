@@ -20,7 +20,7 @@ def get_us_dollar(session: Session) -> Asset:
     )
 
 
-def fetch_asset_ohlcv_as_dataframe(
+def fetch_asset_ohlcv_dataframe(
     source: Source,
     base_asset: Asset,
     quote_asset: Asset,

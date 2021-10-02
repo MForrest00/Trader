@@ -70,18 +70,13 @@ def main():
             session, (e.cryptocurrency_exchange for e in enabled_cryptocurrency_exchanges)
         )
         us_dollar = get_us_dollar(session)
-        coin_market_cap_id = SOURCE_COIN_MARKET_CAP.fetch_id()
         one_day = session.query(Timeframe).get(TIMEFRAME_ONE_DAY.fetch_id())
         for base_asset_id in base_asset_ids:
             base_asset = session.query(Asset).get(base_asset_id)
-            if base_asset:
-                cryptocurrency = base_asset.cryptocurrency
+            if base_asset and base_asset.cryptocurrency:
                 timedelta = TIMEFRAME_UNIT_TO_DELTA_FUNCTION[one_day.unit](one_day.amount)
-                target_date = cryptocurrency.coin_market_cap_date_added or DATA_DEFAULT_FLOOR
-                if (
-                    cryptocurrency
-                    and datetime.now(timezone.utc) - clean_range_cap(target_date, one_day.unit) >= timedelta
-                ):
+                target_date = base_asset.cryptocurrency.coin_market_cap_date_added or DATA_DEFAULT_FLOOR
+                if datetime.now(timezone.utc) - clean_range_cap(target_date, one_day.unit) >= timedelta:
                     logger.debug(
                         "Loading CoinMarketCap cryptocurrency daily USD OHLCV for cryptocurrency %s", base_asset.name
                     )

@@ -1,4 +1,4 @@
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, Numeric
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, Numeric
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.sql import func
@@ -12,6 +12,7 @@ class Position(Base):
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     asset_id = Column(Integer, ForeignKey("asset.id"), nullable=False)
     data = Column(JSONB, nullable=True)
+    is_demo = Column(Boolean, nullable=False, default=False)
     date_opened = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
     date_closed = Column(DateTime(timezone=True), nullable=True)
 
@@ -30,6 +31,7 @@ class PositionPurchase(Base):
     price = Column(Numeric, nullable=False)
     size = Column(Numeric, nullable=False)
     fees = Column(Numeric, nullable=False)
+    data = Column(JSONB, nullable=True)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
 
@@ -42,4 +44,5 @@ class PositionSale(Base):
     price = Column(Numeric, nullable=False)
     size = Column(Numeric, nullable=False)
     fees = Column(Numeric, nullable=False)
+    data = Column(JSONB, nullable=True)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())

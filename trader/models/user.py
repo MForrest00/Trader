@@ -11,7 +11,8 @@ class User(Base):
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
     email = Column(String, nullable=False, unique=True)
-    is_live = Column(Boolean, nullable=False, default=False)
+    is_demo = Column(Boolean, nullable=False, default=True)
+    is_live = Column(Boolean, nullable=False, default=True)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # One to many

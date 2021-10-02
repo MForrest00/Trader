@@ -59,28 +59,26 @@ def queue_update_cryptocurrency_one_day_asset_ohlcv_from_coin_market_cap_task() 
         one_day_id = TIMEFRAME_ONE_DAY.fetch_id()
         for base_asset_id in base_asset_ids:
             base_asset = session.query(Asset).get(base_asset_id)
-            if base_asset:
-                cryptocurrency = base_asset.cryptocurrency
-                if cryptocurrency:
-                    last_date = (
-                        session.query(func.max(AssetOHLCV.date_open))
-                        .select_from(AssetOHLCV)
-                        .join(AssetOHLCVPull)
-                        .join(AssetOHLCVGroup)
-                        .filter(
-                            AssetOHLCVGroup.source_id == coin_market_cap_id,
-                            AssetOHLCVGroup.base_asset_id == base_asset.id,
-                            AssetOHLCVGroup.quote_asset_id == us_dollar.id,
-                            AssetOHLCVGroup.timeframe_id == one_day_id,
-                        )
-                        .one_or_none()
+            if base_asset and base_asset.cryptocurrency:
+                last_date = (
+                    session.query(func.max(AssetOHLCV.date_open))
+                    .select_from(AssetOHLCV)
+                    .join(AssetOHLCVPull)
+                    .join(AssetOHLCVGroup)
+                    .filter(
+                        AssetOHLCVGroup.source_id == coin_market_cap_id,
+                        AssetOHLCVGroup.base_asset_id == base_asset.id,
+                        AssetOHLCVGroup.quote_asset_id == us_dollar.id,
+                        AssetOHLCVGroup.timeframe_id == one_day_id,
                     )
-                    timedelta = TIMEFRAME_UNIT_TO_DELTA_FUNCTION[TIMEFRAME_ONE_DAY.unit](TIMEFRAME_ONE_DAY.amount)
-                    if last_date:
-                        target_date = last_date[0] + timedelta
-                    else:
-                        target_date = cryptocurrency.coin_market_cap_date_added or DATA_DEFAULT_FLOOR
-                    if datetime.now(timezone.utc) - clean_range_cap(target_date, TIMEFRAME_ONE_DAY.unit) >= timedelta:
-                        update_cryptocurrency_one_day_asset_ohlcv_from_coin_market_cap_task.apply_async(
-                            (base_asset.id, datetime_to_ms_timestamp(target_date)), priority=3
-                        )
+                    .one_or_none()
+                )
+                timedelta = TIMEFRAME_UNIT_TO_DELTA_FUNCTION[TIMEFRAME_ONE_DAY.unit](TIMEFRAME_ONE_DAY.amount)
+                if last_date:
+                    target_date = last_date[0] + timedelta
+                else:
+                    target_date = base_asset.cryptocurrency.coin_market_cap_date_added or DATA_DEFAULT_FLOOR
+                if datetime.now(timezone.utc) - clean_range_cap(target_date, TIMEFRAME_ONE_DAY.unit) >= timedelta:
+                    update_cryptocurrency_one_day_asset_ohlcv_from_coin_market_cap_task.apply_async(
+                        (base_asset.id, datetime_to_ms_timestamp(target_date)), priority=3
+                    )
