@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
-from sqlalchemy.orm import Session
+from trader.connections.database import session
 from trader.data.initial.base import BaseData
 from trader.models.google_trends import GoogleTrendsGprop
 
@@ -10,7 +10,7 @@ class GoogleTrendsGpropData(BaseData):
     code: str
     name: str
 
-    def query_instance(self, session: Session) -> Optional[GoogleTrendsGprop]:
+    def query_instance(self) -> Optional[GoogleTrendsGprop]:
         return session.query(GoogleTrendsGprop).filter_by(code=self.code).one_or_none()
 
     def create_instance(self) -> GoogleTrendsGprop:

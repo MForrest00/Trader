@@ -4,8 +4,7 @@ from typing import Dict, List, Optional, Tuple
 from urllib.parse import urlencode
 from bs4 import BeautifulSoup
 import requests
-from sqlalchemy.orm import Session
-from trader.connections.database import DBSession
+from trader.connections.database import session
 from trader.data.initial.asset_type import ASSET_TYPE_CRYPTOCURRENCY, ASSET_TYPE_UNKNOWN_CURRENCY
 from trader.data.initial.source import SOURCE_COIN_MARKET_CAP
 from trader.models.asset import AssetTag, AssetXAssetTag, Asset
@@ -45,10 +44,7 @@ class CryptocurrencyRankRecord:
 
 
 def insert_cryptocurrency_ranks(
-    session: Session,
-    source_id: int,
-    cryptocurrency_rank_snapshot_id: int,
-    data: List[CryptocurrencyRankRecord],
+    source_id: int, cryptocurrency_rank_snapshot_id: int, data: List[CryptocurrencyRankRecord]
 ) -> None:
     cryptocurrency_id = ASSET_TYPE_CRYPTOCURRENCY.fetch_id()
     unknown_currency_id = ASSET_TYPE_UNKNOWN_CURRENCY.fetch_id()
@@ -282,34 +278,32 @@ def retrieve_current_cryptocurrency_ranks_from_coin_market_cap(limit: int) -> Li
 def update_historical_cryptocurrency_ranks_from_coin_market_cap(limit: int = CRYPTOCURRENCY_RANK_LIMIT) -> None:
     coin_market_cap_id = SOURCE_COIN_MARKET_CAP.fetch_id()
     historical_snapshots = retrieve_historical_snapshot_list_from_coin_market_cap()
-    with DBSession() as session:
-        for historical_snapshot in historical_snapshots:
-            cryptocurrency_rank_snapshot = (
-                session.query(CryptocurrencyRankSnapshot)
-                .filter_by(source_id=coin_market_cap_id, snapshot_date=historical_snapshot, is_historical=True)
-                .one_or_none()
+    for historical_snapshot in historical_snapshots:
+        cryptocurrency_rank_snapshot = (
+            session.query(CryptocurrencyRankSnapshot)
+            .filter_by(source_id=coin_market_cap_id, snapshot_date=historical_snapshot, is_historical=True)
+            .one_or_none()
+        )
+        if not cryptocurrency_rank_snapshot:
+            data = retrieve_historical_cryptocurrency_ranks_from_coin_market_cap(historical_snapshot, limit)
+            cryptocurrency_rank_snapshot = CryptocurrencyRankSnapshot(
+                source_id=coin_market_cap_id,
+                snapshot_date=historical_snapshot,
+                is_historical=True,
             )
-            if not cryptocurrency_rank_snapshot:
-                data = retrieve_historical_cryptocurrency_ranks_from_coin_market_cap(historical_snapshot, limit)
-                cryptocurrency_rank_snapshot = CryptocurrencyRankSnapshot(
-                    source_id=coin_market_cap_id,
-                    snapshot_date=historical_snapshot,
-                    is_historical=True,
-                )
-                session.add(cryptocurrency_rank_snapshot)
-                session.flush()
-                insert_cryptocurrency_ranks(session, coin_market_cap_id, cryptocurrency_rank_snapshot.id, data)
+            session.add(cryptocurrency_rank_snapshot)
+            session.flush()
+            insert_cryptocurrency_ranks(coin_market_cap_id, cryptocurrency_rank_snapshot.id, data)
 
 
 def update_current_cryptocurrency_ranks_from_coin_market_cap(limit: int = CRYPTOCURRENCY_RANK_LIMIT) -> None:
     coin_market_cap_id = SOURCE_COIN_MARKET_CAP.fetch_id()
     data = retrieve_current_cryptocurrency_ranks_from_coin_market_cap(limit)
-    with DBSession() as session:
-        cryptocurrency_rank_snapshot = CryptocurrencyRankSnapshot(
-            source_id=coin_market_cap_id,
-            snapshot_date=datetime.now(timezone.utc),
-            is_historical=False,
-        )
-        session.add(cryptocurrency_rank_snapshot)
-        session.flush()
-        insert_cryptocurrency_ranks(session, coin_market_cap_id, cryptocurrency_rank_snapshot.id, data)
+    cryptocurrency_rank_snapshot = CryptocurrencyRankSnapshot(
+        source_id=coin_market_cap_id,
+        snapshot_date=datetime.now(timezone.utc),
+        is_historical=False,
+    )
+    session.add(cryptocurrency_rank_snapshot)
+    session.flush()
+    insert_cryptocurrency_ranks(coin_market_cap_id, cryptocurrency_rank_snapshot.id, data)

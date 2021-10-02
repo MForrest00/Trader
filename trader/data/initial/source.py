@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
-from sqlalchemy.orm import Session
+from trader.connections.database import session
 from trader.data.initial.base import BaseData
 from trader.data.initial.source_type import (
     SOURCE_TYPE_CRYPTOCURRENCY_MARKET_DATA,
@@ -18,7 +18,7 @@ class SourceData(BaseData):
     name: str
     url: Optional[str] = None
 
-    def query_instance(self, session: Session) -> Optional[Source]:
+    def query_instance(self) -> Optional[Source]:
         return session.query(Source).filter_by(source_type_id=self.source_type.fetch_id(), name=self.name).one_or_none()
 
     def create_instance(self) -> Source:

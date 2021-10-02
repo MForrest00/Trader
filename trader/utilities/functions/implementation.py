@@ -1,51 +1,37 @@
 from datetime import datetime, timedelta
 from typing import List, Optional
 import pandas as pd
-from sqlalchemy.orm.session import Session
-from trader.connections.database import DBSession
-from trader.data.initial.asset_type import ASSET_TYPE_STANDARD_CURRENCY
-from trader.models.asset import Asset
+from trader.connections.database import session
 from trader.models.asset_ohlcv import AssetOHLCV, AssetOHLCVGroup, AssetOHLCVPull
-from trader.models.source import Source
 from trader.models.timeframe import Timeframe
-from trader.utilities.constants import US_DOLLAR_SYMBOL
 from trader.utilities.functions import clean_range_cap, TIMEFRAME_UNIT_TO_DELTA_FUNCTION
 
 
-def get_us_dollar(session: Session) -> Asset:
-    return (
-        session.query(Asset)
-        .filter_by(asset_type_id=ASSET_TYPE_STANDARD_CURRENCY.fetch_id(), symbol=US_DOLLAR_SYMBOL)
-        .one()
-    )
-
-
 def fetch_asset_ohlcv_dataframe(
-    source: Source,
-    base_asset: Asset,
-    quote_asset: Asset,
-    timeframe: Timeframe,
+    source_id: int,
+    base_asset_id: int,
+    quote_asset_id: int,
+    timeframe_id: int,
     from_inclusive: Optional[datetime] = None,
     to_exclusive: Optional[datetime] = None,
 ) -> pd.DataFrame:
-    with DBSession() as session:
-        records_query = (
-            session.query(AssetOHLCV)
-            .join(AssetOHLCVPull)
-            .join(AssetOHLCVGroup)
-            .filter(
-                AssetOHLCVGroup.source_id == source.id,
-                AssetOHLCVGroup.base_asset_id == base_asset.id,
-                AssetOHLCVGroup.quote_asset_id == quote_asset.id,
-                AssetOHLCVGroup.timeframe_id == timeframe.id,
-            )
-            .order_by(AssetOHLCV.date_open.asc())
+    records_query = (
+        session.query(AssetOHLCV)
+        .join(AssetOHLCVPull)
+        .join(AssetOHLCVGroup)
+        .filter(
+            AssetOHLCVGroup.source_id == source_id,
+            AssetOHLCVGroup.base_asset_id == base_asset_id,
+            AssetOHLCVGroup.quote_asset_id == quote_asset_id,
+            AssetOHLCVGroup.timeframe_id == timeframe_id,
         )
-        if from_inclusive:
-            records_query.filter(AssetOHLCV.date_open >= from_inclusive)
-        if to_exclusive:
-            records_query.filter(AssetOHLCV.date_open < to_exclusive)
-        records = records_query.all()
+        .order_by(AssetOHLCV.date_open.asc())
+    )
+    if from_inclusive:
+        records_query.filter(AssetOHLCV.date_open >= from_inclusive)
+    if to_exclusive:
+        records_query.filter(AssetOHLCV.date_open < to_exclusive)
+    records = records_query.all()
     return pd.DataFrame(
         (
             {"id": r.id, "open": r.open, "high": r.high, "low": r.low, "close": r.close, "volume": r.volume}

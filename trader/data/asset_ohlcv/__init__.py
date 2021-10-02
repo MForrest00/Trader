@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple, Union
-from trader.connections.database import DBSession
+from trader.connections.database import session
 from trader.data.initial.source import SourceData
 from trader.data.initial.source_type import SourceTypeData
 from trader.models.asset import Asset
@@ -38,10 +38,7 @@ class AssetOHLCVDataFeedRetriever(ABC):
         if self._source_id is None:
             if isinstance(self.SOURCE, tuple):
                 name, source_type_data = self.SOURCE
-                with DBSession() as session:
-                    source = (
-                        session.query(Source).filter_by(source_type_id=source_type_data.fetch_id(), name=name).one()
-                    )
+                source = session.query(Source).filter_by(source_type_id=source_type_data.fetch_id(), name=name).one()
                 self._source_id = source.id
             else:
                 self._source_id = self.SOURCE.fetch_id()
@@ -61,54 +58,53 @@ class AssetOHLCVDataFeedRetriever(ABC):
 
     def update_asset_ohlcv(self) -> int:
         data = self.retrieve_asset_ohlcv()
-        with DBSession() as session:
-            asset_ohlcv_group = (
-                session.query(AssetOHLCVGroup)
-                .filter_by(
-                    source_id=self.source_id,
-                    base_asset_id=self.base_asset.id,
-                    quote_asset_id=self.quote_asset.id,
-                    timeframe_id=self.timeframe.id,
-                )
-                .one_or_none()
+        asset_ohlcv_group = (
+            session.query(AssetOHLCVGroup)
+            .filter_by(
+                source_id=self.source_id,
+                base_asset_id=self.base_asset.id,
+                quote_asset_id=self.quote_asset.id,
+                timeframe_id=self.timeframe.id,
             )
-            if not asset_ohlcv_group:
-                asset_ohlcv_group = AssetOHLCVGroup(
-                    source_id=self.source_id,
-                    base_asset_id=self.base_asset.id,
-                    quote_asset_id=self.quote_asset.id,
-                    timeframe_id=self.timeframe.id,
-                )
-                session.add(asset_ohlcv_group)
-                session.flush()
-            asset_ohlcv_pull = AssetOHLCVPull(
-                asset_ohlcv_group_id=asset_ohlcv_group.id,
-                from_inclusive=self.from_inclusive,
-                to_exclusive=self.to_exclusive,
+            .one_or_none()
+        )
+        if not asset_ohlcv_group:
+            asset_ohlcv_group = AssetOHLCVGroup(
+                source_id=self.source_id,
+                base_asset_id=self.base_asset.id,
+                quote_asset_id=self.quote_asset.id,
+                timeframe_id=self.timeframe.id,
             )
-            session.add(asset_ohlcv_pull)
+            session.add(asset_ohlcv_group)
             session.flush()
-            new_records_inserted = 0
-            if data:
-                existing_records = (
-                    session.query(AssetOHLCV)
-                    .join(AssetOHLCVPull)
-                    .join(AssetOHLCVGroup)
-                    .filter(
-                        AssetOHLCVGroup.source_id == self.source_id,
-                        AssetOHLCVGroup.base_asset_id == self.base_asset.id,
-                        AssetOHLCVGroup.quote_asset_id == self.quote_asset.id,
-                        AssetOHLCVGroup.timeframe_id == self.timeframe.id,
-                        AssetOHLCV.date_open >= data[0]["date_open"],
-                        AssetOHLCV.date_open <= data[-1]["date_open"],
-                    )
-                    .all()
+        asset_ohlcv_pull = AssetOHLCVPull(
+            asset_ohlcv_group_id=asset_ohlcv_group.id,
+            from_inclusive=self.from_inclusive,
+            to_exclusive=self.to_exclusive,
+        )
+        session.add(asset_ohlcv_pull)
+        session.flush()
+        new_records_inserted = 0
+        if data:
+            existing_records = (
+                session.query(AssetOHLCV)
+                .join(AssetOHLCVPull)
+                .join(AssetOHLCVGroup)
+                .filter(
+                    AssetOHLCVGroup.source_id == self.source_id,
+                    AssetOHLCVGroup.base_asset_id == self.base_asset.id,
+                    AssetOHLCVGroup.quote_asset_id == self.quote_asset.id,
+                    AssetOHLCVGroup.timeframe_id == self.timeframe.id,
+                    AssetOHLCV.date_open >= data[0]["date_open"],
+                    AssetOHLCV.date_open <= data[-1]["date_open"],
                 )
-                existing_date_opens = set(r.date_open for r in existing_records)
-                for record in data:
-                    if record["date_open"] not in existing_date_opens:
-                        asset_ohlcv = AssetOHLCV(asset_ohlcv_pull_id=asset_ohlcv_pull.id, **record)
-                        session.add(asset_ohlcv)
-                        new_records_inserted += 1
-            session.commit()
+                .all()
+            )
+            existing_date_opens = set(r.date_open for r in existing_records)
+            for record in data:
+                if record["date_open"] not in existing_date_opens:
+                    asset_ohlcv = AssetOHLCV(asset_ohlcv_pull_id=asset_ohlcv_pull.id, **record)
+                    session.add(asset_ohlcv)
+                    new_records_inserted += 1
+        session.commit()
         return new_records_inserted

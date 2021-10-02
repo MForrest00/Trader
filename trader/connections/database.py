@@ -14,3 +14,4 @@ connection_string = (
 )
 database = create_engine(connection_string)
 DBSession = sessionmaker(database)
+session = DBSession()

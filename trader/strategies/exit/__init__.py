@@ -1,4 +1,4 @@
-from trader.strategies.exit.asset_ohlcv.trailing_stop_loss import TrailingStopLossAssetOHLCVExitStrategy
+from trader.strategies.exit.trailing_stop_loss import TrailingStopLossExitStrategy
 
 
-EXIT_STRATEGIES = (TrailingStopLossAssetOHLCVExitStrategy,)
+EXIT_STRATEGIES = (TrailingStopLossExitStrategy,)

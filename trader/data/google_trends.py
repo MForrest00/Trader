@@ -1,7 +1,7 @@
 from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Sequence, Tuple, Union
 from dateutil.relativedelta import relativedelta
-from trader.connections.database import DBSession
+from trader.connections.database import session
 from trader.connections.trend_request import trend_request
 from trader.data.initial.google_trends_gprop import GOOGLE_TRENDS_GPROP_WEB_SEARCH
 from trader.data.initial.source import SOURCE_GOOGLE_TRENDS
@@ -132,96 +132,95 @@ def update_interest_over_time_from_google_trends(
     keywords = sorted([keyword.lower() for keyword in keywords if keyword])
     if not keywords:
         raise ValueError("Must include a keywords sequence with at least one valid keyword")
-    with DBSession() as session:
-        google_trends_keywords = session.query(GoogleTrendsKeywords).filter_by(keywords=keywords).one_or_none()
-        if not google_trends_keywords:
-            google_trends_keywords = GoogleTrendsKeywords(keywords=keywords)
-            session.add(google_trends_keywords)
-            session.flush()
-        google_trends_group = (
-            session.query(GoogleTrendsGroup)
-            .filter_by(
-                source_id=google_trends_id,
-                google_trends_geo_id=geo.id,
-                google_trends_gprop_id=gprop.id,
-                google_trends_keywords_id=google_trends_keywords.id,
-                timeframe_id=timeframe.id,
-            )
-            .one_or_none()
-        )
-        if not google_trends_group:
-            google_trends_group = GoogleTrendsGroup(
-                source_id=google_trends_id,
-                google_trends_geo_id=geo.id,
-                google_trends_gprop_id=gprop.id,
-                google_trends_keywords_id=google_trends_keywords.id,
-                timeframe_id=timeframe.id,
-            )
-            session.add(google_trends_group)
-            session.flush()
-        google_trends_pull = GoogleTrendsPull(
-            google_trends_group_id=google_trends_group.id,
-            from_inclusive=from_inclusive,
-            to_exclusive=to_exclusive,
-        )
-        session.add(google_trends_pull)
+    google_trends_keywords = session.query(GoogleTrendsKeywords).filter_by(keywords=keywords).one_or_none()
+    if not google_trends_keywords:
+        google_trends_keywords = GoogleTrendsKeywords(keywords=keywords)
+        session.add(google_trends_keywords)
         session.flush()
-        for timeframe_base_label in reversed(GOOGLE_TRENDS_TIMEFRAME_RANKS[target_timeframe_rank:]):
-            date_ranges = timeframe_base_label_to_date_ranges(timeframe_base_label, gprop, from_inclusive, to_exclusive)
-            if date_ranges:
-                timeframe = session.query(Timeframe).filter_by(base_label=timeframe_base_label).one()
-                for from_val, to_val in date_ranges:
-                    competing_google_trends_pull_steps = (
-                        session.query(GoogleTrendsPullStep)
-                        .join(GoogleTrendsPull)
-                        .join(GoogleTrendsGroup)
-                        .filter(
-                            GoogleTrendsPullStep.timeframe_id == timeframe.id,
-                            GoogleTrendsPullStep.from_date == from_val,
-                            GoogleTrendsPullStep.to_date == to_val,
-                            GoogleTrendsPullStep.is_current.is_(True),
-                            GoogleTrendsGroup.google_trends_geo_id == geo.id,
-                            GoogleTrendsGroup.google_trends_gprop_id == gprop.id,
-                            GoogleTrendsGroup.google_trends_keywords_id == google_trends_keywords.id,
+    google_trends_group = (
+        session.query(GoogleTrendsGroup)
+        .filter_by(
+            source_id=google_trends_id,
+            google_trends_geo_id=geo.id,
+            google_trends_gprop_id=gprop.id,
+            google_trends_keywords_id=google_trends_keywords.id,
+            timeframe_id=timeframe.id,
+        )
+        .one_or_none()
+    )
+    if not google_trends_group:
+        google_trends_group = GoogleTrendsGroup(
+            source_id=google_trends_id,
+            google_trends_geo_id=geo.id,
+            google_trends_gprop_id=gprop.id,
+            google_trends_keywords_id=google_trends_keywords.id,
+            timeframe_id=timeframe.id,
+        )
+        session.add(google_trends_group)
+        session.flush()
+    google_trends_pull = GoogleTrendsPull(
+        google_trends_group_id=google_trends_group.id,
+        from_inclusive=from_inclusive,
+        to_exclusive=to_exclusive,
+    )
+    session.add(google_trends_pull)
+    session.flush()
+    for timeframe_base_label in reversed(GOOGLE_TRENDS_TIMEFRAME_RANKS[target_timeframe_rank:]):
+        date_ranges = timeframe_base_label_to_date_ranges(timeframe_base_label, gprop, from_inclusive, to_exclusive)
+        if date_ranges:
+            timeframe = session.query(Timeframe).filter_by(base_label=timeframe_base_label).one()
+            for from_val, to_val in date_ranges:
+                competing_google_trends_pull_steps = (
+                    session.query(GoogleTrendsPullStep)
+                    .join(GoogleTrendsPull)
+                    .join(GoogleTrendsGroup)
+                    .filter(
+                        GoogleTrendsPullStep.timeframe_id == timeframe.id,
+                        GoogleTrendsPullStep.from_date == from_val,
+                        GoogleTrendsPullStep.to_date == to_val,
+                        GoogleTrendsPullStep.is_current.is_(True),
+                        GoogleTrendsGroup.google_trends_geo_id == geo.id,
+                        GoogleTrendsGroup.google_trends_gprop_id == gprop.id,
+                        GoogleTrendsGroup.google_trends_keywords_id == google_trends_keywords.id,
+                    )
+                    .all()
+                )
+                valid_competing_found = False
+                for competing_google_trends_pull_step in competing_google_trends_pull_steps:
+                    for datum in competing_google_trends_pull_step.google_trends_data:
+                        if datum.is_partial:
+                            competing_google_trends_pull_step.is_current = False
+                            break
+                    else:
+                        if valid_competing_found:
+                            competing_google_trends_pull_step.is_current = False
+                        valid_competing_found = True
+                if valid_competing_found:
+                    continue
+                google_trends_pull_step = GoogleTrendsPullStep(
+                    google_trends_pull_id=google_trends_pull.id,
+                    timeframe_id=timeframe.id,
+                    from_date=from_val,
+                    to_date=to_val,
+                )
+                session.add(google_trends_pull_step)
+                session.flush()
+                from_string, to_string = date_range_to_timeframe_string(from_val, to_val)
+                timeframe_string = from_string if to_string is None else f"{from_string} {to_string}"
+                data = retrieve_interest_over_time_from_google_trends(keywords, geo, gprop, timeframe_string)
+                if timeframe_base_label[-1] == "m":
+                    data = data[:-1]
+                for record in data:
+                    data_date = record.pop("data_date")
+                    is_partial = bool(record.pop("isPartial"))
+                    for keyword, value in record.items():
+                        keyword_index = keywords.index(keyword)
+                        google_trends = GoogleTrends(
+                            google_trends_pull_step_id=google_trends_pull_step.id,
+                            google_trends_keyword_index=keyword_index + 1,
+                            data_date=data_date,
+                            value=value,
+                            is_partial=is_partial,
                         )
-                        .all()
-                    )
-                    valid_competing_found = False
-                    for competing_google_trends_pull_step in competing_google_trends_pull_steps:
-                        for datum in competing_google_trends_pull_step.google_trends_data:
-                            if datum.is_partial:
-                                competing_google_trends_pull_step.is_current = False
-                                break
-                        else:
-                            if valid_competing_found:
-                                competing_google_trends_pull_step.is_current = False
-                            valid_competing_found = True
-                    if valid_competing_found:
-                        continue
-                    google_trends_pull_step = GoogleTrendsPullStep(
-                        google_trends_pull_id=google_trends_pull.id,
-                        timeframe_id=timeframe.id,
-                        from_date=from_val,
-                        to_date=to_val,
-                    )
-                    session.add(google_trends_pull_step)
-                    session.flush()
-                    from_string, to_string = date_range_to_timeframe_string(from_val, to_val)
-                    timeframe_string = from_string if to_string is None else f"{from_string} {to_string}"
-                    data = retrieve_interest_over_time_from_google_trends(keywords, geo, gprop, timeframe_string)
-                    if timeframe_base_label[-1] == "m":
-                        data = data[:-1]
-                    for record in data:
-                        data_date = record.pop("data_date")
-                        is_partial = bool(record.pop("isPartial"))
-                        for keyword, value in record.items():
-                            keyword_index = keywords.index(keyword)
-                            google_trends = GoogleTrends(
-                                google_trends_pull_step_id=google_trends_pull_step.id,
-                                google_trends_keyword_index=keyword_index + 1,
-                                data_date=data_date,
-                                value=value,
-                                is_partial=is_partial,
-                            )
-                            session.add(google_trends)
-        session.commit()
+                        session.add(google_trends)
+    session.commit()

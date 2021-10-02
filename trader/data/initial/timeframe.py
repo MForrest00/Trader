@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
-from sqlalchemy.orm import Session
+from trader.connections.database import session
 from trader.data.initial.base import BaseData
 from trader.models.timeframe import Timeframe
 
@@ -13,7 +13,7 @@ class TimeframeData(BaseData):
     amount: int
     ccxt_label: str
 
-    def query_instance(self, session: Session) -> Optional[Timeframe]:
+    def query_instance(self) -> Optional[Timeframe]:
         return session.query(Timeframe).filter_by(base_label=self.base_label).one_or_none()
 
     def create_instance(self) -> Timeframe:

@@ -1,15 +1,14 @@
 from itertools import product
 from typing import Any, Dict, List, Sequence
-from sqlalchemy.orm import Session
 from trader.connections.cache import cache
-from trader.connections.database import DBSession
+from trader.connections.database import session
+from trader.models.data_feed import DataFeedXStrategyVersion
 from trader.models.strategy import (
     Strategy,
     StrategyVersion,
     StrategyVersionInstance,
     StrategyVersionParameter,
     StrategyVersionXStrategyVersionParameter,
-    StrategyVersionXSupplementalDataFeed,
 )
 from trader.strategies.base import Strategy as StrategyBase
 from trader.strategies.entry import ENTRY_STRATEGIES
@@ -27,7 +26,7 @@ def parameter_space_to_arguments_dict(strategy: StrategyBase) -> List[Dict[str, 
     return [dict(zip(parameter_names, p)) for p in product_parameter_values]
 
 
-def initialize_strategy(session: Session, strategy: StrategyBase) -> None:
+def initialize_strategy(strategy: StrategyBase) -> None:
     strategy_object = (
         session.query(Strategy)
         .filter_by(
@@ -49,17 +48,16 @@ def initialize_strategy(session: Session, strategy: StrategyBase) -> None:
     if not strategy_version:
         strategy_version = StrategyVersion(
             strategy_id=strategy_object.id,
-            base_data_feed_id=strategy.BASE_DATA_FEED.fetch_id(),
             version=strategy.VERSION,
             source_code_md5_hash=get_hash_of_source(strategy),
         )
         session.add(strategy_version)
         session.flush()
-        for data_feed in strategy.SUPPLEMENTAL_DATA_FEEDS:
-            strategy_version_x_supplemental_data_feed = StrategyVersionXSupplementalDataFeed(
-                strategy_version_id=strategy_version.id, data_feed_id=data_feed.fetch_id()
+        for data_feed in strategy.DATA_FEEDS:
+            data_feed_x_strategy_version = DataFeedXStrategyVersion(
+                data_feed_id=data_feed.fetch_id(), strategy_version_id=strategy_version.id
             )
-            session.add(strategy_version_x_supplemental_data_feed)
+            session.add(data_feed_x_strategy_version)
         for parameter in strategy.PARAMETER_SPACE.keys():
             strategy_version_parameter = (
                 session.query(StrategyVersionParameter).filter_by(parameter=parameter).one_or_none()
@@ -82,7 +80,6 @@ def initialize_strategy(session: Session, strategy: StrategyBase) -> None:
 
 
 def initialize_strategies() -> None:
-    with DBSession() as session:
-        for item in (*ENTRY_STRATEGIES, *EXIT_STRATEGIES):
-            initialize_strategy(session, item)
-        session.commit()
+    for item in (*ENTRY_STRATEGIES, *EXIT_STRATEGIES):
+        initialize_strategy(item)
+    session.commit()

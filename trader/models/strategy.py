@@ -24,7 +24,6 @@ class StrategyVersion(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     strategy_id = Column(Integer, ForeignKey("strategy.id"), nullable=False)
-    base_data_feed_id = Column(Integer, ForeignKey("data_feed.id"), nullable=False)
     version = Column(String, nullable=False)
     source_code_md5_hash = Column(String(32), nullable=False)
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
@@ -35,11 +34,9 @@ class StrategyVersion(Base):
     )
 
     # Many to many
+    data_feeds = relationship("DataFeedXStrategyVersion", lazy=True, back_populates=__tablename__)
     strategy_version_parameters = relationship(
         "StrategyVersionXStrategyVersionParameter", lazy=True, back_populates=__tablename__
-    )
-    supplemental_data_feeds = relationship(
-        "StrategyVersionXSupplementalDataFeed", lazy=True, back_populates=__tablename__
     )
 
     __table_args__ = (UniqueConstraint("strategy_id", "version"),)
@@ -73,21 +70,6 @@ class StrategyVersionXStrategyVersionParameter(Base):
     )
 
     __table_args__ = (UniqueConstraint("strategy_version_id", "strategy_version_parameter_id"),)
-
-
-class StrategyVersionXSupplementalDataFeed(Base):
-    __tablename__ = "strategy_version_x_supplemental_data_feed"
-
-    id = Column(Integer, primary_key=True, autoincrement=True)
-    strategy_version_id = Column(Integer, ForeignKey("strategy_version.id"), nullable=False)
-    data_feed_id = Column(Integer, ForeignKey("data_feed.id"), nullable=False)
-    date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
-
-    # Many to many
-    strategy_version = relationship("StrategyVersion", lazy=False, back_populates="supplemental_data_feeds")
-    data_feed = relationship("DataFeed", lazy=False, back_populates="supplemental_strategy_versions")
-
-    __table_args__ = (UniqueConstraint("strategy_version_id", "data_feed_id"),)
 
 
 class StrategyVersionInstance(Base):

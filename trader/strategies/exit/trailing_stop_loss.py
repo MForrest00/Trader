@@ -2,14 +2,14 @@ from typing import Dict
 import pandas as pd
 from sqlalchemy.orm.attributes import flag_modified
 from trader.models.position import Position
-from trader.strategies.asset_ohlcv.base import AssetOHLCVStrategy
+from trader.data.initial.data_feed import DATA_FEED_ASSET_OHLCV
 from trader.strategies.exit.base import ExitStrategy
 
 
-class TrailingStopLossAssetOHLCVExitStrategy(AssetOHLCVStrategy, ExitStrategy):
+class TrailingStopLossExitStrategy(ExitStrategy):
     NAME = "Trailing Stop Loss"
     VERSION = "1.0.0"
-    SUPPLEMENTAL_DATA_FEEDS = ()
+    DATA_FEEDS = (DATA_FEED_ASSET_OHLCV,)
     PARAMETER_SPACE = {"trailing_stop_loss_percentage": [i * 0.01 for i in range(2, 42, 2)]}
 
     def __init__(self, arguments: Dict[str, float]):

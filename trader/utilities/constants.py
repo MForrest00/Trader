@@ -6,8 +6,8 @@ from typing import Any, Dict, Tuple
 from trader.data.initial.asset_type import ASSET_TYPE_CRYPTOCURRENCY, ASSET_TYPE_STANDARD_CURRENCY, AssetTypeData
 from trader.data.initial.timeframe import TIMEFRAME_ONE_DAY, TimeframeData
 from trader.strategies.base import Strategy
-from trader.strategies.entry.asset_ohlcv.bollinger_bands import BollingerBandsAssetOHLCVEntryStrategy
-from trader.strategies.exit.asset_ohlcv.trailing_stop_loss import TrailingStopLossAssetOHLCVExitStrategy
+from trader.strategies.entry.bollinger_bands import BollingerBandsEntryStrategy
+from trader.strategies.exit.trailing_stop_loss import TrailingStopLossExitStrategy
 
 
 PROJECT_BASE_PATH = os.path.split(os.path.split(pathlib.Path(__file__).parent.absolute())[0])[0]
@@ -66,14 +66,12 @@ class EnabledStrategyVersionInstance:
 
 INITIAL_ENTRY_ENABLED_STRATEGY_VERSION_INSTANCES: Dict[TimeframeData, Tuple[EnabledStrategyVersionInstance, ...]] = {
     TIMEFRAME_ONE_DAY: (
-        EnabledStrategyVersionInstance(BollingerBandsAssetOHLCVEntryStrategy, {"bollinger_bands_period": 20}, 1),
+        EnabledStrategyVersionInstance(BollingerBandsEntryStrategy, {"bollinger_bands_period": 20}, 1),
     ),
 }
 
 INITIAL_EXIT_ENABLED_STRATEGY_VERSION_INSTANCES: Dict[TimeframeData, Tuple[EnabledStrategyVersionInstance, ...]] = {
     TIMEFRAME_ONE_DAY: (
-        EnabledStrategyVersionInstance(
-            TrailingStopLossAssetOHLCVExitStrategy, {"trailing_stop_loss_percentage": 0.1}, 1
-        ),
+        EnabledStrategyVersionInstance(TrailingStopLossExitStrategy, {"trailing_stop_loss_percentage": 0.1}, 1),
     ),
 }

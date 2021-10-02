@@ -1,12 +1,12 @@
 from typing import Set, Sequence
-from sqlalchemy.orm import Session
+from trader.connections.database import session
 from trader.models.cryptocurrency_exchange import CryptocurrencyExchange
 from trader.models.cryptocurrency_exchange_market import CryptocurrencyExchangeMarket
 from trader.models.enabled_quote_asset import EnabledQuoteAsset
 
 
 def fetch_enabled_base_asset_ids_for_cryptocurrency_exchanges(
-    session: Session, cryptocurrency_exchanges: Sequence[CryptocurrencyExchange]
+    cryptocurrency_exchanges: Sequence[CryptocurrencyExchange]
 ) -> Set[int]:
     enabled_quote_assets = session.query(EnabledQuoteAsset).filter_by(is_disabled=False).all()
     enabled_quote_asset_ids = [c.asset.id for c in enabled_quote_assets]

@@ -1,4 +1,4 @@
-from trader.connections.database import DBSession
+from trader.connections.database import session
 from trader.models.views.asset_ohlcv import ASSET_OHLCV_SQL
 from trader.models.views.cryptocurrency import CRYPTOCURRENCY_SQL
 from trader.models.views.cryptocurrency_exchange import CRYPTOCURRENCY_EXCHANGE_SQL
@@ -8,11 +8,10 @@ from trader.models.views.standard_currency import STANDARD_CURRENCY_SQL
 
 
 def initialize_views() -> None:
-    with DBSession() as session:
-        session.execute(ASSET_OHLCV_SQL)
-        session.execute(CRYPTOCURRENCY_SQL)
-        session.execute(CRYPTOCURRENCY_EXCHANGE_SQL)
-        session.execute(CRYPTOCURRENCY_EXCHANGE_MARKET_SQL)
-        session.execute(GOOGLE_TRENDS_SQL)
-        session.execute(STANDARD_CURRENCY_SQL)
-        session.commit()
+    session.execute(ASSET_OHLCV_SQL)
+    session.execute(CRYPTOCURRENCY_SQL)
+    session.execute(CRYPTOCURRENCY_EXCHANGE_SQL)
+    session.execute(CRYPTOCURRENCY_EXCHANGE_MARKET_SQL)
+    session.execute(GOOGLE_TRENDS_SQL)
+    session.execute(STANDARD_CURRENCY_SQL)
+    session.commit()

@@ -12,17 +12,13 @@ def fetch_data_feeds_to_strategy_mapping(is_entry: bool) -> DefaultDict[Tuple[in
     output: DefaultDict[Tuple[int, ...], List[int]] = defaultdict(list)
     data_feed_lookup: Dict[DataFeedData, int] = {}
     for strategy in strategies:
-        data_feeds = (strategy.BASE_DATA_FEED, *strategy.SUPPLEMENTAL_DATA_FEEDS)
-        for data_feed in data_feeds:
+        data_feed_list: List[DataFeedData] = []
+        for data_feed in strategy.DATA_FEEDS:
             if data_feed not in data_feed_lookup:
                 data_feed_lookup[data_feed] = data_feed.fetch_id()
-        key = tuple(
-            (
-                data_feed_lookup[strategy.BASE_DATA_FEED],
-                *sorted(data_feed_lookup[d] for d in strategy.SUPPLEMENTAL_DATA_FEEDS),
-            )
-        )
-        output[key].append(int(cache.get(strategy.get_cache_key()).decode()))
+            insort_left(data_feed_list, data_feed_lookup[data_feed])
+        if data_feed_list:
+            output[tuple(data_feed_list)].append(int(cache.get(strategy.get_cache_key()).decode()))
     return output
 
 

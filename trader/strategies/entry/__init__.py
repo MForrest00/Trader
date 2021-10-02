@@ -1,4 +1,4 @@
-from trader.strategies.entry.asset_ohlcv.bollinger_bands import BollingerBandsAssetOHLCVEntryStrategy
+from trader.strategies.entry.bollinger_bands import BollingerBandsEntryStrategy
 
 
-ENTRY_STRATEGIES = (BollingerBandsAssetOHLCVEntryStrategy,)
+ENTRY_STRATEGIES = (BollingerBandsEntryStrategy,)

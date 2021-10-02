@@ -1,14 +1,14 @@
 from typing import Dict
 from finta import TA
 import pandas as pd
-from trader.strategies.asset_ohlcv.base import AssetOHLCVStrategy
+from trader.data.initial.data_feed import DATA_FEED_ASSET_OHLCV
 from trader.strategies.entry.base import EntryStrategy
 
 
-class BollingerBandsAssetOHLCVEntryStrategy(AssetOHLCVStrategy, EntryStrategy):
+class BollingerBandsEntryStrategy(EntryStrategy):
     NAME = "Bollinger Bands"
     VERSION = "1.0.0"
-    SUPPLEMENTAL_DATA_FEEDS = ()
+    DATA_FEEDS = (DATA_FEED_ASSET_OHLCV,)
     PARAMETER_SPACE = {"bollinger_bands_period": range(5, 45, 5)}
 
     def __init__(self, arguments: Dict[str, int]):

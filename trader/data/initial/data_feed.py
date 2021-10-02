@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
-from sqlalchemy.orm import Session
+from trader.connections.database import session
 from trader.data.initial.base import BaseData
 from trader.models.data_feed import DataFeed
 
@@ -9,7 +9,7 @@ from trader.models.data_feed import DataFeed
 class DataFeedData(BaseData):
     name: str
 
-    def query_instance(self, session: Session) -> Optional[DataFeed]:
+    def query_instance(self) -> Optional[DataFeed]:
         return session.query(DataFeed).filter_by(name=self.name).one_or_none()
 
     def create_instance(self) -> DataFeed:

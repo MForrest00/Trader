@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from typing import Optional
-from sqlalchemy.orm import Session
+from trader.connections.database import session
 from trader.data.initial.base import BaseData
 from trader.models.asset import AssetType
 
@@ -9,7 +9,7 @@ from trader.models.asset import AssetType
 class AssetTypeData(BaseData):
     description: str
 
-    def query_instance(self, session: Session) -> Optional[AssetType]:
+    def query_instance(self) -> Optional[AssetType]:
         return session.query(AssetType).filter_by(description=self.description).one_or_none()
 
     def create_instance(self) -> AssetType:

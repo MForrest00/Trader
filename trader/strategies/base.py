@@ -1,8 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Any, Dict, Sequence, Tuple
 import pandas as pd
-from sqlalchemy.orm import Session
-from trader.connections.database import DBSession
+from trader.connections.database import session
 from trader.data.initial.data_feed import DataFeedData
 from trader.models.strategy import Strategy as StrategyModel, StrategyVersion, StrategyVersionInstance
 
@@ -25,12 +24,7 @@ class Strategy(ABC):
 
     @property
     @abstractmethod
-    def BASE_DATA_FEED(self) -> DataFeedData:
-        ...
-
-    @property
-    @abstractmethod
-    def SUPPLEMENTAL_DATA_FEEDS(self) -> Tuple[DataFeedData]:
+    def DATA_FEEDS(self) -> Tuple[DataFeedData]:
         ...
 
     @property
@@ -47,7 +41,7 @@ class Strategy(ABC):
         strategy_name = "_".join(cls.NAME.lower().split())
         return f"strategy_version_{strategy_type}_{strategy_name}_id"
 
-    def get_strategy_version_instance(self, session: Session) -> StrategyVersionInstance:
+    def get_strategy_version_instance(self) -> StrategyVersionInstance:
         return (
             session.query(StrategyVersionInstance)
             .join(StrategyVersion)
