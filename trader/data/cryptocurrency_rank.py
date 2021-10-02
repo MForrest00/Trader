@@ -152,7 +152,6 @@ def insert_cryptocurrency_ranks(
             total_supply=record.total_supply,
         )
         session.add(cryptocurrency_rank)
-    session.commit()
 
 
 def retrieve_historical_snapshot_list_from_coin_market_cap() -> List[datetime]:
@@ -294,6 +293,7 @@ def update_historical_cryptocurrency_ranks_from_coin_market_cap(limit: int = CRY
             session.add(cryptocurrency_rank_snapshot)
             session.flush()
             insert_cryptocurrency_ranks(coin_market_cap_id, cryptocurrency_rank_snapshot.id, data)
+            session.commit()
 
 
 def update_current_cryptocurrency_ranks_from_coin_market_cap(limit: int = CRYPTOCURRENCY_RANK_LIMIT) -> None:
@@ -307,3 +307,4 @@ def update_current_cryptocurrency_ranks_from_coin_market_cap(limit: int = CRYPTO
     session.add(cryptocurrency_rank_snapshot)
     session.flush()
     insert_cryptocurrency_ranks(coin_market_cap_id, cryptocurrency_rank_snapshot.id, data)
+    session.commit()
