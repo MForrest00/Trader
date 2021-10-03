@@ -39,9 +39,12 @@ def main():
     logger.debug("Loading current CoinMarketCap cryptocurrency ranks")
     update_current_cryptocurrency_ranks_from_coin_market_cap.apply(kwargs={"limit": 5000})
     set_initial_enabled_quote_assets()
+    logger.debug("Initializing strategies")
     initialize_strategies()
     set_initial_enabled_strategy_version_instances()
+    logger.debug("Loading CoinMarketCap cryptocurrency exchange market stats")
     queue_update_cryptocurrency_exchange_market_stats_from_coin_market_cap.apply(kwargs={"synchronous": True})
+    logger.debug("Queueing tasks for loading CoinMarketCap cryptocurrency OHLCV")
     queue_update_cryptocurrency_one_day_asset_ohlcv_from_coin_market_cap.delay()
 
 

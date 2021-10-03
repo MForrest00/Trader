@@ -1,4 +1,3 @@
-from typing import Dict
 from finta import TA
 import pandas as pd
 from trader.data.initial.data_feed import DATA_FEED_ASSET_OHLCV

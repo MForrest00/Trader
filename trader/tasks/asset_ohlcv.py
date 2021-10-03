@@ -14,7 +14,10 @@ from trader.tasks import app
 from trader.utilities.constants import DATA_DEFAULT_FLOOR, DATA_FEED_MONITOR_QUEUE_KEY
 from trader.utilities.functions import generate_data_feed_monitor_value, get_asset_us_dollar, get_asset_us_dollar_id
 from trader.utilities.functions.time import (
-    clean_range_cap, datetime_to_ms_timestamp, ms_timestamp_to_datetime, TIMEFRAME_UNIT_TO_DELTA_FUNCTION
+    clean_range_cap,
+    datetime_to_ms_timestamp,
+    ms_timestamp_to_datetime,
+    TIMEFRAME_UNIT_TO_DELTA_FUNCTION,
 )
 from trader.utilities.functions.cryptocurrency_exchange import (
     fetch_enabled_base_asset_ids_for_cryptocurrency_exchanges,

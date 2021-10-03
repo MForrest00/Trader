@@ -1,4 +1,3 @@
-from typing import Dict
 import pandas as pd
 from sqlalchemy.orm.attributes import flag_modified
 from trader.models.position import Position
