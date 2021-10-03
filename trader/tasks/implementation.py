@@ -17,7 +17,8 @@ def fetch_one_day_asset_ohlcv_dataframe(timeframe_id: int, base_asset_id: int) -
 
 
 @app.task
-def run_implementations(timeframe_id: int, base_asset_id: int, data_feed_ids: Sequence[int]):
+def run_implementations(timeframe_id: int, base_asset_id: int, data_feed_ids: Sequence[int]) -> None:
+    data_feed_ids = tuple(data_feed_ids)
     timeframe_one_day_id = TIMEFRAME_ONE_DAY.fetch_id()
     data_feed_asset_ohlcv_id = DATA_FEED_ASSET_OHLCV.fetch_id()
     timeframe_data_feed_to_dataframe_function_mapping: Dict[Tuple[int, int], Callable[[int, int], pd.DataFrame]] = {

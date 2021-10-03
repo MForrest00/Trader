@@ -51,6 +51,6 @@ class DataFeedMonitor:
             for target in targets:
                 combinations[target].remove(data_feed_id)
                 if len(combinations[target]) == 0:
-                    run_implementations.apply_async((timeframe_id, base_asset_id, target), priority=5)
+                    run_implementations.apply_async(args=(timeframe_id, base_asset_id, target), priority=5)
                     combinations[target] = set(target)
             cache.set(DataFeedMonitor.CACHE_STATE_KEY, str(self.data_feed_load_status))

@@ -19,12 +19,16 @@ from trader.models.cryptocurrency_exchange_market_stat import (
     CryptocurrencyExchangeMarketStat,
     CryptocurrencyExchangeMarketStatPull,
 )
+from trader.models.enabled_cryptocurrency_exchange import EnabledCryptocurrencyExchange
+from trader.tasks import app
 from trader.utilities.functions import iso_time_string_to_datetime
 
 
-def update_cryptocurrency_exchange_market_stats_from_coin_market_cap(
-    cryptocurrency_exchange: CryptocurrencyExchange,
-) -> None:
+@app.task
+def update_cryptocurrency_exchange_market_stats_from_coin_market_cap(cryptocurrency_exchange_id: int) -> None:
+    cryptocurrency_exchange = session.query(CryptocurrencyExchange).get(cryptocurrency_exchange_id)
+    if not cryptocurrency_exchange:
+        raise ValueError("Cryptocurrency exchange does not exist with that ID")
     if cryptocurrency_exchange.coin_market_cap_slug is None:
         raise ValueError("Cryptocurrency exchange must have a coin_market_cap_slug attribute")
     coin_market_cap_id = SOURCE_COIN_MARKET_CAP.fetch_id()
@@ -110,9 +114,7 @@ def update_cryptocurrency_exchange_market_stats_from_coin_market_cap(
             asset_key = (asset_type_id, base_asset_symbol)
             if asset_key not in asset_lookup:
                 base_asset = (
-                    session.query(Asset)
-                    .filter_by(asset_type_id=asset_type_id, symbol=base_asset_symbol)
-                    .one_or_none()
+                    session.query(Asset).filter_by(asset_type_id=asset_type_id, symbol=base_asset_symbol).one_or_none()
                 )
                 asset_lookup[asset_key] = base_asset
             else:
@@ -134,9 +136,7 @@ def update_cryptocurrency_exchange_market_stats_from_coin_market_cap(
             asset_key = (asset_type_id, quote_asset_symbol)
             if asset_key not in asset_lookup:
                 quote_asset = (
-                    session.query(Asset)
-                    .filter_by(asset_type_id=asset_type_id, symbol=quote_asset_symbol)
-                    .one_or_none()
+                    session.query(Asset).filter_by(asset_type_id=asset_type_id, symbol=quote_asset_symbol).one_or_none()
                 )
                 asset_lookup[asset_key] = quote_asset
             else:
@@ -213,3 +213,17 @@ def update_cryptocurrency_exchange_market_stats_from_coin_market_cap(
         )
         session.add(cryptocurrency_exchange_market_stat)
     session.commit()
+
+
+@app.task
+def queue_update_cryptocurrency_exchange_market_stats_from_coin_market_cap(synchronous: bool = False) -> None:
+    if synchronous:
+        function = update_cryptocurrency_exchange_market_stats_from_coin_market_cap.apply
+        kwargs = {}
+    else:
+        function = update_cryptocurrency_exchange_market_stats_from_coin_market_cap.apply_async
+        kwargs = {"priority": 1}
+    enabled_cryptocurrency_exchanges = session.query(EnabledCryptocurrencyExchange).filter_by(is_disabled=False).all()
+    for enabled_cryptocurrency_exchange in enabled_cryptocurrency_exchanges:
+        if enabled_cryptocurrency_exchange.coin_market_cap_slug:
+            function(args=(enabled_cryptocurrency_exchange.cryptocurrency_exchange.id), **kwargs)

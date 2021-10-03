@@ -9,8 +9,7 @@ from trader.utilities.constants import (
 
 def set_initial_enabled_strategy_version_instances() -> None:
     timeframes = (
-        INITIAL_ENTRY_ENABLED_STRATEGY_VERSION_INSTANCES.keys()
-        | INITIAL_EXIT_ENABLED_STRATEGY_VERSION_INSTANCES.keys()
+        INITIAL_ENTRY_ENABLED_STRATEGY_VERSION_INSTANCES.keys() | INITIAL_EXIT_ENABLED_STRATEGY_VERSION_INSTANCES.keys()
     )
     for timeframe in timeframes:
         timeframe_id = timeframe.fetch_id()
