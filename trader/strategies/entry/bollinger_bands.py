@@ -11,9 +11,9 @@ class BollingerBandsEntryStrategy(EntryStrategy):
     DATA_FEEDS = (DATA_FEED_ASSET_OHLCV,)
     PARAMETER_SPACE = {"bollinger_bands_period": range(5, 45, 5)}
 
-    def __init__(self, arguments: Dict[str, int]):
-        super().__init__(arguments)
-        self.bollinger_bands_period = self.arguments.get("bollinger_bands_period", 20)
+    @property
+    def bollinger_bands_period(self) -> int:
+        return self.arguments.get("bollinger_bands_period", 20)
 
     def enhance_data(self, dataframe: pd.DataFrame) -> pd.DataFrame:
         return dataframe.join(TA.BBANDS(dataframe, self.bollinger_bands_period))

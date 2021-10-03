@@ -21,7 +21,7 @@ from trader.models.google_trends import (
     GoogleTrendsPullStep,
 )
 from trader.models.timeframe import Timeframe
-from trader.utilities.functions import clean_range_cap
+from trader.utilities.functions.time import clean_range_cap
 
 
 GOOGLE_TRENDS_WEB_SEARCH_BASE_DATE = datetime(2004, 1, 1, tzinfo=timezone.utc)

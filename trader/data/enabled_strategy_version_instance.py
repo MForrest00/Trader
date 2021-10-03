@@ -1,7 +1,7 @@
 from trader.connections.database import session
 from trader.models.enabled_strategy_version_instance import EnabledStrategyVersionInstance
 from trader.models.strategy import Strategy, StrategyVersion, StrategyVersionInstance
-from trader.utilities.constants import (
+from trader.utilities.initial_enabled_data import (
     INITIAL_ENTRY_ENABLED_STRATEGY_VERSION_INSTANCES,
     INITIAL_EXIT_ENABLED_STRATEGY_VERSION_INSTANCES,
 )
@@ -31,6 +31,20 @@ def set_initial_enabled_strategy_version_instances() -> None:
                 .one_or_none()
             )
             if strategy_version_instance:
+                enabled_strategy_version_instance = EnabledStrategyVersionInstance(
+                    strategy_version_instance_id=strategy_version_instance.id,
+                    timeframe_id=timeframe_id,
+                    priority=enabled_strategy_version_instance.priority,
+                )
+                session.add(enabled_strategy_version_instance)
+            else:
+                strategy_version = enabled_strategy_version_instance.strategy.get_strategy_version()
+                strategy_version_instance = StrategyVersionInstance(
+                    strategy_version_id=strategy_version.id,
+                    arguments=enabled_strategy_version_instance.arguments,
+                )
+                session.add(strategy_version_instance)
+                session.flush()
                 enabled_strategy_version_instance = EnabledStrategyVersionInstance(
                     strategy_version_instance_id=strategy_version_instance.id,
                     timeframe_id=timeframe_id,

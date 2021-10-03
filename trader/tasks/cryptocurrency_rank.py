@@ -11,7 +11,7 @@ from trader.models.asset import AssetTag, AssetXAssetTag, Asset
 from trader.models.cryptocurrency import Cryptocurrency, CryptocurrencyPlatform
 from trader.models.cryptocurrency_rank import CryptocurrencyRank, CryptocurrencyRankSnapshot
 from trader.tasks import app
-from trader.utilities.functions import iso_time_string_to_datetime
+from trader.utilities.functions.time import iso_time_string_to_datetime
 
 
 CRYPTOCURRENCY_RANK_LIMIT = 500

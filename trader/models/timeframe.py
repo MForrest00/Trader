@@ -20,8 +20,9 @@ class Timeframe(Base):
     enabled_strategy_version_instances = relationship(
         "EnabledStrategyVersionInstance", lazy=True, backref=backref(__tablename__, lazy=False)
     )
+    entry_implementations = relationship("EntryImplementation", lazy=True, backref=backref(__tablename__, lazy=False))
+    exit_implementations = relationship("ExitImplementation", lazy=True, backref=backref(__tablename__, lazy=False))
     google_trends_groups = relationship("GoogleTrendsGroup", lazy=True, backref=backref(__tablename__, lazy=False))
     google_trends_pull_steps = relationship(
         "GoogleTrendsPullStep", lazy=True, backref=backref(__tablename__, lazy=False)
     )
-    implementations = relationship("Implementation", lazy=True, backref=backref(__tablename__, lazy=False))

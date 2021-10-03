@@ -21,7 +21,7 @@ from trader.models.cryptocurrency_exchange_market_stat import (
 )
 from trader.models.enabled_cryptocurrency_exchange import EnabledCryptocurrencyExchange
 from trader.tasks import app
-from trader.utilities.functions import iso_time_string_to_datetime
+from trader.utilities.functions.time import iso_time_string_to_datetime
 
 
 @app.task

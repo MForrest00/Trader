@@ -8,7 +8,7 @@ from trader.models.asset import Asset
 from trader.models.asset_ohlcv import AssetOHLCV, AssetOHLCVGroup, AssetOHLCVPull
 from trader.models.source import Source
 from trader.models.timeframe import Timeframe
-from trader.utilities.functions import clean_range_cap
+from trader.utilities.functions.time import clean_range_cap
 
 
 class AssetOHLCVDataFeedRetriever(ABC):

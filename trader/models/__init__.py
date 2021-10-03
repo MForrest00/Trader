@@ -14,8 +14,9 @@ from trader.models.data_feed import *
 from trader.models.enabled_cryptocurrency_exchange import *
 from trader.models.enabled_quote_asset import *
 from trader.models.enabled_strategy_version_instance import *
+from trader.models.entry_implementation import *
+from trader.models.exit_implementation import *
 from trader.models.google_trends import *
-from trader.models.implementation import *
 from trader.models.position import *
 from trader.models.sell_signal import *
 from trader.models.source import *

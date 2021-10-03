@@ -16,7 +16,7 @@ from trader.models.cryptocurrency_exchange_rank import CryptocurrencyExchangeRan
 from trader.models.standard_currency import StandardCurrency
 from trader.models.source import Source
 from trader.tasks import app
-from trader.utilities.functions import iso_time_string_to_datetime
+from trader.utilities.functions.time import iso_time_string_to_datetime
 
 
 @app.task

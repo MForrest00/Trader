@@ -7,7 +7,7 @@ from trader.data.initial.source import SOURCE_COIN_MARKET_CAP
 from trader.data.initial.timeframe import TIMEFRAME_ONE_DAY
 from trader.data.asset_ohlcv import AssetOHLCVDataFeedRetriever
 from trader.utilities.constants import US_DOLLAR_SYMBOL
-from trader.utilities.functions import iso_time_string_to_datetime
+from trader.utilities.functions.time import iso_time_string_to_datetime
 
 
 class CoinMarketCapAssetOHLCVDataFeedRetriever(AssetOHLCVDataFeedRetriever):

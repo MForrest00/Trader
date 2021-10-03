@@ -4,7 +4,7 @@ import pandas as pd
 from trader.connections.database import session
 from trader.models.asset_ohlcv import AssetOHLCV, AssetOHLCVGroup, AssetOHLCVPull
 from trader.models.timeframe import Timeframe
-from trader.utilities.functions import clean_range_cap, TIMEFRAME_UNIT_TO_DELTA_FUNCTION
+from trader.utilities.functions.time import clean_range_cap, TIMEFRAME_UNIT_TO_DELTA_FUNCTION
 
 
 def fetch_asset_ohlcv_dataframe(

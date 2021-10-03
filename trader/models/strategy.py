@@ -86,6 +86,7 @@ class StrategyVersionInstance(Base):
     )
 
     # One to many
-    implementations = relationship("Implementation", lazy=True, backref=backref(__tablename__, lazy=False))
+    entry_implementations = relationship("EntryImplementation", lazy=True, backref=backref(__tablename__, lazy=False))
+    exit_implementations = relationship("ExitImplementation", lazy=True, backref=backref(__tablename__, lazy=False))
 
     __table_args__ = (UniqueConstraint("strategy_version_id", "arguments"),)

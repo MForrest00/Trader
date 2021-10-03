@@ -43,7 +43,8 @@ app.conf.beat_schedule = {
         },
     },
     dasherize("queue_update_cryptocurrency_exchange_market_stats_from_coin_market_cap"): {
-        "task": "trader.tasks.cryptocurrency_exchange_market_stat.queue_update_cryptocurrency_exchange_market_stats_from_coin_market_cap",
+        "task": "trader.tasks.cryptocurrency_exchange_market_stat"
+        + ".queue_update_cryptocurrency_exchange_market_stats_from_coin_market_cap",
         "schedule": crontab(minute=0, hour=0, day_of_week="mon"),
         "options": {
             "priority": 1,
@@ -70,4 +71,5 @@ from trader.tasks.cryptocurrency_exchange_market_stat import (
 )
 from trader.tasks.cryptocurrency_exchange_rank import update_cryptocurrency_exchange_ranks_from_coin_market_cap
 from trader.tasks.cryptocurrency_rank import update_current_cryptocurrency_ranks_from_coin_market_cap
+from trader.tasks.implementation import run_implementations
 from trader.tasks.standard_currency import update_standard_currencies_from_iso

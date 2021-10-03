@@ -12,9 +12,9 @@ class TrailingStopLossExitStrategy(ExitStrategy):
     DATA_FEEDS = (DATA_FEED_ASSET_OHLCV,)
     PARAMETER_SPACE = {"trailing_stop_loss_percentage": [i * 0.01 for i in range(2, 42, 2)]}
 
-    def __init__(self, arguments: Dict[str, float]):
-        super().__init__(arguments)
-        self.trailing_stop_loss_percentage = self.arguments.get("trailing_stop_loss_percentage", 0.15)
+    @property
+    def trailing_stop_loss_percentage(self) -> float:
+        return self.arguments.get("trailing_stop_loss_percentage", 0.15)
 
     def enhance_data(self, dataframe: pd.DataFrame) -> pd.DataFrame:
         return dataframe

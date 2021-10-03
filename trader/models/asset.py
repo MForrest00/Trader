@@ -37,11 +37,8 @@ class Asset(Base):
     )
 
     # One to many
-    quote_asset_ohlcv_implementation_runs = relationship(
-        "AssetOHLCVImplementationRun", lazy=True, backref=backref(f"quote_{__tablename__}", lazy=False)
-    )
-    base_implementations = relationship(
-        "Implementation", lazy=True, backref=backref(f"base_{__tablename__}", lazy=False)
+    base_entry_implementations = relationship(
+        "EntryImplementation", lazy=True, backref=backref(f"base_{__tablename__}", lazy=False)
     )
     positions = relationship("Position", lazy=True, backref=backref(__tablename__, lazy=False))
 

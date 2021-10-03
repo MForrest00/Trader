@@ -7,7 +7,7 @@ from trader.data.asset_ohlcv import AssetOHLCVDataFeedRetriever
 from trader.data.initial.asset_type import ASSET_TYPE_CRYPTOCURRENCY
 from trader.models.asset import Asset
 from trader.models.timeframe import Timeframe
-from trader.utilities.functions import (
+from trader.utilities.functions.time import (
     datetime_to_ms_timestamp,
     ms_timestamp_to_datetime,
     TIMEFRAME_UNIT_TO_DELTA_FUNCTION,

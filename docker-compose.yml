@@ -16,20 +16,6 @@ services:
       - postgres_data:/var/lib/postgresql/data
     networks:
       - postgres_network
-  celery_beat:
-    image: trader/trader
-    env_file:
-      - .env
-    environment:
-      - CELERY_REDIS_HOST=redis
-    command: celery -A trader.tasks beat --loglevel=INFO
-    volumes:
-      - .:/app
-    networks:
-      - redis_network
-    depends_on:
-      - redis
-    container_name: celery_beat
   celery_worker:
     image: trader/trader
     env_file:
@@ -48,6 +34,20 @@ services:
       - redis
       - postgres
     container_name: celery_worker
+  celery_beat:
+    image: trader/trader
+    env_file:
+      - .env
+    environment:
+      - CELERY_REDIS_HOST=redis
+    command: celery -A trader.tasks beat --loglevel=INFO
+    volumes:
+      - .:/app
+    networks:
+      - redis_network
+    depends_on:
+      - redis
+    container_name: celery_beat
   data_feed_monitor:
     image: trader/trader
     env_file:

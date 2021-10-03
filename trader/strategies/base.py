@@ -3,7 +3,8 @@ from typing import Any, Dict, Sequence, Tuple
 import pandas as pd
 from trader.connections.database import session
 from trader.data.initial.data_feed import DataFeedData
-from trader.models.strategy import Strategy as StrategyModel, StrategyVersion, StrategyVersionInstance
+from trader.models.asset import Asset
+from trader.models.strategy import Strategy as StrategyModel, StrategyVersion
 
 
 class Strategy(ABC):
@@ -32,7 +33,8 @@ class Strategy(ABC):
     def PARAMETER_SPACE(self) -> Dict[str, Sequence[Any]]:
         ...
 
-    def __init__(self, arguments: Dict[str, Any]):
+    def __init__(self, base_asset: Asset, arguments: Dict[str, Any]):
+        self.base_asset = base_asset
         self.arguments = arguments
 
     @classmethod
@@ -41,16 +43,14 @@ class Strategy(ABC):
         strategy_name = "_".join(cls.NAME.lower().split())
         return f"strategy_version_{strategy_type}_{strategy_name}_id"
 
-    def get_strategy_version_instance(self) -> StrategyVersionInstance:
+    def get_strategy_version(self) -> StrategyVersion:
         return (
-            session.query(StrategyVersionInstance)
-            .join(StrategyVersion)
+            session.query(StrategyVersion)
             .join(StrategyModel)
             .filter(
                 StrategyModel.name == self.NAME,
                 StrategyModel.is_entry == self.IS_ENTRY,
                 StrategyVersion.version == self.VERSION,
-                StrategyVersionInstance.arguments == self.arguments,
             )
             .one()
         )

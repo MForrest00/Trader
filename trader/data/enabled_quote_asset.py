@@ -3,7 +3,7 @@ from trader.connections.database import session
 from trader.data.initial.asset_type import AssetTypeData
 from trader.models.asset import Asset
 from trader.models.enabled_quote_asset import EnabledQuoteAsset
-from trader.utilities.constants import INITIAL_ENABLED_QUOTE_ASSETS
+from trader.utilities.initial_enabled_data import INITIAL_ENABLED_QUOTE_ASSETS
 
 
 def set_initial_enabled_quote_assets() -> None:

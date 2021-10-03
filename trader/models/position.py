@@ -17,9 +17,9 @@ class Position(Base):
     date_closed = Column(DateTime(timezone=True), nullable=True)
 
     # One to many
+    exit_implementations = relationship("ExitImplementation", lazy=True, backref=backref(__tablename__, lazy=False))
     position_purchases = relationship("PositionPurchase", lazy=True, backref=backref(__tablename__, lazy=False))
     position_sales = relationship("PositionSale", lazy=True, backref=backref(__tablename__, lazy=False))
-    sell_signals = relationship("SellSignal", lazy=True, backref=backref(__tablename__, lazy=False))
 
 
 class PositionPurchase(Base):

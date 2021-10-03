@@ -2,7 +2,7 @@ from trader.connections.database import session
 from trader.models.cryptocurrency_exchange import CryptocurrencyExchange
 from trader.models.enabled_cryptocurrency_exchange import EnabledCryptocurrencyExchange
 from trader.models.source import Source
-from trader.utilities.constants import INITIAL_ENABLED_CRYPTOCURRENCY_EXCHANGES
+from trader.utilities.initial_enabled_data import INITIAL_ENABLED_CRYPTOCURRENCY_EXCHANGES
 
 
 def set_initial_enabled_cryptocurrency_exchanges() -> None:
