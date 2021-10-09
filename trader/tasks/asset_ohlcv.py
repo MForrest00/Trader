@@ -44,9 +44,9 @@ def update_cryptocurrency_one_day_asset_ohlcv_from_coin_market_cap(
 
 @app.task
 def queue_update_cryptocurrency_one_day_asset_ohlcv_from_coin_market_cap() -> None:
-    enabled_cryptocurrency_exchanges = session.query(EnabledCryptocurrencyExchange).filter_by(is_disabled=False).all()
+    enabled_cryptocurrency_exchanges = session.query(EnabledCryptocurrencyExchange).all()
     base_asset_ids = fetch_enabled_base_asset_ids_for_cryptocurrency_exchanges(
-        (e.cryptocurrency_exchange for e in enabled_cryptocurrency_exchanges)
+        (e.cryptocurrency_exchange for e in enabled_cryptocurrency_exchanges if e.history[0].is_enabled)
     )
     us_dollar_id = get_asset_us_dollar_id()
     coin_market_cap_id = SOURCE_COIN_MARKET_CAP.fetch_id()
@@ -68,7 +68,7 @@ def queue_update_cryptocurrency_one_day_asset_ohlcv_from_coin_market_cap() -> No
                 .one_or_none()
             )
             timedelta = TIMEFRAME_UNIT_TO_DELTA_FUNCTION[TIMEFRAME_ONE_DAY.unit](TIMEFRAME_ONE_DAY.amount)
-            if last_date:
+            if last_date[0]:
                 target_date = last_date[0] + timedelta
             else:
                 target_date = base_asset.cryptocurrency.coin_market_cap_date_added or DATA_DEFAULT_FLOOR

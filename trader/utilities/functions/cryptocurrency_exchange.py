@@ -8,8 +8,8 @@ from trader.models.enabled_quote_asset import EnabledQuoteAsset
 def fetch_enabled_base_asset_ids_for_cryptocurrency_exchanges(
     cryptocurrency_exchanges: Sequence[CryptocurrencyExchange],
 ) -> Set[int]:
-    enabled_quote_assets = session.query(EnabledQuoteAsset).filter_by(is_disabled=False).all()
-    enabled_quote_asset_ids = [c.asset.id for c in enabled_quote_assets]
+    enabled_quote_assets = session.query(EnabledQuoteAsset).all()
+    enabled_quote_asset_ids = [c.asset.id for c in enabled_quote_assets if c.history[0].is_enabled]
     base_asset_ids: Set[int] = set()
     for cryptocurrency_exchange in cryptocurrency_exchanges:
         markets = (

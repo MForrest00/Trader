@@ -43,7 +43,7 @@ def fetch_asset_ohlcv_dataframe(
 
 def fetch_time_deltas_from_dataframe_index(dataframe: pd.DataFrame) -> List[timedelta]:
     unique_timedeltas = dataframe.index.to_series().diff().dropna().unique()
-    return [t.to_pytimedelta() for t in unique_timedeltas]
+    return [pd.to_timedelta(t).to_pytimedelta() for t in unique_timedeltas]
 
 
 def dataframe_is_valid(dataframe: pd.DataFrame, timeframe: Timeframe) -> bool:

@@ -43,14 +43,15 @@ class Strategy(ABC):
         strategy_name = "_".join(cls.NAME.lower().split())
         return f"strategy_version_{strategy_type}_{strategy_name}_id"
 
-    def get_strategy_version(self) -> StrategyVersion:
+    @classmethod
+    def get_strategy_version(cls) -> StrategyVersion:
         return (
             session.query(StrategyVersion)
             .join(StrategyModel)
             .filter(
-                StrategyModel.name == self.NAME,
-                StrategyModel.is_entry == self.IS_ENTRY,
-                StrategyVersion.version == self.VERSION,
+                StrategyModel.name == cls.NAME,
+                StrategyModel.is_entry == cls.IS_ENTRY,
+                StrategyVersion.version == cls.VERSION,
             )
             .one()
         )

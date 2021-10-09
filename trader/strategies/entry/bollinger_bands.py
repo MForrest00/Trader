@@ -17,10 +17,10 @@ class BollingerBandsEntryStrategy(EntryStrategy):
     def enhance_data(self, dataframe: pd.DataFrame) -> pd.DataFrame:
         return dataframe.join(TA.BBANDS(dataframe, self.bollinger_bands_period))
 
-    def should_open_position(self, dataframe: pd.DataFrame, row_index: int) -> bool:
+    def get_buy_signal_strength(self, dataframe: pd.DataFrame, row_index: int) -> float:
         row = dataframe.iloc[row_index]
         if pd.isna(row["BB_LOWER"]):
-            return False
+            return 0.0
         if row["close"] < row["BB_LOWER"]:
-            return True
-        return False
+            return 1.0
+        return 0.0

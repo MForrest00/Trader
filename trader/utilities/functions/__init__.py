@@ -22,7 +22,7 @@ def generate_data_feed_monitor_value(timeframe_id: int, base_asset_id: int, data
 
 
 def generate_asset_cache_key(asset_type_id: int, symbol: str) -> str:
-    return f"asset_{asset_type_id}_{symbol}"
+    return f"asset_{asset_type_id}_{symbol.lower()}"
 
 
 def get_asset_us_dollar() -> Asset:
@@ -45,4 +45,6 @@ def get_asset_us_dollar_id() -> int:
         us_dollar = get_asset_us_dollar()
         us_dollar_id = us_dollar.id
         cache.set(cache_key, us_dollar_id)
+    else:
+        us_dollar_id = int(us_dollar_id.decode())
     return us_dollar_id

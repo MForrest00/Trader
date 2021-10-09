@@ -187,7 +187,7 @@ def update_cryptocurrency_exchange_market_stats_from_coin_market_cap(cryptocurre
         ):
             cryptocurrency_exchange_market.source_id = coin_market_cap_id
             cryptocurrency_exchange_market.cryptocurrency_exchange_market_fee_type_id = market_fee_type.id
-            cryptocurrency_exchange_market.market_url = cryptocurrency_exchange_market_url
+            cryptocurrency_exchange_market.url = cryptocurrency_exchange_market_url
             cryptocurrency_exchange_market.coin_market_cap_id = cryptocurrency_exchange_market_coin_market_cap_id
             cryptocurrency_exchange_market.coin_market_cap_date_last_updated = (
                 cryptocurrency_exchange_market_coin_market_cap_date_last_updated
@@ -223,7 +223,10 @@ def queue_update_cryptocurrency_exchange_market_stats_from_coin_market_cap(synch
     else:
         function = update_cryptocurrency_exchange_market_stats_from_coin_market_cap.apply_async
         kwargs = {"priority": 1}
-    enabled_cryptocurrency_exchanges = session.query(EnabledCryptocurrencyExchange).filter_by(is_disabled=False).all()
+    enabled_cryptocurrency_exchanges = session.query(EnabledCryptocurrencyExchange).all()
     for enabled_cryptocurrency_exchange in enabled_cryptocurrency_exchanges:
-        if enabled_cryptocurrency_exchange.coin_market_cap_slug:
-            function(args=(enabled_cryptocurrency_exchange.cryptocurrency_exchange.id), **kwargs)
+        if (
+            enabled_cryptocurrency_exchange.history[0].is_enabled
+            and enabled_cryptocurrency_exchange.cryptocurrency_exchange.coin_market_cap_slug
+        ):
+            function(args=(enabled_cryptocurrency_exchange.cryptocurrency_exchange.id,), **kwargs)

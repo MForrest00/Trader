@@ -36,9 +36,6 @@ class Source(Base):
     # One to many
     assets = relationship("Asset", lazy=True, backref=backref(__tablename__, lazy=True))
     asset_ohlcv_groups = relationship("AssetOHLCVGroup", lazy=True, backref=backref(__tablename__, lazy=True))
-    asset_ohlcv_implementation_runs = relationship(
-        "AssetOHLCVImplementationRun", lazy=True, backref=backref(__tablename__, lazy=True)
-    )
     asset_tags = relationship("AssetTag", lazy=True, backref=backref(__tablename__, lazy=True))
     assets_x_asset_tags = relationship("AssetXAssetTag", lazy=True, backref=backref(__tablename__, lazy=True))
     countries = relationship("Country", lazy=True, backref=backref(__tablename__, lazy=True))

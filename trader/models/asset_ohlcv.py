@@ -16,7 +16,6 @@ class AssetOHLCVGroup(Base):
 
     # One to many
     asset_ohlcv_pulls = relationship("AssetOHLCVPull", lazy=True, backref=backref(__tablename__, lazy=False))
-    implementations = relationship("Implementation", lazy=True, backref=backref(__tablename__, lazy=False))
 
     # Many to one
     base_asset = relationship(
@@ -55,6 +54,3 @@ class AssetOHLCV(Base):
     volume = Column(Numeric, nullable=False)
     date_high = Column(DateTime(timezone=True), nullable=True)
     date_low = Column(DateTime(timezone=True), nullable=True)
-
-    # One to many
-    asset_ohlcv_buy_signals = relationship("AssetOHLCVBuySignal", lazy=True, backref=backref(__tablename__, lazy=False))

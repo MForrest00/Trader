@@ -7,5 +7,5 @@ class EntryStrategy(Strategy):
     IS_ENTRY = True
 
     @abstractmethod
-    def should_open_position(self, dataframe: pd.DataFrame, row_index: int) -> bool:
+    def get_buy_signal_strength(self, dataframe: pd.DataFrame, row_index: int) -> float:
         ...

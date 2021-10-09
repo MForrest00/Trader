@@ -1,4 +1,4 @@
-from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, Numeric
+from sqlalchemy import Boolean, Column, DateTime, ForeignKey, Integer, Numeric, UniqueConstraint
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import backref, relationship
 from sqlalchemy.sql import func
@@ -13,13 +13,14 @@ class Position(Base):
     asset_id = Column(Integer, ForeignKey("asset.id"), nullable=False)
     data = Column(JSONB, nullable=True)
     is_demo = Column(Boolean, nullable=False, default=False)
-    date_opened = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
-    date_closed = Column(DateTime(timezone=True), nullable=True)
+    date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # One to many
     exit_implementations = relationship("ExitImplementation", lazy=True, backref=backref(__tablename__, lazy=False))
     position_purchases = relationship("PositionPurchase", lazy=True, backref=backref(__tablename__, lazy=False))
     position_sales = relationship("PositionSale", lazy=True, backref=backref(__tablename__, lazy=False))
+
+    __table_args__ = (UniqueConstraint("user_id", "asset_id"),)
 
 
 class PositionPurchase(Base):
@@ -27,7 +28,8 @@ class PositionPurchase(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     position_id = Column(Integer, ForeignKey("position.id"), nullable=False)
-    buy_signal_id = Column(Integer, ForeignKey("buy_signal.id"), nullable=False)
+    signal_date = Column(DateTime(timezone=True), nullable=False)
+    purchase_date = Column(DateTime(timezone=True), nullable=False)
     price = Column(Numeric, nullable=False)
     size = Column(Numeric, nullable=False)
     fees = Column(Numeric, nullable=False)
@@ -40,7 +42,8 @@ class PositionSale(Base):
 
     id = Column(Integer, primary_key=True, autoincrement=True)
     position_id = Column(Integer, ForeignKey("position.id"), nullable=False)
-    sell_signal_id = Column(Integer, ForeignKey("sell_signal.id"), nullable=False)
+    signal_date = Column(DateTime(timezone=True), nullable=False)
+    sale_date = Column(DateTime(timezone=True), nullable=False)
     price = Column(Numeric, nullable=False)
     size = Column(Numeric, nullable=False)
     fees = Column(Numeric, nullable=False)

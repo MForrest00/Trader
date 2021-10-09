@@ -1,4 +1,4 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Callable, Dict, Union
 from dateutil.relativedelta import relativedelta
 
@@ -34,7 +34,7 @@ def datetime_to_ms_timestamp(datetime_val: datetime) -> int:
 
 
 def ms_timestamp_to_datetime(timestamp_val: int) -> datetime:
-    return datetime.utcfromtimestamp(timestamp_val // 1000)
+    return datetime.fromtimestamp(timestamp_val // 1000, timezone.utc)
 
 
 def iso_time_string_to_datetime(time_string: str) -> datetime:

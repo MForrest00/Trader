@@ -19,7 +19,7 @@ class EntryImplementation(Base):
         "EntryImplementationRun", lazy=True, backref=backref(__tablename__, lazy=False)
     )
 
-    __table_args__ = (UniqueConstraint("timeframe_id", "asset_id", "strategy_version_instance_id"),)
+    __table_args__ = (UniqueConstraint("timeframe_id", "base_asset_id", "strategy_version_instance_id"),)
 
 
 class EntryImplementationRun(Base):

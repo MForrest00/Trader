@@ -1,6 +1,4 @@
 import pandas as pd
-from sqlalchemy.orm.attributes import flag_modified
-from trader.models.position import Position
 from trader.data.initial.data_feed import DATA_FEED_ASSET_OHLCV
 from trader.strategies.exit.base import ExitStrategy
 
@@ -18,17 +16,17 @@ class TrailingStopLossExitStrategy(ExitStrategy):
     def enhance_data(self, dataframe: pd.DataFrame) -> pd.DataFrame:
         return dataframe
 
-    def should_close_position(self, position: Position, dataframe: pd.DataFrame, row_index: int) -> bool:
+    def get_sell_signal_strength(self, dataframe: pd.DataFrame, row_index: int) -> float:
         row = dataframe.iloc[row_index]
-        if "trailing_stop_loss_encountered_max" not in position.data:
-            position.data["trailing_stop_loss_encountered_max"] = max(position.bought_price, row["high"])
+        if "trailing_stop_loss_encountered_max" not in self.position.data:
+            self.position.data["trailing_stop_loss_encountered_max"] = max(self.position.bought_price, row["high"])
         else:
-            position.data["trailing_stop_loss_encountered_max"] = max(
-                position.data["trailing_stop_loss_encountered_max"], row["high"]
+            self.position.data["trailing_stop_loss_encountered_max"] = max(
+                self.position.data["trailing_stop_loss_encountered_max"], row["high"]
             )
-        flag_modified(position, "data")
+        self.flag_position_data_modified()
         if row["close"] <= (
-            position.data["trailing_stop_loss_encountered_max"] * (1 - self.trailing_stop_loss_percentage)
+            self.position.data["trailing_stop_loss_encountered_max"] * (1 - self.trailing_stop_loss_percentage)
         ):
-            return True
-        return False
+            return 1.0
+        return 0.0

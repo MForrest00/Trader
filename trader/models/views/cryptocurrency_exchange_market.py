@@ -28,7 +28,7 @@ CRYPTOCURRENCY_EXCHANGE_MARKET_SQL = dedent(
         ,qat.description AS quote_asset_type_description
         ,cem.cryptocurrency_exchange_market_fee_type_id
         ,cemft.description AS cryptocurrency_exchange_market_fee_type_description
-        ,cem.market_url
+        ,cem.url
         ,cem.coin_market_cap_id
         ,cem.coin_market_cap_date_last_updated
     FROM public.{cryptocurrency_exchange_market_table} cem

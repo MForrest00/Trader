@@ -6,7 +6,6 @@ from trader.models.data_feed import DataFeedXStrategyVersion
 from trader.models.strategy import (
     Strategy,
     StrategyVersion,
-    StrategyVersionInstance,
     StrategyVersionParameter,
     StrategyVersionXStrategyVersionParameter,
 )
@@ -70,10 +69,6 @@ def initialize_strategy(strategy: StrategyBase) -> None:
                 strategy_version_id=strategy_version.id, strategy_version_parameter_id=strategy_version_parameter.id
             )
             session.add(strategy_version_x_strategy_version_parameter)
-        arguments_dict = parameter_space_to_arguments_dict(strategy)
-        for item in arguments_dict:
-            strategy_version_instance = StrategyVersionInstance(strategy_version_id=strategy_version.id, arguments=item)
-            session.add(strategy_version_instance)
     elif strategy_version.source_code_md5_hash != get_hash_of_source(strategy):
         raise Exception("MD5 hash of source does not match persisted value for strategy {strategy.NAME}")
     cache.set(strategy.get_cache_key(), strategy_version.id)

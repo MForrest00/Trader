@@ -5,7 +5,7 @@ from typing import DefaultDict, Dict, Set, Tuple
 from trader.connections.cache import cache
 from trader.tasks.implementation import run_implementations
 from trader.utilities.constants import DATA_FEED_MESSAGE_DELIMITER, DATA_FEED_MONITOR_QUEUE_KEY
-from trader.utilities.functions.strategy import strategy_data_feed_combinations
+from trader.utilities.functions.strategy import fetch_data_feeds_to_strategy_mapping
 
 
 class DataFeedMonitor:
@@ -13,20 +13,23 @@ class DataFeedMonitor:
     CACHE_STATE_KEY = "data_feed_monitor_state"
 
     def __init__(self):
+        self.data_feed_to_entry_strategy_mapping = fetch_data_feeds_to_strategy_mapping(True)
+        self.data_feed_to_exit_strategy_mapping = fetch_data_feeds_to_strategy_mapping(False)
+        self.strategy_data_feed_combinations = (
+            self.data_feed_to_entry_strategy_mapping.keys() | self.data_feed_to_exit_strategy_mapping.keys()
+        )
         self.data_feed_to_combinations_mapping = self.generate_data_feed_to_combinations_mapping()
         self.data_feed_load_status = self.generate_data_feed_load_status()
 
-    @staticmethod
-    def generate_data_feed_to_combinations_mapping() -> DefaultDict[int, Set[Tuple[int, ...]]]:
+    def generate_data_feed_to_combinations_mapping(self) -> DefaultDict[int, Set[Tuple[int, ...]]]:
         output: DefaultDict[int, Set[Tuple[int, ...]]] = defaultdict(set)
-        for combination in strategy_data_feed_combinations:
+        for combination in self.strategy_data_feed_combinations:
             for data_feed_id in combination:
                 output[data_feed_id].add(combination)
         return output
 
-    @staticmethod
-    def data_feed_load_combinations() -> Dict[Tuple[int, ...], Set[int]]:
-        return {item: set(item) for item in strategy_data_feed_combinations}
+    def data_feed_load_combinations(self) -> Dict[Tuple[int, ...], Set[int]]:
+        return {item: set(item) for item in self.strategy_data_feed_combinations}
 
     @classmethod
     def generate_data_feed_load_status(cls) -> Dict[int, Dict[int, Dict[Tuple[int, ...], Set[int]]]]:
@@ -41,7 +44,7 @@ class DataFeedMonitor:
             if not record:
                 sleep(self.IDLE_SLEEP_SECONDS)
                 continue
-            timeframe_id, base_asset_id, data_feed_id = record.split(DATA_FEED_MESSAGE_DELIMITER)
+            timeframe_id, base_asset_id, data_feed_id = map(int, record.decode().split(DATA_FEED_MESSAGE_DELIMITER))
             if timeframe_id not in self.data_feed_load_status:
                 self.data_feed_load_status[timeframe_id] = {}
             if base_asset_id not in self.data_feed_load_status[timeframe_id]:

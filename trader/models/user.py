@@ -16,4 +16,10 @@ class User(Base):
     date_created = Column(DateTime(timezone=True), nullable=False, server_default=func.now())
 
     # One to many
+    enabled_cryptocurrency_exchange_histories = relationship(
+        "EnabledCryptocurrencyExchangeHistory", lazy=True, backref=backref(__tablename__, lazy=False)
+    )
+    enabled_quote_asset_histories = relationship(
+        "EnabledQuoteAssetHistory", lazy=True, backref=backref(__tablename__, lazy=False)
+    )
     positions = relationship("Position", lazy=True, backref=backref(__tablename__, lazy=False))
