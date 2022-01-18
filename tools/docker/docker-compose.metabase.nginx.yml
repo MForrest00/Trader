@@ -9,7 +9,7 @@ services:
   nginx:
     image: nginx:1.20-alpine
     volumes:
-      - ./tools/nginx_conf/nginx.conf:/etc/nginx/nginx.conf
+      - ../nginx_conf/nginx.conf:/etc/nginx/nginx.conf
       - /etc/letsencrypt:/etc/letscrypt
     networks:
       - metabase_network

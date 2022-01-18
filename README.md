@@ -33,12 +33,6 @@
 + Docker
   + `docker build -t trader/trader:latest .` - build the image
 
-## Data Feed Refresh Process
-
-+ Data feed refreshes are kicked off via celery beat tasks
-+ If a refresh of a particular data feed results in new records written to the database, two tasks need to be performed: 1. the new data needs to be processed by entry strategies to find buy signals, and 2. the new data needs to be processed by exit strategies for existing positions to find sell signals
-+ If a buy signal is generated, the resulting buy signal needs to be processed by individual users to possibly create positions
-
 ## TODOs
 
 + Maybe try to handle duplicate queued tasks (<https://stackoverflow.com/questions/26831103/avoiding-duplicate-tasks-in-celery-broker>)

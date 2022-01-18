@@ -6,6 +6,7 @@ from trader.connections.database import session
 from trader.data.initial.data_feed import DATA_FEED_ASSET_OHLCV
 from trader.data.initial.source import SOURCE_COIN_MARKET_CAP
 from trader.data.initial.timeframe import TIMEFRAME_ONE_DAY
+from trader.models.buy_signal import BuySignal
 from trader.models.entry_implementation import EntryImplementation, EntryImplementationRun
 from trader.models.exit_implementation import ExitImplementation, ExitImplementationRun
 from trader.models.position import Position
@@ -13,6 +14,7 @@ from trader.models.strategy import StrategyVersionInstance
 from trader.models.timeframe import Timeframe
 from trader.models.user import User
 from trader.tasks import app
+from trader.tasks.buy_signal import handle_buy_signal
 from trader.utilities.functions import get_asset_us_dollar_id
 from trader.utilities.functions.implementation import dataframe_is_valid, fetch_asset_ohlcv_dataframe
 from trader.utilities.functions.strategy import fetch_data_feeds_to_strategy_mapping
@@ -60,7 +62,7 @@ def run_implementations(timeframe_id: int, base_asset_id: int, data_feed_ids: Se
         )
         for strategy_version_instance in strategy_version_instances:
             enabled_strategy_version_instance = strategy_version_instance.enabled_strategy_version_instance
-            if not enabled_strategy_version_instance or enabled_strategy_version_instance.is_disabled:
+            if not enabled_strategy_version_instance or not enabled_strategy_version_instance.history[0].is_enabled:
                 continue
             implementation = session.query(EntryImplementation).filter_by(
                 timeframe_id=timeframe_id,
@@ -82,17 +84,36 @@ def run_implementations(timeframe_id: int, base_asset_id: int, data_feed_ids: Se
                 .one_or_none()
             )
             if last_date[0]:
-                next_date = last_date[0] + TIMEFRAME_UNIT_TO_DELTA_FUNCTION[timeframe.unit](timeframe.amount)
+                start_date = last_date[0] + TIMEFRAME_UNIT_TO_DELTA_FUNCTION[timeframe.unit](timeframe.amount)
                 try:
-                    start_index = dataframe.index.tolist().index(next_date)
+                    start_index = dataframe.index.tolist().index(start_date)
                 except ValueError:
                     continue
             else:
+                start_date = dataframe.index[0].to_pydatetime()
                 start_index = 0
+            implementation_run = EntryImplementationRun(
+                entry_implementation_id=implementation.id,
+                extra_fields=extra_fields,
+                start_date=start_date,
+                end_date=dataframe.index[-1].to_pydatetime(),
+            )
+            session.add(implementation_run)
+            session.flush()
             strategy_object = strategy(base_asset_id, strategy_version_instance.arguments)
             strategy_dataframe = strategy_object.enhance_data(dataframe)
             for i in range(start_index, strategy_dataframe.shape[0]):
                 buy_signal_strength = strategy_object.get_buy_signal_strength(strategy_dataframe, i)
+                if buy_signal_strength:
+                    buy_signal = BuySignal(
+                        entry_implementation_run_id=implementation_run.id,
+                        signal_date=dataframe.index[i],
+                        strength=buy_signal_strength,
+                    )
+                    session.add(buy_signal)
+                    session.flush()
+                    handle_buy_signal.apply_async(args=(buy_signal.id,), priority=5)
+            session.commit()
     users = session.query(User).filter_by(is_live=True).all()
     for user in users:
         positions = session.query(Position).filter_by(user_id=user.id, asset_id=base_asset_id, date_closed=None).all()
